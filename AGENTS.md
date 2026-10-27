@@ -10,6 +10,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Agent skills
 
+### Product requirements
+
+[PRD.md](PRD.md) is the approved source of truth for product behavior. Read the relevant requirements before implementation; diagrams, specs, and plans must remain consistent with it.
+
 ### Issue tracker
 
 Specs live in `docs/superpowers/specs/` and plans in `docs/superpowers/plans/`. Track implementation tasks in those plans. Use GitHub Issues only when explicitly requested. See `docs/agents/issue-tracker.md`.

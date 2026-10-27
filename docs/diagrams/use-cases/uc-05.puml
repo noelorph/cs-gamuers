@@ -1,0 +1,39 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title UC-05  Program Head oversight
+' Requirements: PERM-03 PERM-04 CONTENT-01 CONTENT-02 CONTENT-03 CONTENT-04 CONTENT-05 CONTENT-06 CONTENT-07 CONTENT-08 PATH-01 PATH-02 PATH-03 ASSESS-01 ASSESS-02 ASSESS-03 ASSESS-04 ASSESS-05 REPORT-01 REPORT-02 NOTICE-01 P-07
+left to right direction
+actor "Program Head" as A
+rectangle "CS-GAMUERS: academic oversight" {
+  usecase "Review course, career-path,\nand assessment submissions" as U0
+  usecase "Approve publication or revision" as U1
+  usecase "Request changes or reject\nwith a reason" as U2
+  usecase "Approve course/path retirement" as U3
+  usecase "Transfer content ownership\nand assign assessment owner" as U4
+  usecase "View aggregate participation,\ncompletion, and quiz reports" as U5
+}
+A -- U0
+A -- U1
+A -- U2
+A -- U3
+A -- U4
+A -- U5
+note bottom of A
+Oversight only: no course authoring.
+Reports may be filtered by course, revision, and dates.
+Small-group protection applies below five students.
+No individual records or private conversations.
+end note
+footer CS-GAMUERS | UC-05 | Product behavior
+@enduml

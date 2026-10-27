@@ -1,0 +1,40 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title UC-03  Student guidance
+' Requirements: PROFILE-01 PROFILE-02 REC-01 REC-02 REC-03 REC-04 ROAD-01 ROAD-02 ROAD-03 ROAD-04 ROAD-05 ROAD-06 ROAD-07 ROAD-08 ROAD-09 AI-01 AI-02 AI-03 AI-04 AI-05 AI-06 AI-07 PROGRESS-03 DATA-01 P-05
+left to right direction
+actor "Student" as A
+rectangle "CS-GAMUERS: personal guidance" {
+  usecase "Request course and\ncareer-path suggestions" as U0
+  usecase "Preview and accept\na personal roadmap" as U1
+  usecase "Request and accept\na replacement roadmap" as U2
+  usecase "View roadmap progress\nand optional time estimate" as U3
+  usecase "Ask AI learning questions\nand request suggestions" as U4
+  usecase "Read or delete private\nconversation history" as U5
+}
+A -- U0
+A -- U1
+A -- U2
+A -- U3
+A -- U4
+A -- U5
+note bottom of A
+Personalization requires a complete profile.
+At most one accepted active roadmap.
+20 successful AI requests per day.
+AI cannot start learning or accept a plan silently.
+Private history expires after 90 days without a message.
+end note
+footer CS-GAMUERS | UC-03 | Product behavior
+@enduml

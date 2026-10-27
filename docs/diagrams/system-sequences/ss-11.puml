@@ -1,0 +1,64 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-11  Save and submit a quiz or assessment
+' Requirements: ASSESS-01 ASSESS-02 ASSESS-03 ASSESS-04 ASSESS-05 QUIZ-01 QUIZ-02 QUIZ-03 QUIZ-04 QUIZ-05 QUIZ-06 QUIZ-07 QUIZ-08 PROGRESS-01 PROGRESS-02 PROGRESS-03 REWARD-01 REWARD-02 CONTENT-06 DATA-01 P-03 P-04
+hide footbox
+autonumber
+
+actor "Student" as U
+participant "CS-GAMUERS" as S
+U -> S: Open quiz or shared assessment
+S --> U: Resume unfinished attempt, or start one on applicable revision
+loop While answering
+  U -> S: Save changed answer
+  S --> U: Indicate saved or waiting-to-save state
+end
+U -> S: Submit completed answers
+alt Some questions are unanswered
+  S --> U: Keep attempt and identify missing answers
+else Attempt was already submitted
+  S --> U: Return existing result without another attempt or reward
+else New complete submission
+  alt Course quiz
+    S --> U: Return score, correct answers, and explanations
+    note over S
+    Pass when exact percentage meets threshold.
+    Preserve highest score and any previous pass.
+    Optional quizzes do not affect course progress.
+    Course progress displays 100% only when every required
+    quiz in the Student's started revision is passed.
+    Rounding keeps unfinished progress below 100%.
+    All required quizzes passed: complete course
+    and award its badge at most once.
+    end note
+  else Shared diagnostic
+    S --> U: Return topic scores, correct answers, and explanations
+    note over S
+    15 questions; no pass/fail or badges.
+    Latest completed result informs new suggestions.
+    Earlier results stay saved.
+    end note
+  end
+end
+opt Connection drops during submission
+  U -> S: Check result of the same submission
+  S --> U: Return saved result, or allow retry if not submitted
+end
+note over U,S
+Submitted answers cannot be edited.
+Untimed, unlimited retakes create new attempts.
+At most one unfinished attempt per quiz/assessment.
+end note
+footer CS-GAMUERS | SS-11 | Product behavior
+@enduml

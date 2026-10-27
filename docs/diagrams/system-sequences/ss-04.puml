@@ -1,0 +1,49 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-04  Recover access after losing email
+' Requirements: ACC-04 ACC-15 ACC-16 NOTICE-02 DATA-01
+hide footbox
+autonumber
+
+actor "Account holder" as U
+actor "Administrator" as A
+participant "CS-GAMUERS" as S
+note over U,A
+User requests help outside a signed-in learning flow.
+Administrator matches school-issued ID in person
+against the existing account.
+Another Administrator handles Administrator recovery.
+end note
+A -> S: Authorize recovery for verified existing account
+U -> S: Provide replacement email
+alt Email is already used, or Student address has wrong domain
+  S --> U: Reject replacement and explain required correction
+else Eligible replacement address
+  S --> U: Request ownership verification of replacement email
+  U -> S: Verify replacement address
+  S --> U: Confirm address replacement; notify old address
+  note over S
+  End existing sessions and invalidate existing reset links
+  before password setup, even if setup is abandoned.
+  end note
+  S --> U: Request own password setup
+  U -> S: Set own password
+  S --> U: Confirm password setup; require sign-in again
+  note over S
+  Preserve role, approval, activation state,
+  progress, completions, and badges.
+  end note
+end
+footer CS-GAMUERS | SS-04 | Product behavior
+@enduml

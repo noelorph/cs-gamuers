@@ -1,0 +1,43 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-10  Find and start a course
+' Requirements: PROFILE-01 PROFILE-02 DISC-01 DISC-02 DISC-03 DISC-04 CONTENT-03 CONTENT-06 CONTENT-07
+hide footbox
+autonumber
+
+actor "Student" as U
+participant "CS-GAMUERS" as S
+U -> S: Search titles/descriptions; filter topic and difficulty
+S --> U: Show published courses open to new learners
+opt Clear filters
+  U -> S: Clear search and selected filters
+  S --> U: Show full available catalog
+end
+U -> S: Open course details
+S --> U: Show outcomes, owner, lessons, prerequisites, completion rules
+U -> S: Start selected course
+alt Student already started this course
+  S --> U: Resume existing participation and original revision
+else Course no longer open to new starts
+  S --> U: Explain unavailability; do not create participation
+else Published course is available
+  S --> U: Start current published revision; show lessons
+end
+note over U,S
+Prerequisites and lesson order are advisory.
+My learning includes started and completed courses,
+including archived courses already started.
+end note
+footer CS-GAMUERS | SS-10 | Product behavior
+@enduml

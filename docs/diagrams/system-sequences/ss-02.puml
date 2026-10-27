@@ -1,0 +1,39 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-02  Invite and activate privileged staff
+' Requirements: ACC-09 ACC-10 PERM-01 NOTICE-02
+hide footbox
+autonumber
+
+actor "Administrator" as A
+participant "CS-GAMUERS" as S
+actor "Invited staff member" as I
+A -> S: Invite intended email as Administrator or Program Head
+S --> A: Record invitation and report its status
+S --> I: Deliver invitation to intended address
+I -> S: Accept invitation and verify intended email
+alt Invalid or expired invitation, or wrong recipient
+  S --> I: Do not activate access; explain invitation problem
+else Valid invitation and verified intended recipient
+  I -> S: Provide full name and create own password
+  S --> I: Activate the single invited role
+end
+note over S
+Optional employee number.
+Initial Administrator is school-designated.
+Invitation expiry value belongs in TRD.md.
+Public registration cannot choose these roles.
+end note
+footer CS-GAMUERS | SS-02 | Product behavior
+@enduml

@@ -1,0 +1,56 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-13  Preview and accept a personal roadmap
+' Requirements: PROFILE-01 ROAD-01 ROAD-02 ROAD-03 ROAD-04 ROAD-05 ROAD-06 ROAD-07 ROAD-08 PROGRESS-03 REC-01 AI-05 AI-06 DATA-01 P-04 P-05
+hide footbox
+autonumber
+
+actor "Student" as U
+participant "CS-GAMUERS" as S
+U -> S: Request roadmap for chosen career or learning goal
+note over U,S
+Apply shared saved-outcome rules (diagram index / FC-07).
+Resolve accessible success before new-generation checks:
+no generation or extra usage, even at 20 used or during outage.
+Permissions, privacy, deletion/expiry and current catalog apply.
+end note
+alt No accessible saved success and new generation cannot proceed
+  S --> U: Explain unmet condition; keep current plan unchanged
+else Saved success retrieved, or new generation succeeds under FC-07
+  alt Catalog cannot provide a suitable complete plan
+    S --> U: Explain catalog gap; retain current plan
+  else Suitable proposed plan
+    S --> U: Preview saved or new proposal with ordered courses and reasons
+    opt Weekly hours and all unfinished-course estimates are available
+      S --> U: Show approximate weeks; no deadlines or penalties
+    end
+    alt Student does not accept
+      S --> U: Keep existing active plan, if any
+    else Student explicitly accepts or confirms replacement
+      U -> S: Accept proposed roadmap
+      S --> U: Set as the one active roadmap; show completion progress
+      note over S
+      Preserve prior course attempts, completions, and badges.
+      Completed included courses count toward this plan.
+      Roadmap progress displays 100% only when every
+      included course is complete.
+      Rounding keeps unfinished progress below 100%.
+      Unstarted courses use latest revision when later started.
+      Profile or assessment changes do not auto-replace the plan.
+      end note
+    end
+  end
+end
+footer CS-GAMUERS | SS-13 | Product behavior
+@enduml

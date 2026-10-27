@@ -1,0 +1,40 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-08  Transfer ownership or assign assessment owner
+' Requirements: PERM-03 CONTENT-01 PATH-02 ASSESS-01 ACC-12 ACC-18 NOTICE-01
+hide footbox
+autonumber
+
+actor "Program Head" as H
+participant "CS-GAMUERS" as S
+actor "Previous owner" as O
+actor "New faculty owner" as N
+H -> S: Assign or transfer selected content to approved Faculty
+alt Target is not an approved active Faculty member
+  S --> H: Refuse transfer and retain current ownership
+else Eligible new owner
+  S --> H: Confirm new owner and preserve authorship history
+  opt Previous owner exists
+    S --> O: Notify transfer; remove former ownership permissions
+  end
+  S --> N: Notify assignment and provide owned-content access
+  note over S
+  Preserve revisions and student learning records.
+  Course ownership includes only that course's results.
+  Career-path ownership grants no extra student access.
+  Initial shared-assessment assignment uses this flow.
+  end note
+end
+footer CS-GAMUERS | SS-08 | Product behavior
+@enduml

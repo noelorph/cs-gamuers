@@ -1,0 +1,63 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title FC-07  AI request and usage allowance
+' Requirements: AI-01 AI-02 AI-03 AI-04 AI-05 AI-06 AI-07 REC-01 REC-02 REC-03 REC-04 PROFILE-01 ROAD-01 ROAD-02 ROAD-03 DATA-01
+start
+:Student requests chat, recommendations, or a roadmap;
+:Check permitted access to own saved outcome;
+note right
+Respect privacy and deletion/expiry rules.
+Saved suggestions still respect current catalog restrictions.
+end note
+if (Accessible success for this same logical request?) then (yes)
+  :Return saved outcome; no generation or extra allowance use;
+  :Show remaining allowance and reset time;
+  :Require explicit Student action to start a course\nor preview and accept a proposed roadmap;
+  stop
+else (needs generation)
+endif
+if (Personalization requested and profile incomplete?) then (yes)
+  :Request missing profile answers; keep browsing available;
+  stop
+else (no)
+endif
+if (20 successful requests already used today?) then (yes)
+  :Show exhausted allowance and midnight Philippine reset;
+  :Keep core learning and saved records available;
+  stop
+else (no)
+endif
+if (AI available within free service capacity?) then (yes)
+  :Use permitted learning context only;
+  note right
+No automatic name, student number, email,
+other-student records, or unreleased answer keys.
+Chat warns against sharing personal information;
+student-typed messages are sent to AI.
+end note
+  if (Request succeeds?) then (yes)
+    :Show response or proposed suggestions/roadmap;
+    :Count this logical request once; show remaining allowance\nand midnight Philippine reset;
+    :Require normal Student action to start course\nor accept a proposed roadmap;
+  else (no)
+    :Show failure; do not consume allowance;
+  endif
+else (no)
+  :Explain unavailability; no automatic paid fallback;
+endif
+:Keep current learning records and accepted roadmap;
+:Core courses, quizzes, badges, saved history,\nand saved roadmap remain usable;
+stop
+footer CS-GAMUERS | FC-07 | Product behavior
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title UC-01  Account access and applications
+' Requirements: PERM-01 PERM-05 ACC-01 ACC-02 ACC-03 ACC-04 ACC-05 ACC-06 ACC-07 ACC-08 ACC-09 ACC-10 ACC-13 ACC-14 ACC-15 ACC-16 ACC-17 ACC-20 NOTICE-01 NOTICE-02
+left to right direction
+actor "Applicant or account holder" as A
+rectangle "CS-GAMUERS: account access" {
+  usecase "Register and verify email" as U0
+  usecase "View application status\nand correct an application" as U1
+  usecase "Accept an invitation" as U2
+  usecase "Sign in with approved permissions" as U3
+  usecase "Reset a forgotten password" as U4
+  usecase "Request assisted email recovery" as U5
+  usecase "Deactivate own student account" as U6
+}
+A -- U0
+A -- U1
+A -- U2
+A -- U3
+A -- U4
+A -- U5
+A -- U6
+note bottom of A
+Registration: Students and Faculty only.
+Invitations: Administrators and Program Heads.
+Pending applicants have application access only.
+Self-deactivation: Students only.
+Each account has exactly one role.
+Other roles use Administrator-managed deactivation.
+end note
+footer CS-GAMUERS | UC-01 | Product behavior
+@enduml

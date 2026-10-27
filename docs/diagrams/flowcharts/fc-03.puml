@@ -1,0 +1,58 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title FC-03  Content review and retirement
+' Requirements: CONTENT-01 CONTENT-02 CONTENT-03 CONTENT-04 CONTENT-05 CONTENT-06 CONTENT-07 CONTENT-08 PATH-01 PATH-02 PATH-03 ASSESS-01 ASSESS-05 NOTICE-01 NOTICE-02 P-01 P-02 P-03
+start
+:Faculty owner chooses content action;
+if (Retire published course or career path?) then (yes)
+  :Submit retirement request to Program Head;
+else (create or revise)
+  :Save and edit owned draft;
+  if (All required content valid and complete?) then (yes)
+    :Submit exact draft for Program Head review;
+  else (no)
+    :Keep draft and show field-specific errors;
+    stop
+  endif
+endif
+:Program Head reviews current submission;
+if (Submission changed since review?) then (yes)
+  :Require review of current submitted content;
+  stop
+else (no)
+endif
+if (Program Head approves?) then (yes)
+  if (Retirement request?) then (yes)
+    :Archive; remove from new discovery/recommendations;
+    :Keep existing course access and accepted roadmaps;
+  else (publication)
+    :Publish approved revision;
+    :New course starts and diagnostic attempts\nuse latest published revision;
+    :Existing learners and unfinished diagnostic attempts\nkeep their started revision;
+  endif
+  :Preserve progress, completions, badges, and history;
+else (changes requested or rejected)
+  :Record decision with reason; retain current publication;
+endif
+:Show owner status and send applicable email;
+note right
+Email failure never reverses a saved decision.
+Show current state in permitted dashboards.
+Administrator account support sees delivery failure,
+without private learning content.
+Retry delivery only; never repeat the decision (P-01).
+end note
+stop
+footer CS-GAMUERS | FC-03 | Product behavior
+@enduml

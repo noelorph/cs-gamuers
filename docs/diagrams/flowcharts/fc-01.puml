@@ -1,0 +1,60 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title FC-01  Application approval and reopening
+' Requirements: PERM-01 PERM-02 PERM-05 ACC-01 ACC-02 ACC-03 ACC-04 ACC-05 ACC-06 ACC-07 ACC-08 ACC-20 NOTICE-01 NOTICE-02 P-01
+start
+:Applicant enters required registration fields;
+if (Fields valid and identifiers unused?) then (yes)
+  :Applicant verifies registered email;
+  :Set application to Pending;
+else (no)
+  :Show correction or existing-account recovery;
+  stop
+endif
+repeat
+  if (Student application?) then (yes)
+    :Approved Faculty or Administrator checks\nfull name and student number against external list;
+  else (Faculty)
+    :Administrator checks school faculty records,\nID in person, and applicant email ownership;
+  endif
+  if (Approved?) then (yes)
+    :Record Approved and notify applicant;
+    break
+  elseif (Needs correction?) then (yes)
+    :Record Needs correction and reason;
+    :Applicant corrects and resubmits same application;
+    :Return to Pending;
+  else (Rejected)
+    :Record Rejected and reason; notify applicant;
+    if (Administrator verifies error and reopens?) then (yes)
+      :Record reopening reason; return to Pending;
+    else (no)
+      :Keep application-only access; no self-resubmission;
+      stop
+    endif
+  endif
+repeat while (Application is Pending?) is (yes) not (no)
+:Allow approved role permissions\nwhile account is active;
+note right
+Student eligibility is checked once at registration.
+No term expiry or automatic renewal queue.
+Email failure never reverses a saved decision.
+Show current state in permitted dashboards.
+Administrator account support sees delivery failure,
+without private learning content.
+Retry delivery only; never repeat the decision (P-01).
+end note
+stop
+footer CS-GAMUERS | FC-01 | Product behavior
+@enduml

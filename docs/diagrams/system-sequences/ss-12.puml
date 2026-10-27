@@ -1,0 +1,66 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-12  Request personalized suggestions
+' Requirements: PROFILE-01 PROFILE-02 REC-01 REC-02 REC-03 REC-04 AI-02 AI-04 AI-05 AI-06 ROAD-09
+hide footbox
+autonumber
+
+actor "Student" as U
+participant "CS-GAMUERS" as S
+U -> S: Request course and career-path recommendations
+note over U,S
+Apply shared saved-outcome rules (diagram index / FC-07).
+Resolve accessible success before new-generation checks:
+no generation or extra usage, even at 20 used or during outage.
+Permissions, privacy, deletion/expiry and current catalog apply.
+end note
+alt Accessible saved success for the same logical request
+  S --> U: Return saved outcome; usage unchanged; show allowance/reset time
+  note over U,S
+  No course starts or roadmap activation on replay.
+  Preview and explicit acceptance still required for proposals.
+  end note
+else Required learning profile is incomplete
+  S --> U: Identify required profile answers; keep course browsing available
+else Profile is complete
+  alt Daily allowance exhausted or AI unavailable
+    S --> U: Explain unavailability and offer catalog browsing/later retry
+  else AI request can run
+    note over S
+    Match goals and interests to approved catalog.
+    Adjust using experience, optional latest assessment,
+    and completed courses; do not attach account identity.
+    end note
+    alt No suitable catalog content
+      S --> U: Explain catalog gap; do not invent courses or career paths
+    else Suitable content exists
+      S --> U: Up to 3 career paths and 5 courses, with reasons
+      note over S
+      Only published content open to new learners.
+      Exclude completed courses from next-course suggestions.
+      Show fewer results when appropriate.
+      end note
+    end
+    note over S
+    Count a successful logical AI request once.
+    Failed requests do not consume allowance.
+    end note
+  end
+end
+note over U,S
+Suggestions do not start courses or replace a roadmap.
+External AI roadmaps remain deferred.
+end note
+footer CS-GAMUERS | SS-12 | Product behavior
+@enduml

@@ -1,7 +1,9 @@
 # CS-GAMUERS product requirements design
 
-The canonical product specification is [PRD.md](../../../PRD.md), as requested by the product owner. This entry keeps the specification discoverable in the repository's standard specs directory without maintaining a second copy.
+The product specification is [PRD.md](../../../PRD.md). This file links to it from the repository's standard specs directory.
 
-Status: draft consolidation of approved requirements; builder review and remaining product decisions are pending. Technology, architecture, and design-system decisions are excluded. Application code changes are not authorized.
+Status: PRD approved by the product owner, including section 17. The three questions from the builder review are resolved. The product owner approved this specification entry, the corrected diagram set, and the handoff plan after rereview on 2026-10-27. No application code changes are authorized.
 
-The source is [the project use-case and sequence-diagram document](../../project-documents/software-engineering-use-cases-and-system-sequence-diagrams.docx), refined by the product-owner decisions recorded in the PRD. Diagrams and the documentation handoff plan will be completed after the remaining decisions are resolved.
+The main reference is [the project use-case and sequence-diagram document](../../project-documents/software-engineering-use-cases-and-system-sequence-diagrams.docx). The PRD records the agreed supplemental-learning scope. Technology, architecture, and design-system decisions belong in their separate documents.
+
+See the [diagram index](../../diagrams/README.md) and [documentation handoff plan](../plans/2026-10-27-cs-gamuers-product-handoff-plan.md) for the approved deliverables and validation record.
