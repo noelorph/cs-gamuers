@@ -27,4 +27,4 @@ The product owner approved that implementation plan on 2026-10-27 and requested 
 
 Approval establishes a baseline, not approval of unresolved values or application implementation. The [documentation handoff plan](../plans/2026-10-27-cs-gamuers-technical-baseline-handoff-plan.md) records the documentation tasks and checks. Resolve the TRD's open decisions before implementing their affected features.
 
-Verification: compare against PRD requirements and diagram shared rules, check local links and whitespace, and confirm the diff contains only documentation. Provider behavior and application acceptance tests require later implementation verification.
+Verification: compare documentation against PRD requirements and diagram shared rules, and check local links and whitespace. For tooling implementation, verify the approved file scope and run the checks listed in Task 3. Provider behavior and application acceptance tests require later feature implementation verification.
