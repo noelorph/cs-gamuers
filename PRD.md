@@ -1,14 +1,14 @@
 # CS-GAMUERS product requirements
 
-Status: working draft for requirements review. The requirements below consolidate the decisions approved in the project discussion. Open decisions and editorial proposals are identified separately; this document is not yet the final implementation handoff.
+Status: approved by the product owner. This approval includes the operating rules in section 17. Application code changes remain outside the authorized scope.
 
 ## 1. Purpose and scope
 
-CS-GAMUERS helps currently enrolled Computer Science students at the school pursue supplemental learning and explore careers. Students study faculty-managed courses, take quizzes, earn course-completion badges, and use personalized recommendations and learning roadmaps.
+CS-GAMUERS helps currently enrolled Computer Science students at the school learn beyond their regular classes and explore possible careers. Faculty create the courses, and the Program Head approves them. Students study lessons, pass quizzes, and earn a badge when they finish a course. AI can suggest what to study and help them build a personal learning plan.
 
 The application operates independently of the school's existing academic system. It does not award academic credit or manage official enrollment, grades, curricula, teaching schedules, or faculty unit loads. It does not import enrollment or grade records. Reviewers consult school records outside the application.
 
-The main product reference is [the original use-case and system-sequence document](docs/project-documents/software-engineering-use-cases-and-system-sequence-diagrams.docx). Explicit decisions in the project discussion refine or replace that source where its academic-administration scope conflicts with this supplemental-learning scope.
+The main reference is [the original use-case and system-sequence document](docs/project-documents/software-engineering-use-cases-and-system-sequence-diagrams.docx). Where that document describes official academic administration, the requirements here follow the supplemental-learning scope we agreed on. Section 18 explains those changes.
 
 This document defines product behavior, permissions, information requirements, and acceptance criteria. Technology choices belong in `TRD.md`, architecture in `ARCHITECTURE.md`, and visual design in `DESIGN_SYSTEM.md` and `docs/design/`. None is selected here.
 
@@ -22,11 +22,11 @@ This document defines product behavior, permissions, information requirements, a
 - Core learning remains usable when AI is unavailable.
 - Developers can trace the same rules across the PRD, use cases, system sequence diagrams, and flowcharts.
 
-No numeric adoption, learning-improvement, or performance target has been approved. Completion criteria in this document are functional acceptance criteria, not claims of educational efficacy.
+The acceptance scenarios in section 16 describe how to check whether the agreed features work. Targets for adoption, learning improvement, and application performance have not been set.
 
 ### 1.2 Approaches considered and selected
 
-| Decision | Selected approach | Alternative considered and disposition |
+| Decision | Selected approach | Other approach considered |
 |---|---|---|
 | Product responsibility | Supplemental learning and career guidance | Official academic administration excluded |
 | Course delivery | Faculty-managed internal courses; external links may be lesson resources | External course directory or two distinct course-delivery types not selected for required release |
@@ -70,11 +70,11 @@ No numeric adoption, learning-improvement, or performance target has been approv
 | Deactivate | Remove account access while retaining the account and its records |
 | Approval | Context-specific authorization of an account application or publication of content; these are different permissions |
 
-Faculty approval of course content does not exist: Faculty author and submit; Program Heads approve. A personal roadmap assembled from approved content is not itself a separately reviewed Program Head publication.
+Faculty write course content and submit it to the Program Head for approval. A personal roadmap uses approved content, but the Program Head does not review each student's individual plan.
 
 ## 3. Roles and information access
 
-**PERM-01.** Each account has exactly one role: Student, Faculty, Program Head, or Administrator. Permissions follow the role and the ownership boundaries below, not individual custom settings.
+PERM-01. Each account has exactly one role: Student, Faculty, Program Head, or Administrator. Each role has the permissions below. Individual accounts do not have custom permissions.
 
 | Capability | Student | Faculty | Program Head | Administrator |
 |---|---|---|---|---|
@@ -83,96 +83,106 @@ Faculty approval of course content does not exist: Faculty author and submit; Pr
 | Verify student applications | No | Yes, approved Faculty only | No | Yes |
 | Verify faculty applications | No | No | No | Yes |
 | Invite Administrators and Program Heads | No | No | No | Yes |
-| Author courses and career paths | No | Owned content | No | No |
-| Approve content publication/revisions/retirement | No | No | Yes | No |
-| Transfer course/career-path ownership | No | No | Yes | No |
+| Author courses, career paths, and the shared assessment | No | Owned content | No | No |
+| Approve content publication, revisions, and retirement | No | No | Yes | No |
+| Transfer course, career-path, or shared-assessment ownership | No | No | Yes | No |
 | See individual course progress and quiz results | Own | Only courses currently owned | No | No |
 | See program-wide aggregate learning reports | No | No additional grant | Yes | No additional grant |
 | Read private AI conversations | Own | No | No | No |
 | Account support, recovery, staff role changes, deactivation | Limited self-service below | No administrative grant | No administrative grant | Yes, with safeguards |
 | Read administrative activity history | No | No additional grant | No additional grant | Yes |
 
-**PERM-02.** Faculty inspecting student applications may access the identity and application information necessary for verification. Approving an account does not grant access to its entire learning profile, unrelated courses, or private conversations.
+PERM-02. Faculty reviewing a student application can see the identity and application details needed for verification. Approving the account does not give them access to the student's full learning profile, unrelated course results, or private AI conversations.
 
-**PERM-03.** Owning a career path does not grant access to individual student records for courses owned by other Faculty. Course ownership transfer removes the former owner's editing and student-record access and grants the new owner the course responsibilities.
+PERM-03. A career-path owner can see individual student records only for courses they also own. When course ownership changes, the previous owner loses editing access and access to that course's student records. The new owner receives those responsibilities.
 
-**PERM-04.** Program Heads have an oversight-only role. Their student reporting is aggregate. Administrators manage identity, access, and administrative activity; they cannot author or approve academic content, view individual learning results, or manually change progress or rewards.
+PERM-04. Program Heads oversee content and view reports about groups of students. They cannot open individual learning records. Administrators manage accounts, access, and administrative history. They cannot author or approve learning content, view individual learning results, or change progress or rewards.
 
-**PERM-05.** No applicant may approve their own application. Unapproved Faculty cannot verify students, inspect student learning records, or manage content.
+PERM-05. No applicant may approve their own application. Unapproved Faculty cannot verify students, inspect student learning records, or manage content.
 
 ## 4. Accounts and onboarding
 
 ### 4.1 Registration and identity
 
-**ACC-01.** Student registration requires full name matching the enrollment list, complete student number, school email, and password. Preserve the student number as text, including leading zeros.
+ACC-01. Student registration requires full name matching the enrollment list, complete student number, school email, and password. Preserve the student number as text, including leading zeros.
 
-**ACC-02.** Students use an existing school-issued address under `@caloocan.sti.edu.ph` and verify ownership by email. The system does not construct addresses from names or student numbers. Verification of email control does not replace manual enrollment verification.
+ACC-02. Students use an existing school-issued address under `@caloocan.sti.edu.ph` and verify ownership by email. The system does not construct addresses from names or student numbers. Verification of email control does not replace manual enrollment verification.
 
-**ACC-03.** Faculty registration requires full name, a reachable email address, and password. A school employee number is optional. Faculty may use a personal email address and must verify it.
+ACC-03. Faculty registration requires full name, a reachable email address, and password. A school employee number is optional. Faculty may use a personal email address and must verify it.
 
-**ACC-04.** Every student number and email address belongs to at most one account, including pending, rejected, and deactivated accounts. Returning users recover/reactivate the existing account. An Administrator verifies and corrects identity mistakes before a wrongly claimed student number can be assigned to its rightful owner.
+ACC-04. Each student number and email address can belong to only one account. This includes pending, rejected, and deactivated accounts. Returning users recover or reactivate their existing account. If someone entered another student's number by mistake, an Administrator must verify and correct the mistake before that number can be assigned to its rightful owner.
 
-**ACC-05.** Every user creates a separate CS-GAMUERS password. School login credentials and school sign-in integration are not used.
+ACC-05. Every user creates a separate CS-GAMUERS password. School login credentials and school sign-in integration are not used.
 
 ### 4.2 Manual application review
 
-**ACC-06.** Approved Faculty or Administrators compare a student applicant's full name and student number against an enrollment list they already have access to outside the application. No list import or student document upload is required.
+ACC-06. Approved Faculty or Administrators compare a student applicant's full name and student number against an enrollment list they already have access to outside the application. No list import or student document upload is required.
 
-**ACC-07.** An Administrator checks a faculty applicant's authorization against existing school records, verifies identity in person using a school-issued employee ID, and confirms that the verified application email belongs to the applicant.
+ACC-07. An Administrator checks a faculty applicant's authorization against existing school records, verifies identity in person using a school-issued employee ID, and confirms that the verified application email belongs to the applicant.
 
 | Application status | Applicant capabilities | Reviewer action |
 |---|---|---|
 | Pending | Sign in, complete/correct the profile, and see status; no learning or staff permissions | Approve, request correction, or reject |
 | Needs correction | Read the reason, correct the same application, and resubmit | Provide a reason; resubmission returns to Pending |
 | Approved | Receive the permissions of the approved role, subject to account activation and feature prerequisites | Approval is recorded |
-| Rejected | Read the rejection reason; no learning or staff permissions | Provide a reason; reopening rules remain an open decision |
+| Rejected | Read the reason; no learning or staff permissions | An Administrator may reopen after verifying an error; see ACC-20 |
 
-**ACC-08.** Student enrollment verification occurs once at registration. There is no term expiry or recurring renewal. Staff identify graduates, withdrawals, or program changes and arrange Administrator deactivation. Eligibility may therefore become outdated between school changes and staff action.
+ACC-08. Students are verified once when they register. Approval does not expire each term, and students do not submit renewal requests. Staff must report graduates, withdrawals, or changes of program so an Administrator can deactivate accounts that are no longer eligible. Until staff act, a former student may still have access.
+
+ACC-20. Only an Administrator can reopen a rejected application. They must verify the error and record a reason, then return the same application to Pending for review. Reopening does not approve it. Applicants can still correct and resubmit a Needs correction application themselves.
 
 ### 4.3 Invited staff and role changes
 
-**ACC-09.** The school designates the initial Administrator. Existing approved Administrators invite additional Administrators and appoint Program Heads. Those roles cannot be selected through public self-registration.
+ACC-09. The school designates the initial Administrator. Existing approved Administrators invite additional Administrators and appoint Program Heads. Those roles cannot be selected through public self-registration.
 
-**ACC-10.** Invitees verify the intended invitation email, provide a full name, and create a password. Employee number is optional. Invitations grant access only to the intended recipient after acceptance.
+ACC-10. Invitees verify the intended invitation email, provide a full name, and create a password. Employee number is optional. Invitations grant access only to the intended recipient after acceptance.
 
-**ACC-11.** Only an Administrator can change another staff member's role. A reason and activity record are required, and the affected staff member is notified. Existing sessions end immediately. Administrators cannot change their own role or remove the last active Administrator.
+ACC-11. An Administrator can change another staff member's role. They must give a reason, and the system records the change and notifies the affected person. The change ends existing sessions so the person must sign in with their new permissions. Administrators cannot change their own role or remove the last active Administrator.
 
-**ACC-12.** Faculty-owned content must be transferred by the Program Head before removing the Faculty member's authoring role. Course and career-path ownership follow the same management policy. Student-to-staff conversion has not been requested; its exclusion is listed as an editorial scope default for review in section 17.
+ACC-12. Before a faculty member loses their authoring role, the Program Head must transfer their courses, career paths, and any shared skills assessment they own to another approved faculty member. Student-to-staff conversion is outside this release, as specified in section 17.
 
 ### 4.4 Password and assisted recovery
 
-**ACC-13.** Password recovery accepts a registered email and displays the same acknowledgment whether or not an account exists. A reset link is single-use, lasts 30 minutes, and is superseded by a newer reset link. A successful reset ends all existing sessions and requires sign-in again.
+ACC-13. A user can request a password reset using their registered email. The screen shows the same acknowledgment whether or not that account exists. A reset link works once and expires after 30 minutes. Requesting a new link invalidates older links. After a successful reset, all existing sessions end and the user signs in again.
 
-**ACC-14.** Password recovery preserves account approval, roles, deactivation state, and learning records. It cannot reactivate an account or bypass pending approval.
+ACC-14. Password recovery preserves account approval, roles, deactivation state, and learning records. It cannot reactivate an account or bypass pending approval.
 
-**ACC-15.** Loss of email access requires Administrator-assisted recovery. The Administrator verifies identity in person using school-issued student/employee ID matched to the account. The user verifies a replacement address before replacement; students still require the school domain. The old address is notified, sessions and reset links are invalidated, and the user sets their own password. Another Administrator must handle an Administrator's assisted recovery.
+ACC-15. A user who loses access to their email must ask an Administrator for help. Recovery follows these steps:
 
-**ACC-16.** There is no first-release emergency recovery flow if no Administrator has access and email-based recovery is also unavailable.
+1. The Administrator checks a school-issued student or employee ID in person and matches it to the existing account.
+2. The user supplies and verifies a replacement email. Students must still use the school email domain.
+3. The system replaces the address and notifies the old address.
+4. Existing sessions and password-reset links stop working.
+5. The user sets their own password. Their existing account, role, approval status, and learning records are preserved.
+
+Another Administrator must handle an Administrator's assisted recovery.
+
+ACC-16. There is no first-release emergency recovery flow if no Administrator has access and email-based recovery is also unavailable.
 
 ### 4.5 Deactivation and reactivation
 
-**ACC-17.** A Student may deactivate their account after confirming their password. Sessions end immediately, learning access stops, and profile, progress, completions, and rewards remain saved. Administrator-approved reactivation requires a fresh enrollment check.
+ACC-17. Students can deactivate their own accounts after confirming their password. This immediately ends their sessions and blocks learning access. Their profile, progress, completed courses, and badges stay saved. Reactivation requires an Administrator to approve a fresh enrollment check.
 
-**ACC-18.** Administrators may deactivate student or staff accounts with a recorded reason communicated to the affected user. Sessions and account access end immediately. Before faculty deactivation, the Program Head must transfer owned content. Administrators cannot deactivate themselves or the last active Administrator.
+ACC-18. An Administrator can deactivate a student or staff account. They must record a reason and communicate it to the affected user. Deactivation immediately ends sessions and account access. Before deactivating a faculty member, the Program Head must transfer their owned content. Administrators cannot deactivate themselves or the last active Administrator.
 
-**ACC-19.** Staff reactivation requires another active Administrator to verify authorization and approve restoration. Expedited suspension before ownership transfer is not yet defined; do not invent it as an additional permission.
+ACC-19. Another active Administrator must verify a staff member's authorization before approving reactivation. An emergency suspension that bypasses content transfer is not part of the agreed workflow.
 
 ## 5. Student learning profile
 
-**PROFILE-01.** Approved Students may browse and start courses before completing the learning profile. Personalized recommendations require the complete learning profile. The optional skills assessment is not a substitute for missing required profile answers.
+PROFILE-01. Approved students can browse and start courses before completing their learning profile. Personalized recommendations require all the required profile answers below. Taking the optional assessment does not replace those answers.
 
 | Field | Requirement | Values/meaning |
 |---|---|---|
 | Interests | At least one | Shared CS topics below |
 | Current learning goal | Exactly one | Explore CS careers; build foundational CS skills; improve a specific topic; prepare for a specific career |
 | Target topic | Required for improving a specific topic | One shared topic |
-| Career choice | Explicit choice of a published career path or “I'm not sure yet” | A concrete path is required for preparing for a specific career |
+| Career choice | Explicit choice of a published career path or "I'm not sure yet" | A concrete path is required for preparing for a specific career |
 | Experience level | Exactly one | No experience; Beginner; Intermediate; Advanced |
 | Available study hours per week | Optional | Used only for optional roadmap pacing estimates |
 
 Experience descriptions: No experience means starting from scratch; Beginner means following guided exercises; Intermediate means building small projects independently; Advanced means experience building larger projects. These are self-reports, not verified qualifications or access restrictions.
 
-**PROFILE-02.** The fixed first-release topic list is shared by profile interests, course primary topics, and discovery filters:
+PROFILE-02. The fixed first-release topic list is shared by profile interests, course primary topics, and discovery filters:
 
 1. Programming fundamentals
 2. Data structures and algorithms
@@ -187,21 +197,21 @@ Experience descriptions: No experience means starting from scratch; Beginner mea
 
 ## 6. Optional skills assessment
 
-**ASSESS-01.** The initial diagnostic is optional and untimed, authored by Faculty and approved by the Program Head. Students may skip it and still receive profile-based suggestions.
+ASSESS-01. The skills assessment is an optional, untimed quiz that helps identify a starting point for recommendations. There is one shared assessment, with one faculty owner assigned by the Program Head. The owner writes it, and the Program Head approves publication and revisions through the same review process used for courses. Students can skip it and still receive recommendations based on their profile.
 
-**ASSESS-02.** It contains exactly 15 multiple-choice questions: three each for programming fundamentals, problem-solving, databases, computer systems, and basic networking. Each question has one correct answer and an additional “I don't know yet” option. Four ordinary choices plus the unknown-answer option are proposed in D-01; that diagnostic choice count is not yet approved.
+ASSESS-02. The assessment contains exactly 15 questions, with three questions for each of these topics: programming fundamentals, problem-solving, databases, computer systems, and basic networking. Each question has four ordinary answer choices, exactly one correct answer, and an additional "I don't know yet" option. The faculty author provides an explanation of the correct answer.
 
-**ASSESS-03.** Correct answers earn one point; incorrect and “I don't know yet” answers earn zero. There are no penalties and no pass/fail result. Display results by topic. Three questions per topic provide a rough starting signal, not a mastery or career-eligibility judgment.
+ASSESS-03. Each correct answer earns one point. An incorrect answer or "I don't know yet" earns zero, with no penalty. Results are shown by topic, with no pass or fail. Three questions per topic give only a rough indication of what to study; the result does not establish mastery or determine whether a student is suited to a career.
 
-**ASSESS-04.** Retakes are unlimited. The latest completed attempt informs future suggestions. Previous results remain stored, and an unfinished retake does not replace the latest completed result. Diagnostic results do not award course credit, badges, or completion and do not block access to courses.
+ASSESS-04. Students can retake the assessment whenever they choose. Recommendations use the latest completed attempt. Earlier results stay saved, and an unfinished retake does not replace the previous result. The assessment awards no course credit, badges, or course completion and does not restrict course access.
 
-**ASSESS-05.** Saved attempts and submission reliability follow section 9. Ownership, publication/revision lifecycle, and release of diagnostic answers require the decisions recorded in section 17.
+ASSESS-05. After submission, students can see the correct answers and their explanations. An unfinished attempt keeps the assessment revision it started with, even if a new revision is published. New attempts use the latest published revision. Saving and submission follow the rules in section 9, while the assessment keeps its own scoring rules.
 
-## 7. Content authoring and governance
+## 7. Writing and approving learning content
 
 ### 7.1 Courses and lessons
 
-**CONTENT-01.** Each course has one approved faculty owner, initially its creator. The owner authors drafts, submits publication/revision requests, and reviews students' work in that course. Program Heads may transfer ownership to another approved Faculty member. Content, learner records, and authorship history survive transfer.
+CONTENT-01. Each course has one approved faculty owner, initially the person who created it. The owner edits drafts, submits changes for review, and reviews student results for that course. The Program Head can transfer the course to another approved faculty member. The transfer preserves the content, student records, and authorship history.
 
 | Item | Required before submission for approval | Optional |
 |---|---|---|
@@ -211,137 +221,139 @@ Experience descriptions: No experience means starting from scratch; Beginner mea
 | PDF resource | Attachment and descriptive title | Supporting description |
 | External resource | Link and descriptive title | Supporting description |
 
-**CONTENT-02.** Every course requires at least one lesson and one required quiz. Difficulty is Beginner, Intermediate, or Advanced. Faculty can save incomplete drafts; mandatory content must be valid before review submission. Ownership, revision number, review/publication state, and publication dates are recorded by the application.
+CONTENT-02. A course needs at least one lesson and one required quiz. Its difficulty is Beginner, Intermediate, or Advanced. Faculty can save incomplete drafts, but all required fields and quiz details must be complete before submission to the Program Head. The system records the owner, revision number, review status, publication status, and publication dates.
 
-**CONTENT-03.** Prerequisites are advisory. Students can start any published course open to new learners and access lessons/quizzes in any order. Suggested order and prior knowledge remain visible guidance. No course completion prerequisite is a hard access restriction.
+CONTENT-03. Prerequisites and learning order are guidance. Students can start any published course that is open to new learners and access its lessons and quizzes in any order. Recommended prior knowledge stays visible, but it does not lock the course.
 
 ### 7.2 Review, publication, and revisions
 
-**CONTENT-04.** Program Heads approve publication, request changes, or reject with a reason. Students only receive published content. Faculty and Administrators cannot bypass this approval.
+CONTENT-04. The Program Head can approve publication, request changes, or reject a submission. Requests for changes and rejections need a reason. Students can access only published content. Faculty and Administrators cannot publish content without this approval.
 
-**CONTENT-05.** Revisions to published content require review. The existing approved revision remains available while changes are reviewed. Review and publication must refer to the actual submitted content; an approval must not silently cover later edits.
+CONTENT-05. Changes to published content go through review again. Students keep seeing the existing approved revision while the new one is under review. Approval applies to the content that was submitted and reviewed; later edits cannot be included without review.
 
-**CONTENT-06.** Starting a course binds the student to its currently published revision, including content and completion requirements. Existing learners continue that revision after updates. New learners start the latest published revision. Revisions never reset existing progress, scores, completions, or earned badges.
+CONTENT-06. Students keep the course revision they started, including its learning materials, quizzes, and completion requirements. A new publication does not change their course. Students who start afterward receive the latest published revision. Updates never reset existing progress, scores, completed courses, or badges.
 
-**CONTENT-07.** Faculty request retirement and the Program Head approves archiving. Archived courses disappear from discovery and new recommendations and cannot be started by new learners. Existing learners may continue their course revision; completed records and badges remain accessible. Published courses are retained. Only unpublished drafts may be deleted.
+CONTENT-07. Faculty request retirement, and the Program Head approves archiving. An archived course disappears from discovery and new recommendations, and new students cannot start it. Students who already started it can continue their version. Completed records and badges remain available. Published courses are retained; only unpublished drafts can be deleted.
 
-**CONTENT-08.** Ordinary retirement does not provide an urgent takedown mechanism. The treatment of a dangerous, erroneous, or unavailable resource in a pinned revision is not yet approved. External resource availability also remains outside the application's control.
+CONTENT-08. Ordinary archiving keeps access open for existing learners. An urgent takedown that also removes their access has not been approved. External websites may also change or remove resources even when the course itself stays unchanged.
 
 ### 7.3 Career paths
 
-**PATH-01.** Each career path has one faculty owner. Publication requires a name, career description, skills list, and at least one published course in a suggested order. Faculty may reference courses owned by other Faculty.
+PATH-01. Each career path has one faculty owner. Publication requires a name, career description, skills list, and at least one published course in a suggested order. Faculty may reference courses owned by other Faculty.
 
-**PATH-02.** Career paths follow the course ownership, Program Head approval, revision, reassignment, and archiving policy. Archived paths are excluded from new recommendations.
+PATH-02. Career paths use the same ownership, review, revision, transfer, and archiving rules as courses. The Program Head approves publication and revisions. Archived paths are not included in new recommendations.
 
-**PATH-03.** Updating or archiving a career path does not automatically change an accepted personal roadmap. A path owner receives no extra student-record permissions over its referenced courses.
+PATH-03. Updating or archiving a career path does not automatically change an accepted personal roadmap. A path owner receives no extra student-record permissions over its referenced courses.
 
-## 8. Course discovery and starting learning
+## 8. Finding and starting courses
 
-**DISC-01.** Approved Students browse courses published and open to new learners. Keyword search covers titles and descriptions. Filters cover shared topic and difficulty. Clearing filters restores the full eligible catalog.
+DISC-01. Approved students can browse published courses that are open to new learners. Search matches course titles and descriptions. Students can filter by topic and difficulty, then clear filters to return to the full available catalog.
 
-**DISC-02.** Course details show description, learning outcomes, faculty owner, lesson outline, and completion requirements. Prerequisite guidance is advisory and visible.
+DISC-02. Course details show description, learning outcomes, faculty owner, lesson outline, and completion requirements. Prerequisite guidance is advisory and visible.
 
-**DISC-03.** “Start course” requires no additional faculty approval and starts the latest published revision. An existing participation must be resumed rather than duplicated by a repeated start action. Starting from a recommendation follows the same rule.
+DISC-03. Selecting "Start course" starts the latest published revision without another faculty approval step. If the student has already started that course, the system resumes their existing course rather than creating a duplicate. The same rule applies when they start from a recommendation.
 
-**DISC-04.** “My learning” contains started and completed courses, including archived courses the student previously started. Archive status does not remove that existing right to continue.
+DISC-04. "My learning" contains started and completed courses, including archived courses the student previously started. Archive status does not remove that existing right to continue.
 
-## 9. Course quizzes and reliable attempts
+## 9. Quizzes, scoring, and saved answers
 
 ### 9.1 Quiz structure and grading
 
-**QUIZ-01.** Each lesson may have one quiz. A quiz requires a title, required/optional setting, passing percentage, and at least one question. Every question requires text, exactly four distinct answer choices, exactly one correct answer, and an explanation. Every question must be answered before submission.
+QUIZ-01. Each lesson can have one quiz. A quiz needs a title, a required-or-optional setting, a passing percentage, and at least one question. Each question needs text, exactly four distinct answer choices, exactly one correct answer, and an explanation. Students must answer every question before submitting.
 
-**QUIZ-02.** Every correct answer is worth one point; incorrect answers earn zero. Questions have equal weight. Default passing percentage is 80%; Faculty may choose a whole-number percentage from 1 through 100 before Program Head approval.
+QUIZ-02. Every correct answer is worth one point; incorrect answers earn zero. Questions have equal weight. Default passing percentage is 80%; Faculty may choose a whole-number percentage from 1 through 100 before Program Head approval.
 
-**QUIZ-03.** Compare the exact score against the threshold, without rounding up. For `c` correct answers, `n` questions, and threshold `p`, pass when `100 × c >= p × n`. Seven correct out of nine does not meet 80%.
+QUIZ-03. Compare the exact score against the threshold, without rounding up. For `c` correct answers, `n` questions, and threshold `p`, pass when `100 × c >= p × n`. Seven correct out of nine does not meet 80%.
 
-**QUIZ-04.** Quizzes are untimed with unlimited retakes. After a submitted attempt, show the score, correct answers, and Faculty explanations. Retain each attempt and use the highest score to determine passage. A later failed attempt never revokes a previous pass, course completion, or badge.
+QUIZ-04. Course quizzes are untimed and allow unlimited retakes. After submission, students see their score, the correct answers, and the faculty explanations. The system saves every attempt and uses the highest score to decide whether the student has passed. A later failed attempt cannot undo a pass, course completion, or badge.
 
 ### 9.2 Saved attempts and submission behavior
 
-**QUIZ-05.** Save answers automatically and indicate whether the latest changes are saved or waiting to save. A Student can leave and resume an unfinished attempt. There is at most one unfinished attempt per Student per quiz/assessment.
+QUIZ-05. Answers save automatically as students work. The screen shows whether their latest changes are saved or still waiting to save. Students can leave and resume an unfinished attempt. Each student can have at most one unfinished attempt for a particular quiz or for the shared skills assessment.
 
-**QUIZ-06.** Grade submitted attempts once. Repeated clicks or retries cannot create duplicate submitted attempts or badges. After a connection failure during submission, determine whether submission succeeded before offering a retry.
+QUIZ-06. The system grades each submitted attempt once. Repeated clicks and retries cannot create duplicate attempts or badges. If the connection drops during submission, the system checks whether the attempt was submitted successfully before offering a retry.
 
-**QUIZ-07.** A submitted attempt cannot be edited. Retaking starts a new attempt. The same reliability rules apply to the diagnostic assessment with its separate scoring rules. Offline quiz-taking is not part of this release.
+QUIZ-07. A submitted attempt cannot be edited. Retaking starts a new attempt. The same reliability rules apply to the diagnostic assessment with its separate scoring rules. Offline quiz-taking is not part of this release.
 
-**QUIZ-08.** Student-visible course-quiz status is Not started, In progress, or Passed. A below-threshold attempt remains In progress with its result and feedback accessible. A course quiz already passed remains Passed during or after later retakes.
+QUIZ-08. Course quizzes show one of three statuses: Not started, In progress, or Passed. An attempt below the passing score leaves the quiz In progress, with its result and feedback available. Once passed, a quiz stays Passed during and after later retakes.
 
 ## 10. Progress and rewards
 
-**PROGRESS-01.** Course progress is `passed required quizzes / all required quizzes × 100`. Every published course has at least one required quiz. Optional quizzes show their own results but contribute neither to the numerator nor denominator. Resource views do not increase completion progress.
+PROGRESS-01. Course progress is `passed required quizzes / all required quizzes × 100`. For example, passing two of four required quizzes gives 50% progress. Every published course has at least one required quiz. Optional quizzes show their own results but do not affect this calculation. Opening a lesson or resource does not increase completion progress.
 
-**PROGRESS-02.** A course completes when all required quizzes in the student's revision are passed. Compute progress from that revision's requirements, not the latest published revision.
+PROGRESS-02. A student completes a course by passing every required quiz in the revision they started. A newer published revision does not change those requirements.
 
-**PROGRESS-03.** Roadmap progress is `completed included courses / all included courses × 100`, with equal weight per course regardless of estimated time. Previously completed courses count where included. The roadmap completes when all included courses are completed.
+PROGRESS-03. Roadmap progress is `completed included courses / all included courses × 100`. Each course has equal weight, regardless of its estimated study time. Courses completed earlier count if they are included in the roadmap. The roadmap is complete when every included course is complete.
 
-**REWARD-01.** Completion awards one course badge to the Student, showing course name and completion date. Award at most once per Student per course, regardless of retakes or later course revisions. The badge remains saved after updates, archival, and deactivation. Display it in the student's dashboard.
+REWARD-01. Completing a course automatically earns a badge showing its name and the completion date. A student can earn that course badge only once. Retakes and later revisions do not create another badge. Badges appear on the student dashboard and stay saved after updates, archiving, or account deactivation.
 
-**REWARD-02.** The first release has no additional points, leaderboard, assessment reward, or separate roadmap badge. Badge issuance follows actual completion and cannot be performed by AI or manually overridden by Administrators.
+REWARD-02. The first release awards course-completion badges only. It has no points, leaderboard, diagnostic-assessment rewards, or separate roadmap badge. AI cannot award badges, and Administrators cannot override completion or award them manually.
 
 ## 11. Recommendations and personal roadmaps
 
 ### 11.1 Recommendations
 
-**REC-01.** Recommendations require the complete learning profile. Consider interests, current goal, experience, career preference if known, latest completed diagnostic if available, and completed courses. Match goals/interests to the approved catalog first, then adjust suggestions and order with the remaining learning context.
+REC-01. Personalized recommendations require a complete learning profile. The system considers interests, the current learning goal, experience, a preferred career if known, the latest completed skills assessment if available, and completed courses. It first matches goals and interests to the approved catalog, then uses the other information to adjust the suggestions and learning order.
 
-**REC-02.** Suggest up to three approved career paths and five suitable published courses open to new learners. Explain each suggestion using the student's interests or learning needs. Return fewer when suitable catalog content is limited; do not invent catalog items.
+REC-02. Recommend up to three approved career paths and five suitable published courses that new learners can start. Explain how each suggestion relates to the student's interests or learning needs. Show fewer results when suitable content is limited. Every suggestion must refer to a real catalog item.
 
-**REC-03.** Exclude completed courses from what-to-study-next course suggestions. Students unsure about careers may receive career suggestions without selecting one first. Recommendations neither enroll the Student nor change an active roadmap.
+REC-03. Suggestions for what to study next exclude courses the student already completed. Students who are unsure of their career can receive career suggestions without choosing a career first. Suggestions do not start courses or change an active roadmap.
 
-**REC-04.** Exact model, ranking implementation, and hosting remain technical decisions. The approved product behavior is personalization within catalog constraints, not a claim that a particular model or numeric ranking formula has been selected.
+REC-04. The model, hosting, and exact method for ranking suggestions will be decided in the technical specification. The product requirement is to personalize suggestions while respecting the approved catalog and the rules above.
 
 ### 11.2 Roadmap creation and replacement
 
-**ROAD-01.** Students with a complete learning profile may request a roadmap for a chosen career path or a specific learning goal. It contains an ordered course list with reasons for inclusion. Relevant previously completed courses count toward the plan.
+ROAD-01. Students with a complete learning profile can request a roadmap for a chosen career path or a specific learning goal. The plan lists courses in a suggested order and explains why they are included. Relevant courses completed earlier count toward the plan.
 
-**ROAD-02.** Each Student has at most one active roadmap; a Student who has not accepted a plan has none. Preview a proposed plan and require explicit acceptance to activate it. For replacement, show the proposed plan and require confirmation before it replaces the active plan. Preserve course attempts, progress, completions, and badges.
+ROAD-02. A student can have at most one active roadmap. A student who has not accepted a plan has none. The student previews and accepts a proposed plan before it becomes active. Replacing it also requires a preview and explicit confirmation. Course attempts, progress, completions, and badges remain saved.
 
-**ROAD-03.** Changing profile answers, completing a new assessment, or publishing content revisions does not silently replace an active roadmap. Students may study courses outside the plan. Suggested order is advisory.
+ROAD-03. Profile changes, assessment retakes, and content updates do not automatically replace a roadmap. Students can study courses outside their plan and follow a different order.
 
-**ROAD-04.** Listing an unstarted course in a roadmap does not start it or reserve an old course revision. The latest published revision applies when the Student actually starts it. Existing starts retain their original revision.
+ROAD-04. A roadmap lists courses without starting them. If a course changes before the student starts it, they receive the latest published revision when they select "Start course." Courses already started keep their existing revision.
 
-**ROAD-05.** When a roadmap course is archived, Students who already started it continue their version. Others see that it is unavailable; it is not silently removed or marked complete. They may request and accept a replacement roadmap. If no suitable replacement exists, explain that the catalog cannot currently provide a complete plan for that goal.
+ROAD-05. If a roadmap course is archived, students who already started it can continue their version. Other students see that it is unavailable. The course is not silently removed or marked complete. They can request a replacement roadmap, review it, and accept it. If no suitable replacement exists, explain that the catalog cannot currently provide a complete plan for their goal.
 
-**ROAD-06.** The accepted replacement's course list determines its completion. A course-path update or archive does not itself change an already accepted personal plan.
+ROAD-06. After a replacement is accepted, its course list determines roadmap completion. Updating or archiving the shared career path does not automatically change a student's accepted plan.
 
-### 11.3 Optional pacing
+### 11.3 Optional study-time estimates
 
-**ROAD-07.** Faculty may provide optional course study-time estimates for Program Head review. If the Student provides available weekly hours and every unfinished course has an estimate, show an approximate duration based on their total estimated time divided by weekly availability.
+ROAD-07. Faculty can include an optional course study-time estimate in the content sent to the Program Head for approval. A student can also enter their available study hours per week. When every unfinished roadmap course has an estimate and weekly hours are provided, show an approximate duration: total estimated hours for unfinished courses divided by the available hours per week.
 
-**ROAD-08.** Exclude completed courses. Include the full estimate for each unfinished course, since actual study hours are not tracked. If information is incomplete, show order without duration. Estimates impose no deadlines, penalties, or changes to progress/rewards, and do not precisely account for partial progress or retakes.
+ROAD-08. Leave completed courses out of the estimate. Count the full estimate for each unfinished course because the application does not track actual study hours. If any required estimate is missing, show the course order without a duration. Estimates create no deadlines or penalties and do not affect progress or badges. They cannot precisely account for partial progress or retakes.
 
 ### 11.4 External roadmap request
 
-**ROAD-09.** The product owner requested separate internal and external AI roadmap options, including links to internet courses. External recommendations are optional and deferred from required first-release scope. No external progress/reward rules, provider, search service, generation trigger, or cost commitment is approved. Remind the owner during final scope review.
+ROAD-09. External AI roadmaps would suggest learning resources on other websites, separately from the internal roadmap. This feature remains optional and deferred from the required first release. Its search service, generation rules, costs, and treatment of external completion have not been selected. Revisit the deferral during final scope review.
 
 ## 12. AI chat, limits, and availability
 
-**AI-01.** Student AI chat may explain programming and course concepts, released quiz feedback, approved career paths, recommendations, and personal roadmaps. It may suggest courses/career paths and produce a proposed roadmap using the same requirements and confirmation flow as other recommendation entry points.
+AI-01. Students can ask AI chat to explain programming concepts, course material, feedback they have received on quizzes, career paths, recommendations, and their roadmap. They can also ask for course or career suggestions and a proposed roadmap. Requests through chat follow the same recommendation rules and roadmap-acceptance steps as requests elsewhere in the application.
 
-**AI-02.** Relevant context may include the Student's learning profile, diagnostic summary, roadmap, and course progress. The AI must not receive name, student number, email, other Students' records, or unreleased quiz answer keys through automatic account context. How to handle identifiers voluntarily typed into messages requires an explicit clarification of this privacy boundary.
+AI-02. The system may automatically provide the student's learning profile, skills-assessment summary, roadmap, and course progress as context. It must leave out their name, student number, email, other students' records, and unreleased quiz answer keys.
 
-**AI-03.** Chat cannot change scores, mark work complete, award badges, approve accounts, bypass publication rules, or silently start courses/replace roadmaps. Students use course details/start actions and roadmap previews/acceptance to make those changes.
+Messages that students type themselves are sent to the AI, including any personal information they choose to type. Show a clear reminder near the chat input: "Your messages are sent to the AI. Do not include personal information, such as your name, student number, email, or passwords." The application does not promise to automatically remove personal information from typed messages.
 
-**AI-04.** Aim to avoid paid AI services. No model or provider is selected. Never switch automatically to a paid service. Free-service capacity is not guaranteed.
+AI-03. AI chat cannot change scores, mark learning complete, award badges, approve accounts, or bypass content review. Students still choose whether to start a suggested course or accept a proposed roadmap. Chat cannot make those changes silently.
 
-**AI-05.** Each Student has a shared allowance of 20 successful AI requests per day, resetting at midnight Philippine time. A chat message, recommendation request, or roadmap generation uses one allowance on success. A recommendation delivered through chat counts once, not twice. Reading saved content costs no allowance. Failures do not count, and retries of the same successful request do not count twice. Show remaining allowance and reset time.
+AI-04. The project aims to avoid paid AI services. No model or provider has been selected, and the application must never switch to a paid service automatically. Free services may become unavailable or run out of capacity.
 
-**AI-06.** AI downtime/exhausted service capacity or Student allowance does not block course discovery, lessons, quizzes, badges, or saved roadmaps. Saved conversations remain readable. Explain unavailability and offer later retry or catalog browsing. Failed requests leave the active roadmap and learning records unchanged.
+AI-05. Each student has an allowance of 20 successful AI requests per day, resetting at midnight Philippine time. A chat message, a recommendation request, or a roadmap request uses one allowance when it succeeds. Asking for recommendations through chat counts once, not twice. Reading saved content uses no allowance. Failed requests do not count, and retrying the same successful request cannot charge it again. Show the remaining allowance and its reset time.
 
-**AI-07.** Students may save/reopen separate private conversations. A conversation expires from accessible history 90 days after its last message; Students may delete it sooner. Deleted or expired conversations are no longer used as AI context. Deletion does not remove accepted roadmaps, course records, or badges and does not refund used allowance. Faculty, Program Heads, and Administrators cannot read private chats.
+AI-06. When AI is unavailable, the service has no capacity, or the student has used their daily allowance, core learning continues. Students can browse courses, study lessons, take quizzes, earn badges, and read saved roadmaps and conversations. Explain why new AI responses are unavailable and offer catalog browsing or a later retry. A failed request leaves learning records and the active roadmap unchanged.
+
+AI-07. Students can save and reopen separate conversations. A conversation disappears from accessible history 90 days after its last message. Students can delete it sooner. Deleted or expired conversations are no longer supplied as AI context. Deletion does not remove accepted roadmaps, learning records, or badges and does not restore used AI allowance. Faculty, Program Heads, and Administrators cannot read private conversations.
 
 ## 13. Reports and administrative history
 
-**REPORT-01.** Program Heads receive aggregate CS-GAMUERS reports covering course participation, ongoing/completed learning and completion rates, course-quiz outcomes by course/revision, and content awaiting approval/published/archived with faculty owners. Filters are course, revision, and date range.
+REPORT-01. Program Heads can see reports about course participation, ongoing and completed courses, completion rates, and course-quiz results. They can also see content awaiting review, published content, archived content, and its faculty owners. Reports can be filtered by course, revision, and date range.
 
-**REPORT-02.** Reports do not grant individual learning-record access or expose private conversations. They contain no imported official grades, official enrollment trends, or faculty evaluation data from school systems. Proposed aggregate calculations, date-filter semantics, and small-group treatment are listed for final review in section 17.
+REPORT-02. Reports summarize groups of students and do not provide access to individual learning records or private conversations. They contain no imported official grades, school enrollment trends, or faculty evaluations. Section 17 defines the calculations and rules for small groups.
 
-**REPORT-03.** Administrators can see administrative activity history, including who approved accounts, changed roles, or approved content. Administrative visibility is not permission to view student quiz answers, individual assessment results, or private chat text.
+REPORT-03. Administrators can read administrative history, including who approved accounts, changed roles, or approved content. These records do not expose student quiz answers, individual assessment results, or private chat messages.
 
 ## 14. Notifications
 
-**NOTICE-01.** Existing dashboards show relevant application/content state; there is no separate notification inbox.
+NOTICE-01. Students and staff see application and content status in their existing dashboards. There is no separate notification inbox.
 
 | Event | Dashboard/in-application behavior | Email recipient |
 |---|---|---|
@@ -353,11 +365,11 @@ Experience descriptions: No experience means starting from scratch; Beginner mea
 | Ownership transfer | Reflect current owner and permissions | Previous and new owner |
 | Quiz result/badge/AI allowance | Display in the application | No additional email required |
 
-**NOTICE-02.** Verification, invitations, password resets, and old-address recovery notices follow the account flows. Email-delivery failure behavior is an editorial proposal requiring review, not a reason to silently reverse an already completed application decision.
+NOTICE-02. Email verification, invitations, password resets, and notices to an old email address follow the account flows. Section 17 defines how to handle a delivery failure after an account or content decision has already succeeded.
 
 ## 15. Required product records
 
-This is a conceptual information inventory, not a database design. Credential storage, persistence layout, transport, and implementation-specific identifiers belong in technical documents.
+These are the records the product needs to keep. The database design, password storage, and other technical details belong in the technical documents.
 
 | Record | Required product information |
 |---|---|
@@ -368,7 +380,7 @@ This is a conceptual information inventory, not a database design. Credential st
 | Course revision | Approved content, required quiz set, grading thresholds, review result, publication information; referenced by course participation |
 | Resource | Type and content/attachment/link; descriptive title for PDFs/links |
 | Quiz/question | Title, required flag, threshold, questions with four distinct choices, correct choices, explanations |
-| Skills assessment | Approved 15-question form, topic association, correct answers and unknown-answer options; ownership/version lifecycle is open |
+| Skills assessment | One faculty owner; approved revisions of the 15-question form; topic for each question; four ordinary choices and an unknown-answer option; correct answer and explanation; publication and review history |
 | Attempt | Owner Student, course/assessment revision context, saved answers, unfinished/submitted state, submitted result and submission time; unsubmitted answers are not graded |
 | Course participation | Student, stable course identity, revision at start, start time, attempts/passage, completion time where completed |
 | Badge | Student, stable course identity, course name, original completion date; unique per Student/course |
@@ -379,77 +391,100 @@ This is a conceptual information inventory, not a database design. Credential st
 | AI usage | Student, allowance date in Philippine time, count of successful logical requests, remaining allowance; no duplicate charge on retries |
 | Administrative event | Actor, action, affected record, date/time, and reason where required; no private chat or quiz-answer content |
 
-**DATA-01.** Accounts, quiz attempts, progress, accepted roadmaps, and badges have no automatic expiry. Deactivation preserves them. Published course/path revisions remain wherever existing records depend on them. Permanent account deletion is not available through the first-release application. Chats follow the separate 90-day/student-deletion rule.
+DATA-01. Accounts, quiz attempts, course progress, accepted roadmaps, and badges have no automatic expiry. Deactivation preserves them. Published course and career-path revisions remain available wherever existing student records depend on them. The application has no permanent account-deletion feature in the first release. Chat history follows its separate 90-day and student-deletion rules.
 
-## 16. Acceptance scenarios
+## 16. Checks for the agreed behavior
 
 | ID | Scenario and required result | Requirements |
 |---|---|---|
-| AC-01 | A verified school email alone does not unlock learning; manual student approval is required | ACC-01–08 |
+| AC-01 | A verified school email alone does not unlock learning; manual student approval is required | ACC-01 through ACC-08 |
 | AC-02 | Pending/unapproved Faculty cannot approve Students or inspect learning records | PERM-05, ACC-07 |
 | AC-03 | Duplicate student number or email cannot create another account even if the existing account is deactivated | ACC-04 |
-| AC-04 | Password reset expires after 30 minutes, is consumed once, and does not reactivate a deactivated account | ACC-13–14 |
+| AC-04 | Password reset expires after 30 minutes, is consumed once, and does not reactivate a deactivated account | ACC-13 through ACC-14 |
 | AC-05 | Assisted recovery requires identity checking and verified replacement email and preserves existing records | ACC-15 |
-| AC-06 | A staff role change revokes old access; last-Administrator and ownership safeguards prevent prohibited changes | ACC-11–12, ACC-18 |
+| AC-06 | A staff role change revokes old access; last-Administrator and ownership safeguards prevent prohibited changes | ACC-11 through ACC-12, ACC-18 |
 | AC-07 | Approved Student without a complete learning profile can start a course but cannot receive personalized recommendations | PROFILE-01, REC-01 |
-| AC-08 | Skipping the diagnostic permits profile-based recommendations; an unfinished retake does not replace previous completed results | ASSESS-01–04 |
+| AC-08 | Skipping the diagnostic permits profile-based recommendations; an unfinished retake does not replace previous completed results | ASSESS-01 through ASSESS-04 |
 | AC-09 | A course missing a lesson, learning resource, required quiz, or complete quiz question cannot be submitted for publication | CONTENT-02, QUIZ-01 |
 | AC-10 | Faculty cannot publish their own draft; Program Head rejection/change request includes a reason | CONTENT-04 |
-| AC-11 | A Student starts revision A; revision B publishes with different quizzes; that Student retains A while a new Student receives B | CONTENT-05–06 |
+| AC-11 | A Student starts revision A; revision B publishes with different quizzes; that Student retains A while a new Student receives B | CONTENT-05 through CONTENT-06 |
 | AC-12 | Archived course cannot be newly started, but an existing Student can continue and keep their badge | CONTENT-07, DISC-04 |
-| AC-13 | Transfer removes former owner access, preserves records, and does not grant access to unrelated courses | PERM-02–03, CONTENT-01 |
-| AC-14 | Seven correct out of nine fails an 80% quiz; later passage followed by failure retains Passed and completion | QUIZ-03–04 |
-| AC-15 | Resume saved answers after leaving; retry uncertain submission without creating a second attempt, score, or reward | QUIZ-05–07 |
+| AC-13 | Transfer removes former owner access, preserves records, and does not grant access to unrelated courses | PERM-02 through PERM-03, CONTENT-01 |
+| AC-14 | Seven correct out of nine fails an 80% quiz; later passage followed by failure retains Passed and completion | QUIZ-03 through QUIZ-04 |
+| AC-15 | Resume saved answers after leaving; retry uncertain submission without creating a second attempt, score, or reward | QUIZ-05 through QUIZ-07 |
 | AC-16 | Two of four required quizzes yields 50%; optional quiz completion and resource views do not change that percentage | PROGRESS-01 |
 | AC-17 | Completing every required quiz awards exactly one badge, even when completion is retried or the course is revised | REWARD-01 |
 | AC-18 | Limited catalog yields fewer suggestions with real published references, not invented courses or paths | REC-02 |
-| AC-19 | Student explicitly accepts a replacement roadmap; existing course records remain; a profile change alone does not replace it | ROAD-02–03 |
+| AC-19 | Student explicitly accepts a replacement roadmap; existing course records remain; a profile change alone does not replace it | ROAD-02 through ROAD-03 |
 | AC-20 | Unstarted archived roadmap course remains unavailable rather than becoming complete; replacement requires acceptance | ROAD-05 |
-| AC-21 | Missing weekly hours or any unfinished course estimate produces an ordered plan without a duration | ROAD-07–08 |
+| AC-21 | Missing weekly hours or any unfinished course estimate produces an ordered plan without a duration | ROAD-07 through ROAD-08 |
 | AC-22 | AI cannot award a badge, publish a course, change a grade, or bypass Student acceptance of a roadmap | AI-03 |
 | AC-23 | Recommendation through chat costs one successful request; a failed request or retry does not consume another allowance | AI-05 |
-| AC-24 | AI outage leaves quizzes, core learning, saved conversations, and saved roadmap usable; no paid fallback activates | AI-04–06 |
+| AC-24 | AI outage leaves quizzes, core learning, saved conversations, and saved roadmap usable; no paid fallback activates | AI-04 through AI-06 |
 | AC-25 | Chat deletion or 90-day expiry removes history/context without deleting accepted roadmap or restoring AI allowance | AI-07 |
-| AC-26 | Program Head aggregate reports and Administrator activity views do not expose individual quiz records or chat contents | PERM-04, REPORT-01–03 |
-| AC-27 | Decisions are visible on the relevant dashboard and email recipients follow the approved event matrix | NOTICE-01–02 |
+| AC-26 | Program Head aggregate reports and Administrator activity views do not expose individual quiz records or chat contents | PERM-04, REPORT-01 through REPORT-03 |
+| AC-27 | Decisions are visible on the relevant dashboard and email recipients follow the approved event matrix | NOTICE-01 through NOTICE-02 |
+| AC-28 | A rejected applicant cannot resubmit directly; an Administrator verifies the error, records a reason, and returns the same application to Pending | ACC-20 |
+| AC-29 | Updating the shared assessment leaves an unfinished attempt on its original revision; submitted results reveal the correct answers and explanations | ASSESS-01, ASSESS-02, ASSESS-05 |
+| AC-30 | Automatic AI context excludes account identity; student-written messages are sent, and the chat clearly reminds students not to include personal information | AI-02 |
+| AC-31 | Email delivery fails after approval; the decision stays saved, permitted dashboards show its state, and retrying delivery does not repeat approval | P-01 |
+| AC-32 | An unsafe or unsupported upload or invalid link is rejected with feedback on the affected field | P-02 |
+| AC-33 | Invalid drafts keep entered data; an outdated review screen cannot approve changed content | P-03 |
+| AC-34 | Rounded display values never show 100% before the completion requirement is satisfied | P-04 |
+| AC-35 | Blank effort estimates are accepted; supplied invalid hours are rejected; missing estimates produce no duration | P-05 |
+| AC-36 | Core flows support keyboard use, labeled inputs, understandable errors, and status meaning without color alone | P-06 |
+| AC-37 | Reports use course starts within the date range, retain historical deactivated accounts, and hide completion/quiz breakdowns below the five-student threshold | P-07 |
+| AC-38 | Learning preferences can change without identity reassignment; approved identity corrections require Administrator verification; Student-to-staff conversion is unavailable | P-08 |
 
-## 17. Open decisions before final sign-off
+## 17. Operating rules
 
-These are not approved requirements. They must be resolved or explicitly deferred before claiming implementation readiness.
+The three questions from the requirements review are resolved: AI-02 defines the chat privacy boundary, ASSESS-01 through ASSESS-05 define the shared assessment, and ACC-20 defines reopening a rejected application.
 
-| ID | Question |
+The product owner approved these rules with the PRD.
+
+### 17.1 Errors, input checks, and accessibility
+
+| ID | Required behavior |
 |---|---|
-| D-01 | Approve a single shared diagnostic with one Faculty owner assigned by the Program Head, the existing review process, four ordinary options plus “I don't know yet,” correct answers/explanations after submission, and unfinished attempts remaining on the form they started? |
-| D-02 | May only an Administrator reopen a rejected application after verifying an error, recording a reason, and returning it to Pending for review? |
-| D-05 | Does the AI identity-data restriction cover only automatic account context, or must it also redact/block identifiers Students type into messages? | 
+| P-01 | If an email fails after a successful account or content decision, keep the decision and show the current status in the relevant dashboard where the user has access. Account support can see the delivery failure without seeing private learning content. Retrying the email must not repeat the decision. |
+| P-02 | Reject unsafe or unsupported uploads and invalid links with an error next to the affected field. File-size limits and supported text formatting will be specified in `TRD.md`. |
+| P-03 | Keep entered draft data when validation fails and explain what needs correcting. A reviewer cannot approve a changed submission using an outdated review screen. |
+| P-04 | Show 100% only after the completion requirements are met. Display rounding must not make unfinished work appear complete. |
+| P-05 | Supplied study-hour estimates must be positive, finite numbers. Weekly availability cannot exceed 168 hours. Leaving estimates blank remains valid. |
+| P-06 | Core flows support keyboard use, labeled inputs, clear error messages, and status indicators that do not depend only on color. Styling belongs in `DESIGN_SYSTEM.md`. |
 
-A fresh builder review identified these three consequential product decisions and found no direct contradiction in the consolidated requirements. The remaining items below are explicitly proposed defaults or existing deferrals, not requests for new functionality.
+### 17.2 Report calculations
 
-### 17.1 Editorial proposals for review
+P-07. A date filter selects students who started the selected course and revision within that date range. The report shows where those students are now, including completions recorded after the selected period. For example, a report for September starts can show that some of those students finished in October.
 
-These close routine behavioral gaps without selecting architecture. They are proposals, not historical user approvals.
+| Report | Calculation |
+|---|---|
+| Participation for a course and revision | Count each student who started within the date range once |
+| Unique participation across selected courses | Count each student once, even if they started several courses |
+| Completed courses | Count selected course starts that are complete when the report is viewed |
+| Ongoing courses | Count selected course starts that are not yet complete |
+| Completion rate | Divide completed course starts by all selected starts; show no data when there are none |
+| Results for a particular quiz | Average each student's highest submitted percentage; leave out students with no submitted attempt and show how many students contributed |
 
-- P-01: If email delivery fails after a successful decision, preserve the actual decision, show the current state in the permitted dashboard, and expose delivery failure to account support without exposing private learning content. Retrying notification must not repeat the decision.
-- P-02: Reject unsafe or unsupported resource uploads and invalid links with field-specific feedback. Exact size limits and supported rich-text features remain to be set.
-- P-03: Preserve entered draft data on validation failure; show actionable errors. Prevent stale review actions from approving content different from what was reviewed.
-- P-04: Show 100% only when the completion condition is satisfied; percentage display precision is an implementation detail, but display rounding must not imply completion early.
-- P-05: Require positive finite weekly/course hours when estimates are supplied; weekly availability cannot exceed the hours in a week. Missing estimates remain valid because the feature is optional.
-- P-06: All core flows must support keyboard interaction, labeled form inputs, understandable validation feedback, and status information that does not rely solely on color. Visual styling is deferred to the design-system document.
-- P-07: For reports, use Students who started the selected course/revision within the date range as the cohort, and show their current completion state as of report viewing. Count each Student once per course/revision; program-wide unique participation counts each Student once across selected courses. Completion rate is completed cohort participants divided by all cohort participants, with no-data shown when the denominator is zero. Retained deactivated accounts remain in historical cohorts. For each quiz, average each participating Student's highest submitted percentage; exclude Students without a submitted attempt from that quiz average and state its participant count. Avoid combining the diagnostic with course-quiz results. Proposed small-group protection: show participation counts but suppress completion breakdown and quiz statistics for cohorts with fewer than five Students; suppress a quiz's statistics if fewer than five Students contributed attempts. These report definitions and the threshold require final product-owner review.
+Deactivated accounts remain in historical reports because their records are retained. Reports keep the shared skills assessment separate from course-quiz results.
 
-### 17.2 Review dispositions and launch responsibilities
+For groups with fewer than five students, the privacy rule is to show participation counts but hide completion breakdowns and quiz statistics. Hide a quiz's statistics if fewer than five students have submitted attempts, even when the wider group is larger. The minimum reporting group is five students.
 
-- Approved identity corrections remain Administrator-verified account support; Students may edit learning-profile preferences without changing approved identity. Student-to-staff conversion is not part of the requested first-release role-change workflow. This is a proposed scope default, not a new conversion feature.
-- Urgent takedown and emergency suspension before content reassignment are not approved capabilities. Retain ordinary archive/access and deactivation/reassignment rules; do not add emergency permissions without an explicit scope decision.
-- Ordinary password-strength rules, verification/invitation expiry values, resource-size limits, and text-length bounds are delegated to the technical specification for later review. Preserve the explicitly approved 30-minute reset expiry and the required fields, uniqueness, role restrictions, and content-validation outcomes in this PRD. No implementation may silently omit those checks.
-- Actual learning materials, career guides, and diagnostic questions are supplied by authorized Faculty and approved by the Program Head. Content availability is a launch dependency, not permission to publish placeholder or invented approved content. No minimum catalog size has been selected; features must truthfully handle an empty or insufficient catalog.
-- External AI roadmaps remain optional and deferred. Include the promised reminder during final scope review; no provider or external tracking feature is selected.
-- The editorial clarifications that an active roadmap is optional and that personalized roadmap generation needs a complete profile preserve the agreed Student choice and personalization prerequisites.
+### 17.3 Identity changes and release boundaries
 
+P-08. Students can update their learning interests and goals. Corrections to approved identity details require Administrator verification. Converting a Student account into a staff account is outside the first-release role-change workflow.
 
-## 18. Source reconciliation and remaining deliverables
+Emergency content removal and suspension before content reassignment have not been added. The application follows the ordinary archive, access, and deactivation rules already agreed.
 
-| Original source area | Product disposition |
+Password-strength rules, verification and invitation expiry, file-size limits, and text-length limits will be specified in `TRD.md` for later review. The technical specification must preserve the rules already set here, including the 30-minute reset link, unique account identifiers, required content fields, and permission checks.
+
+Faculty supply the actual learning materials, career guides, and assessment questions, and the Program Head approves them. No minimum catalog size has been selected. The application must explain when the catalog is empty or cannot support a requested recommendation or roadmap.
+
+External AI roadmaps remain optional and deferred. This is the reminder requested for final scope review: they are not required for the first release, and no provider, search cost, or external progress-tracking feature has been approved.
+
+## 18. Changes from the original reference and remaining documents
+
+| Original source area | Agreed scope |
 |---|---|
 | Administrator account/security management | Retained with explicit approval, invitation, recovery, deactivation, and fixed-role rules |
 | System monitoring | Administrative activity visibility retained; no grant to private student content |
@@ -463,6 +498,6 @@ These close routine behavioral gaps without selecting architecture. They are pro
 | Student search, recommendations, roadmap, materials, chat, progress | Retained and specified above |
 | Reward after progress completion | Defined as one badge per completed course |
 
-The final diagram set will live under `docs/diagrams/`, with separate use-case diagrams, system sequence diagrams, and flowcharts. They must share these role names, requirement IDs, states, and exception rules. System sequence diagrams describe actor/system interactions, not internal architecture.
+The [diagram index](docs/diagrams/README.md) links to separate use-case diagrams, system sequence diagrams, and flowcharts. They must share these role names, requirement IDs, states, and exception rules. System sequence diagrams describe actor/system interactions, not internal architecture.
 
-After resolving the builder review, finalize the PRD and diagrams for product-owner review. Invoke the writing-plans skill after design approval and save the agreed documentation/handoff plan under `docs/superpowers/plans/`. Do not introduce technology or architecture into that plan without separate authorization. No application implementation is authorized by this document.
+The PRD is approved. The [documentation handoff plan](docs/superpowers/plans/2026-10-27-cs-gamuers-product-handoff-plan.md) covers the diagrams, consistency checks, and final handoff. The diagram set and handoff plan still need the product owner's final review. Technology and architecture remain outside this work. Approval of this document does not authorize application code changes.
