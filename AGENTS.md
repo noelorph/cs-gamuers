@@ -18,6 +18,10 @@ Use [.agents/skills/supabase/SKILL.md](.agents/skills/supabase/SKILL.md) for Sup
 
 [PRD.md](PRD.md) is the approved source of truth for product behavior. Read the relevant requirements before implementation; diagrams, specs, and plans must remain consistent with it.
 
+### Technical requirements
+
+[TRD.md](TRD.md) records the approved technology baseline, technical guarantees, and verification requirements. Read the relevant requirements before implementation and resolve applicable open decisions before implementing affected features; the PRD remains authoritative for product behavior.
+
 ### Issue tracker
 
 Specs live in `docs/superpowers/specs/` and plans in `docs/superpowers/plans/`. Track implementation tasks in those plans. Use GitHub Issues only when explicitly requested. See `docs/agents/issue-tracker.md`.
