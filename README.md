@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CS-GAMUERS
 
-## Getting Started
+Supplemental learning application. See [PRD.md](PRD.md) for product behavior and [TRD.md](TRD.md) for the approved technical baseline.
 
-First, run the development server:
+## Local setup
 
-```bash
+Use Node.js **24.22.1** (`.nvmrc`) and npm **11.19.1**. With nvm installed:
+
+```sh
+nvm install
+nvm use
+npm ci
+npx playwright install chromium
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. The current page and tooling checks require no Supabase credentials. The backend will use a hosted Supabase development project; project provisioning, authentication integration, and database changes are separate work. Keep real credentials out of Git. Production deployment is not configured.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Local development server |
+| `npm run build` | Production build, without deployment |
+| `npm run start` | Serve a completed build |
+| `npm run lint` | ESLint checks |
+| `npm run format` | Format application source, tests, and root configuration |
+| `npm run format:check` | Check that formatting without writing |
+| `npm run typecheck` | Generate Next.js route types and run TypeScript checks |
+| `npm test` | Vitest unit/integration tests, once |
+| `npm run test:watch` | Vitest watch mode |
+| `npm run test:e2e` | Build, then run Chromium tests against a managed local server |
 
-## Learn More
+Vitest currently checks the existing home component. Integration tests will use `tests/integration/` when features and isolated test records exist. Playwright verifies the real home page title and heading; port 3000 must be free, and an unrelated server is never reused. These smoke checks do not prove PRD acceptance, Supabase permissions, or provider integration. The supported product-browser matrix remains open.
 
-To learn more about Next.js, take a look at the following resources:
+Tailwind uses the existing Turbopack loader. Theme and utilities are imported without Preflight so installation does not reset the existing page's browser-default styling.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Agent skills
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The official `supabase` and `supabase-postgres-best-practices` skills are stored in `.agents/skills/`; their source paths and hashes are tracked in `skills-lock.json`. The Supabase plugin is managed separately. Skills CLI **1.7.4** installed the project copies with:
 
-## Deploy on Vercel
+```sh
+npx --yes skills@1.7.4 add supabase/agent-skills --skill supabase supabase-postgres-best-practices -a codex -y
+npx --yes skills@1.7.4 list -a codex --json
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The add command resolves upstream content at execution time; review any resulting skill and lockfile changes. Committed skill files provide the repository's reviewed snapshot. See [AGENTS.md](AGENTS.md) for when to apply each skill.

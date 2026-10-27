@@ -10,6 +10,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Agent skills
 
+### Supabase
+
+Use [.agents/skills/supabase/SKILL.md](.agents/skills/supabase/SKILL.md) for Supabase products, Auth, Storage, and Next.js integration. Also use [.agents/skills/supabase-postgres-best-practices/SKILL.md](.agents/skills/supabase-postgres-best-practices/SKILL.md) for schema, SQL, RLS, and query performance work. Their official sources are tracked in `skills-lock.json`; the Supabase plugin is managed separately. Read current guidance before implementation and preserve the PRD's access and retention requirements.
+
 ### Product requirements
 
 [PRD.md](PRD.md) is the approved source of truth for product behavior. Read the relevant requirements before implementation; diagrams, specs, and plans must remain consistent with it.

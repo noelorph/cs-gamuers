@@ -4,11 +4,11 @@ Status: the canonical TRD baseline was approved by the product owner on 2026-10-
 
 ## Intent and scope
 
-Define a small [TRD.md](../../../TRD.md) connecting the approved [PRD.md](../../../PRD.md) to technology choices, technical guarantees, testing responsibilities, and explicitly open decisions. This is documentation work, not permission to implement or deploy.
+Define a small [TRD.md](../../../TRD.md) connecting the approved [PRD.md](../../../PRD.md) to technology choices, technical guarantees, testing responsibilities, and explicitly open decisions. Baseline approval does not authorize product features or deployment; the later tooling execution authorization is recorded below.
 
 Scope amendment: the product owner subsequently requested an installation task in the plan for the approved stack. Plan local dependencies, minimal tooling configuration, and smoke checks in the existing application. This request does not execute installation or authorize product features, hosted project provisioning, database changes, or deployment.
 
-The product owner approved that implementation plan on 2026-10-27 and requested the two official Supabase skills (`supabase` and `supabase-postgres-best-practices`) with generated entries in the repository's `skills-lock.json`. Task 3 includes project-local installation and validation; the managed Supabase plugin remains separate. Installation has not yet run.
+The product owner approved that implementation plan on 2026-10-27 and requested the two official Supabase skills (`supabase` and `supabase-postgres-best-practices`) with generated entries in the repository's `skills-lock.json`. Task 3 includes project-local installation and validation; the managed Supabase plugin remains separate. The product owner subsequently requested execution; Task 3 records the implementation and verification results.
 
 ## Approaches
 
@@ -21,7 +21,7 @@ The product owner approved that implementation plan on 2026-10-27 and requested 
 - The approved baseline retains TypeScript, uses Supabase Database/Auth/Storage, and requires reproducible dependencies and isolated development/test records.
 - Preserve the PRD's behavior, numeric rules, privacy, revisions, and failure guarantees. Open technical policy values must not silently override those rules.
 - Keep detailed schemas and authentication/permission architecture in `ARCHITECTURE.md`, and visual design in `DESIGN_SYSTEM.md`. Do not add deployment, paid AI fallback, school integration, or deferred product features.
-- The current planning edit touches only `TRD.md`, this specification, and the handoff plan. The original handoff also corrected the stale PRD approval-status sentence. Future installation files and checks are listed in Task 3 of the plan; no installation or runtime files change during this planning edit.
+- The original planning edit touched only `TRD.md`, this specification, and the handoff plan. The original handoff also corrected the stale PRD approval-status sentence. Installation files and checks are listed in Task 3 of the plan; execution is now authorized for that bounded task.
 
 ## Review and handoff
 

@@ -1,6 +1,6 @@
 # CS-GAMUERS technical requirements
 
-Status: baseline approved by the product owner on 2026-10-27, including the technical choices and safeguards below. Section 6 decisions remain open. This approval does not authorize application implementation or deployment. See the [documentation handoff plan](docs/superpowers/plans/2026-10-27-cs-gamuers-technical-baseline-handoff-plan.md).
+Status: baseline approved by the product owner on 2026-10-27, including the technical choices and safeguards below. Section 6 decisions remain open. The product owner subsequently authorized the tooling plan for execution; product feature implementation and deployment remain outside its scope. See the [documentation handoff plan](docs/superpowers/plans/2026-10-27-cs-gamuers-technical-baseline-handoff-plan.md).
 
 ## 1. Scope and document boundaries
 
@@ -21,16 +21,16 @@ Detailed system boundaries, schemas, authentication flows, and permission enforc
 | Playwright | Browser acceptance tests | Selected by product owner |
 | npm | Package installation and scripts | Selected by product owner |
 
-Current manifest baseline: Next.js `16.4.2`, React/React DOM `19.3.0`, TypeScript `^5`, Tailwind CSS `^4`, and ESLint `^9`. Supabase client packages, Prettier, Vitest, and Playwright are selected but not yet declared in `package.json`. These are repository observations, not claims that these versions are latest or integration-tested.
+Installed tooling baseline (2026-10-28): Node.js `24.22.1`, npm `11.19.1`, Next.js `16.4.2`, React/React DOM `19.3.0`, TypeScript `5.9.3`, Tailwind CSS/loader `4.3.3`, ESLint `9.39.5`, Prettier `3.9.10`, Vitest `5.0.5`, Playwright `1.64.1`, Supabase JS `2.118.0`, and Supabase SSR `0.12.7`. `package.json` declares exact versions for new packages; `package-lock.json` records the full dependency tree. Node types use `24.19.2` to match the selected runtime and Vitest peer requirements. These versions describe this installation, not a policy to track latest releases. ESLint 9's npm deprecation notice is retained as a follow-up; the approved existing major was not upgraded incidentally.
 
-Dependency policy: retain the npm lockfile, use `npm ci` for reproducible installs, and select compatible exact versions for newly added packages. Agree Node.js/npm versions during tooling setup. Read the installed Next.js guides in `node_modules/next/dist/docs/` before implementation; do not infer APIs from older versions.
+Dependency policy: retain the npm lockfile, use `npm ci` for reproducible installs, and select compatible exact versions for newly added packages. Use `.nvmrc`, `packageManager`, and the package engine ranges for the selected Node.js/npm versions. Read the installed Next.js guides in `node_modules/next/dist/docs/` before implementation; do not infer APIs from older versions.
 
 ## 3. Development environment
 
 - Next.js runs locally and connects to a hosted Supabase development project. No production deployment or hosting provider is selected.
 - Keep environment secrets out of Git and browser bundles; document variable names with placeholders. Privileged Supabase and AI credentials remain server-side.
 - Use synthetic development records, version-controlled migrations, and repeatable seed data. Integration tests must isolate their records and never reset a shared hosted database.
-- The linked plan includes a pending task to install and configure the approved local development tools. Project provisioning, database changes, product features, and production operations remain outside that task; adding the task does not execute it.
+- The linked plan tracks installation and verification of the approved local development tools. Project provisioning, database changes, product features, and production operations remain outside that task.
 - Agent tooling: the approved plan also includes the official `supabase` and `supabase-postgres-best-practices` skills as repository-local instructions, tracked in `skills-lock.json`. These are development guidance, not runtime dependencies; the Supabase plugin is managed separately.
 
 ## 4. Required technical guarantees
@@ -71,7 +71,7 @@ The compact baseline deliberately does not invent these values. Resolve each in 
 | Initial school-designated Administrator bootstrap procedure; session/recovery enforcement design | Authentication architecture and account implementation |
 | AI provider/model, execution environment, catalog ranking method, context limits, and timeouts | AI implementation; free-service preference, no automatic paid fallback, and core-learning independence remain fixed |
 | Email provider/sender and development delivery setup for Auth and application notices | End-to-end account and notification testing; Supabase's default mail service has recipient restrictions—see [SMTP guidance](https://supabase.com/docs/guides/auth/auth-smtp) |
-| Exact Node.js/npm and new package versions; supported browsers; test-data isolation procedure | Tooling setup |
+| Product supported-browser matrix and hosted integration-test isolation procedure | Before broader browser coverage and database integration tests; tooling versions are recorded in section 2 and Chromium is the initial smoke browser |
 | Physical chat cleanup and backup handling, separate from immediate history/context exclusion | Persistence design; do not introduce expiry of retained learning records |
 | Measurable performance targets and expected data/concurrency volumes | Performance validation; the PRD has not set targets |
 
