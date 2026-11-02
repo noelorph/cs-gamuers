@@ -4,7 +4,7 @@ Status: reviewed by the owner; the shared design system was approved as version 
 
 Open [the learning preview](learning.html) in a browser, then expand **Design preview · choose a screen** at the top to navigate between examples. Files work locally without a server, accounts, network calls, or installation. The mobile Menu opens a native modal drawer; radio choices and text fields can be exercised. Only preview links navigate. Gray application actions and sidebar destinations are intentionally illustrative; their disabled appearance does not redefine product permissions or availability.
 
-All content is fictional. System-font fallback is used unless Inter is already installed; no font is downloaded. No icon package has been added. These examples validate layout and states, not final Inter metrics or Lucide treatment.
+All content is fictional. System-font fallback is used unless Inter is already installed; no font is downloaded. These standalone previews do not load Lucide; the application separately has Lucide React installed. These examples validate layout and states, not final Inter metrics or Lucide treatment.
 
 The Program Head review preview includes a four-mode selector beside the Published/Submitted indicators: Review submission, Request changes, Approve publication, and Reject submission. Changes/rejection reveal a required reason; approval reveals its publication action without a reason field. Refresh the stale example first to enable simulated decisions. No decision persists or publishes content. A typed reason survives mode changes. Administrators do not receive these content-review permissions.
 

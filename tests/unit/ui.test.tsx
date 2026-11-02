@@ -44,6 +44,7 @@ test('dialog has an accessible name and restores focus on Escape', async () => {
   trigger.focus();
   fireEvent.click(trigger);
   expect(screen.getByRole('dialog', { name: 'Review course' })).toBeDefined();
+  expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Close' }));
   fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
   expect(screen.queryByRole('dialog')).toBeNull();
   await waitFor(() => expect(document.activeElement).toBe(trigger));

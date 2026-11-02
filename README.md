@@ -16,7 +16,7 @@ npx playwright install chromium
 npm run dev
 ```
 
-Open http://localhost:3000. This is the existing development page, not the future multi-device HTTPS demonstration. Current tooling checks need no Supabase credentials. Provisioning, authentication, migrations, Caddy certificates, ClamAV, and provider setup remain future implementation work described in the architecture. Keep credentials out of Git. Production deployment is not configured.
+Open http://localhost:3000. This is the existing development page, not the future multi-device HTTPS demonstration. Current tooling checks need no Supabase credentials. The hosted `cs-gamuers` Supabase project exists and was healthy at the 2026-11-02 read-only check, with no application tables, recorded migrations, or storage buckets. Authentication, migrations, storage policies, Caddy certificates, ClamAV, and AI/email integration remain future implementation work described in the architecture. Keep credentials out of Git. Production deployment is not configured.
 
 ## Commands
 
@@ -33,7 +33,7 @@ Open http://localhost:3000. This is the existing development page, not the futur
 | `npm run test:watch` | Vitest watch mode |
 | `npm run test:e2e` | Build, then run Chromium tests against a managed local server |
 
-Vitest currently checks the existing home component. Integration tests will use `tests/integration/` with the isolation rules in the architecture. Playwright currently checks the home title/heading in Chromium; port 3000 must be free, and an unrelated server is never reused. These smoke checks do not prove PRD acceptance, Supabase permissions, or provider integration. TRD section 6 defines the target browser matrix; broader coverage and actual-phone rehearsal remain future work.
+Vitest currently checks the home component and shared Button/Dialog behavior. Integration tests will use `tests/integration/` with the isolation rules in the architecture. Playwright currently checks the home title/heading in Chromium; port 3000 must be free, and an unrelated server is never reused. These smoke checks do not prove PRD acceptance, Supabase permissions, or provider integration. TRD section 6 defines the target browser matrix; broader coverage and actual-phone rehearsal remain future work.
 
 Tailwind uses the existing Turbopack loader. Theme and utilities are imported without Preflight so installation does not reset the existing page's browser-default styling.
 

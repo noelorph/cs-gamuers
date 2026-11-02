@@ -4,7 +4,7 @@ Status: direction and subsequent design system approved by the product owner on 
 Date: 2026-11-02
 Scope: design documentation and representative screen designs; no application implementation.
 
-[PRD](../../../PRD.md) governs behavior and permissions. [TRD](../../../TRD.md) governs technology and verification. This proposal informs the future root `DESIGN_SYSTEM.md`; it does not replace either source.
+[PRD](../../../PRD.md) governs behavior and permissions. [TRD](../../../TRD.md) governs technology and verification. This proposal records the rationale for the approved root `DESIGN_SYSTEM.md`; its original recommendations below are historical, not competing current rules.
 
 ## Direction
 

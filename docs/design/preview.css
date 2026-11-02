@@ -212,7 +212,7 @@ textarea {
   min-height: 0;
   height: 100%;
   overflow-y: auto;
-  padding: 24px;
+  padding: var(--layout-gutter-large);
   max-width: var(--layout-content-max);
   width: 100%;
   margin: 0 auto;

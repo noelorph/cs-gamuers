@@ -102,7 +102,7 @@ layout:
   toast-max: "360px"
   gutter-small: "{spacing.lg}"
   gutter-medium: "{spacing.xl}"
-  gutter-large: "{spacing.2xl}"
+  gutter-large: "{spacing.xl}"
 breakpoints:
   medium: "768px"
   desktop: "1024px"
@@ -173,7 +173,7 @@ Fit ordinary task content within the available viewport where practical, using c
 
 The drawer is modal: labeled trigger, expanded state, inert background, focus containment, Escape to close, and focus return. Use the same destination order as desktop. Show role and account actions consistently; do not expose a role switcher.
 
-Card grids fit as many preferred-width cards as available space allows, shrinking to a single full-width card below the preferred minimum. For example, a 1024px viewport with a 256px sidebar and 64px of main gutters leaves 704px: two 280px cards and a 24px gap fit; three do not. A 320px viewport with small gutters leaves 288px. Never add fixed card padding outside its allocated border-box width.
+Card grids fit as many preferred-width cards as available space allows, shrinking to a single full-width card below the preferred minimum. For example, a 1024px viewport with a 256px sidebar and 48px of main gutters leaves 720px: two 280px cards and a 24px gap fit; three do not. A 320px viewport with small gutters leaves 288px. Never add fixed card padding outside its allocated border-box width.
 
 Keep simple account forms within `form-max`; authoring uses `authoring-max` with stacked field groups. Labels and reading order remain clear when contextual previews sit alongside a form. No mandatory multi-column input layout.
 
