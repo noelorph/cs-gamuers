@@ -1,0 +1,40 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-15  Read, delete, or expire a conversation
+' Requirements: AI-05 AI-07 DATA-01 PERM-02 PERM-03 PERM-04
+hide footbox
+autonumber
+
+actor "Student" as U
+participant "CS-GAMUERS" as S
+U -> S: Open own saved conversation
+alt At least 90 days since last message, or previously deleted
+  S --> U: Conversation is no longer available
+  note over S
+  Do not supply expired/deleted messages as AI context.
+  end note
+else Conversation is still available
+  S --> U: Show messages without using daily AI allowance
+  opt Student deletes conversation sooner
+    U -> S: Delete own conversation
+    S --> U: Remove from accessible history and future AI context
+  end
+end
+note over U,S
+Keep accepted roadmaps, learning records, and badges.
+Do not restore used AI allowance.
+No Faculty, Program Head, or Administrator chat access.
+end note
+footer CS-GAMUERS | SS-15 | Product behavior
+@enduml

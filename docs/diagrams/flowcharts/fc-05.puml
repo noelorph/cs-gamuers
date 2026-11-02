@@ -1,0 +1,40 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title FC-05  Optional skills assessment
+' Requirements: ASSESS-01 ASSESS-02 ASSESS-03 ASSESS-04 ASSESS-05 PROFILE-01 REC-01 QUIZ-05 QUIZ-06 QUIZ-07
+start
+if (Student chooses to take assessment?) then (yes)
+  :Resume unfinished form or start latest published form;
+  :Answer 15 questions: 3 per foundational topic;
+  note right
+Four ordinary choices plus "I don't know yet".
+Correct = 1 point; other answers = 0.
+Untimed and optional, with unlimited retakes.
+end note
+  :Save answers and show save status;
+  if (All questions answered and Student submits?) then (yes)
+    :Record submission once;
+    :Show topic scores, correct answers, and explanations;
+    :Use this as latest completed result\nfor future recommendations;
+    :Keep earlier results and existing active roadmap;
+  else (no)
+    :Keep unfinished attempt and previous completed result;
+  endif
+else (skip)
+  :Profile-based recommendations remain available\nwhen the required profile is complete;
+endif
+:No pass/fail result, course credit, badge,\nor restriction on course access;
+stop
+footer CS-GAMUERS | FC-05 | Product behavior
+@enduml

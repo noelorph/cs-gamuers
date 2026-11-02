@@ -1,0 +1,44 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-05  Manage another account access
+' Requirements: ACC-11 ACC-12 ACC-18 ACC-19 PERM-01 PERM-04 REPORT-03 NOTICE-01 NOTICE-02 P-08
+hide footbox
+autonumber
+
+actor "Administrator" as A
+participant "CS-GAMUERS" as S
+actor "Affected user" as U
+A -> S: Request target account action and reason where required
+note over A,S
+For reactivation, first verify current authorization.
+Student reactivation needs a fresh enrollment check.
+Role changes apply only among Faculty, Program Head,
+and Administrator; no Student/staff conversion either way.
+end note
+alt Prohibited role transition, self-deactivation, own role change, or removing last active Administrator
+  S --> A: Refuse action; keep existing account access
+else Removing Faculty access while content is still owned
+  S --> A: Require Program Head ownership transfer first
+else Valid action with required verification complete
+  S --> A: Confirm recorded action and administrative history
+  S --> U: Email change and applicable reason
+  note over S
+  Deactivation and role change end existing sessions.
+  Reactivation restores authorized access.
+  Learning records remain saved.
+  Administrator cannot edit academic outcomes.
+  end note
+end
+footer CS-GAMUERS | SS-05 | Product behavior
+@enduml

@@ -1,0 +1,55 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title FC-02  Account recovery
+' Requirements: ACC-04 ACC-13 ACC-14 ACC-15 ACC-16 DATA-01 NOTICE-02
+start
+if (User can access registered email?) then (yes)
+  :Request reset; show generic acknowledgment;
+  :Eligible account receives a single-use link;
+  :Invalidate older reset links;
+  if (Latest link is unused and within 30 minutes?) then (yes)
+    :User sets acceptable new password;
+    :After successful reset, end existing sessions;
+    :Consume reset link;
+  else (no)
+    :Reject link; offer a new reset request;
+    stop
+  endif
+else (no)
+  if (Another authorized Administrator has access?) then (yes)
+    :Administrator verifies school-issued ID in person;
+    if (Identity verified?) then (yes)
+      :User supplies unused eligible replacement email;
+      if (User verifies new email ownership?) then (yes)
+        :Replace address; notify old address;
+        :End existing sessions and invalidate existing password-reset links;
+        :User sets own password;
+      else (no)
+        :Keep existing identity and access state;
+        stop
+      endif
+    else (no)
+      :Refuse assisted recovery;
+      stop
+    endif
+  else (no)
+    :No emergency recovery flow in first release;
+    stop
+  endif
+endif
+:Keep account approval, role, activation state,\nprogress, completions, and badges;
+:Require sign-in again;
+stop
+footer CS-GAMUERS | FC-02 | Product behavior
+@enduml

@@ -1,0 +1,52 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-07  Review and publish learning content
+' Requirements: CONTENT-01 CONTENT-02 CONTENT-03 CONTENT-04 CONTENT-05 CONTENT-06 PATH-01 PATH-02 PATH-03 ASSESS-01 ASSESS-02 ASSESS-05 NOTICE-01 NOTICE-02 P-01 P-02 P-03
+hide footbox
+autonumber
+
+actor "Faculty owner" as F
+participant "CS-GAMUERS" as S
+actor "Program Head" as H
+F -> S: Save owned content draft or draft revision
+S --> F: Save draft; show validation feedback without discarding edits
+F -> S: Submit draft for publication review
+alt Required content is incomplete or invalid
+  S --> F: Keep draft and identify fields to correct
+else Complete valid submission
+  S --> H: Show submitted content in review dashboard
+  H -> S: Review exact submission; approve, request changes, or reject
+  alt Submission changed since review began
+    S --> H: Refuse outdated approval; require current review
+  else Changes requested or submission rejected
+    S --> F: Show and email result with reason
+  else Publication approved
+    S --> F: Show published revision and email approval
+    note over S
+    Existing course learners keep their started revision.
+    New starts use the latest published revision.
+    Unfinished diagnostic attempts keep their form.
+    Career-path changes do not replace accepted roadmaps.
+    end note
+  end
+end
+note over S
+Email failure never reverses a saved decision.
+Show current state in permitted dashboards.
+Administrator account support sees delivery failure,
+without private learning content.
+Retry delivery only; never repeat the decision (P-01).
+end note
+footer CS-GAMUERS | SS-07 | Product behavior
+@enduml

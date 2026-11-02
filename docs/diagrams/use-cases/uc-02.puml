@@ -1,0 +1,42 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title UC-02  Student learning
+' Requirements: PERM-01 PROFILE-01 PROFILE-02 ASSESS-01 ASSESS-02 ASSESS-03 ASSESS-04 ASSESS-05 CONTENT-03 CONTENT-06 CONTENT-07 DISC-01 DISC-02 DISC-03 DISC-04 QUIZ-01 QUIZ-02 QUIZ-03 QUIZ-04 QUIZ-05 QUIZ-06 QUIZ-07 QUIZ-08 PROGRESS-01 PROGRESS-02 PROGRESS-03 REWARD-01 REWARD-02 DATA-01 P-02 P-03 P-04 P-05 P-06
+left to right direction
+actor "Student" as A
+rectangle "CS-GAMUERS: learning" {
+  usecase "Edit learning profile" as U0
+  usecase "Take optional skills assessment" as U1
+  usecase "Search and filter courses" as U2
+  usecase "View course details\nand start or resume a course" as U3
+  usecase "Study lessons and resources" as U4
+  usecase "Take or retake course quizzes" as U5
+  usecase "View progress and earned badges" as U6
+}
+A -- U0
+A -- U1
+A -- U2
+A -- U3
+A -- U4
+A -- U5
+A -- U6
+note bottom of A
+Approved, active Student account required.
+Prerequisites and lesson order are advisory.
+Course completion requires all required quizzes.
+Only course completion earns a badge.
+Assessment is optional and has no pass/fail.
+end note
+footer CS-GAMUERS | UC-02 | Product behavior
+@enduml

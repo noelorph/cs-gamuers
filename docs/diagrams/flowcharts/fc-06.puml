@@ -1,0 +1,95 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title FC-06  Personal roadmap lifecycle
+' Requirements: ROAD-01 ROAD-02 ROAD-03 ROAD-04 ROAD-05 ROAD-06 ROAD-07 ROAD-08 ROAD-09 PROGRESS-03 PROFILE-01 AI-05 AI-06 P-04 P-05
+start
+if (Request new or replacement roadmap?) then (yes)
+  :Resolve request under FC-07 shared saved-outcome rules;
+  note right
+Apply shared saved-outcome rules (diagram index / FC-07).
+Resolve accessible success before new-generation checks:
+no generation or extra usage, even at 20 used or during outage.
+Permissions, privacy, deletion/expiry and current catalog apply.
+end note
+  if (Accessible saved proposal or successful new generation?) then (yes)
+    :Use saved or new proposal; no automatic activation;
+    if (Suitable complete plan available?) then (yes)
+      :Preview ordered courses and reasons for explicit acceptance;
+      if (Student explicitly accepts?) then (yes)
+        if (This roadmap already active for this Student?) then (yes)
+          :Return current plan; do not repeat replacement;
+        else (no)
+          if (Proposal still accessible and eligible at acceptance?) then (yes)
+          else (no)
+            :Refuse acceptance; keep current plan;
+            :Require eligible proposal and another preview/acceptance;
+            note right
+            An archived unstarted course prevents acceptance.
+            end note
+            stop
+          endif
+          if (Active roadmap unchanged since preview?) then (yes)
+          else (no)
+            :Keep current plan; require fresh preview\nand replacement confirmation;
+            stop
+          endif
+          :Make this the one active roadmap;
+          :Preserve course records and badges;
+        endif
+      else (no)
+        :Keep current active plan, if any;
+        stop
+      endif
+    else (no)
+      :Explain catalog gap; keep current plan;
+      stop
+    endif
+  else (no)
+    :Explain unmet condition; preserve current plan;
+    stop
+  endif
+else (view existing)
+  if (An accepted active roadmap exists?) then (yes)
+    :Open accepted active roadmap;
+  else (no)
+    :Show no active roadmap and offer a new request;
+    stop
+  endif
+endif
+:Show completed included courses / total courses;
+if (All included courses complete?) then (yes)
+  :Show Completed; no separate roadmap badge;
+else (no)
+  if (Any archived course not yet started?) then (yes)
+    :Show course unavailable without marking it complete;
+    :Offer a replacement request; never replace silently;
+  else (no)
+    :Continue learning; courses already started\nkeep their original revision;
+  endif
+  if (Weekly hours and all unfinished-course estimates supplied?) then (yes)
+    :Show approximate duration using full estimates\nfor unfinished courses;
+  else (no)
+    :Show course order without duration;
+  endif
+endif
+note right
+Roadmap progress displays 100% only when every
+included course is complete.
+Rounding keeps unfinished progress below 100%.
+No deadlines or penalties.
+External AI roadmaps remain deferred.
+end note
+stop
+footer CS-GAMUERS | FC-06 | Product behavior
+@enduml

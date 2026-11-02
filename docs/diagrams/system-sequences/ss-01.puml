@@ -1,0 +1,62 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-01  Register and review an application
+' Requirements: PERM-01 PERM-02 PERM-05 ACC-01 ACC-02 ACC-03 ACC-04 ACC-05 ACC-06 ACC-07 ACC-08 ACC-20 NOTICE-01 NOTICE-02 P-01 P-03
+hide footbox
+autonumber
+
+actor "Applicant" as A
+participant "CS-GAMUERS" as S
+actor "Authorized reviewer" as R
+A -> S: Register with required identity and credential details
+alt Invalid fields or identity already belongs to an account
+  S --> A: Explain correction or existing-account recovery
+else Valid new application
+  S --> A: Request email verification
+  A -> S: Verify control of registered email
+  S --> A: Show Pending application and limited access
+  R -> S: Open application details for review
+  S --> R: Show only the information needed for verification
+  note over R
+  Students: approved Faculty or Administrator
+  checks name and student number against external list.
+  Faculty: Administrator checks school records,
+  employee ID in person, and applicant email ownership.
+  end note
+  R -> S: Submit review decision and applicable reason
+  alt Approved
+    S --> A: Show Approved role access; email decision
+  else Needs correction
+    S --> A: Show correction reason; email decision
+    A -> S: Correct and resubmit the same application
+    S --> A: Return to Pending for another review
+  else Rejected
+    S --> A: Show reason and application-only access; email decision
+    note over A,S
+    No applicant resubmission from Rejected.
+    Only Administrator may verify an error,
+    record a reason, and reopen as Pending.
+    end note
+  end
+end
+note over S
+Email failure never reverses a saved decision.
+Show current state in permitted dashboards.
+Administrator account support sees delivery failure,
+without private learning content.
+Retry delivery only; never repeat the decision (P-01).
+No automatic school-system checks or term renewal.
+end note
+footer CS-GAMUERS | SS-01 | Product behavior
+@enduml

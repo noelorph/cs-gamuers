@@ -1,0 +1,52 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-16  View permitted reports or history
+' Requirements: PERM-02 PERM-03 PERM-04 REPORT-01 REPORT-02 REPORT-03 NOTICE-01 DATA-01 P-07
+hide footbox
+autonumber
+
+actor "Staff requester" as U
+participant "CS-GAMUERS" as S
+U -> S: Request permitted report/history with relevant filters
+alt Faculty requesting owned-course student results
+  S --> U: Show individual progress and results only for owned courses
+else Program Head requesting learning reports
+  S --> U: Show course/revision/date-filtered aggregate participation
+  note over S
+  Date range selects course starts; show completion as of now.
+  Retained deactivated accounts remain in historical totals.
+  Overall participation counts each student once.
+  Per-quiz averages use each student's highest submitted score.
+  Keep diagnostic separate from course-quiz outcomes.
+  end note
+  alt Group has fewer than 5 students
+    S --> U: Show participation count; hide completion and quiz statistics
+  else Group has at least 5 students
+    S --> U: Show completion breakdown and rate
+    opt Particular quiz has at least 5 contributing students
+      S --> U: Show quiz statistics and contributing count
+    end
+  end
+else Administrator requesting administrative history
+  S --> U: Show permitted actor, action, target, time, and reason
+else Wrong role or ownership
+  S --> U: Refuse access without exposing restricted records
+end
+note over U,S
+Program Head: no individual learning-record drill-down.
+Administrator: no individual quiz results or private chat.
+Empty denominator: show no data, not a misleading rate.
+end note
+footer CS-GAMUERS | SS-16 | Product behavior
+@enduml

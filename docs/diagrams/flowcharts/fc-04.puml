@@ -1,0 +1,56 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title FC-04  Course quiz progress and badge
+' Requirements: QUIZ-01 QUIZ-02 QUIZ-03 QUIZ-04 QUIZ-05 QUIZ-06 QUIZ-07 QUIZ-08 PROGRESS-01 PROGRESS-02 REWARD-01 REWARD-02 CONTENT-06 P-03 P-04
+start
+:Open quiz from student's course revision;
+:Resume one unfinished attempt or start a new attempt;
+:Save answers automatically and show save status;
+:Student submits answers;
+if (All questions answered?) then (yes)
+else (no)
+  :Keep saved answers; identify unanswered questions;
+  stop
+endif
+if (This submission already recorded?) then (yes)
+  :Return saved result; do not duplicate attempt or badge;
+  stop
+else (no)
+endif
+:Score one point per correct answer;
+:Save submitted attempt and keep highest score;
+if (Exact highest percentage meets passing threshold?) then (yes)
+  :Quiz status is Passed;
+else (no)
+  :Quiz status remains In progress;
+endif
+:Show score, correct answers, and explanations;
+:Calculate progress from passed required quizzes only;
+if (All required quizzes passed?) then (yes)
+  :Complete course if not already complete;
+  :Award course badge only if not previously earned;
+else (no)
+  :Keep current progress; optional quizzes do not block completion;
+endif
+note right
+Course progress displays 100% only when every required
+quiz in the Student's started revision is passed.
+Rounding keeps unfinished progress below 100%.
+A later failed retake cannot revoke a pass or badge.
+If submission response is lost, check the saved outcome
+before offering a retry of the same submission.
+end note
+stop
+footer CS-GAMUERS | FC-04 | Product behavior
+@enduml

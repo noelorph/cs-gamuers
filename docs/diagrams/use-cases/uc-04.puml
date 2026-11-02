@@ -1,0 +1,41 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title UC-04  Faculty responsibilities
+' Requirements: PERM-02 PERM-03 PERM-04 PERM-05 ACC-06 CONTENT-01 CONTENT-02 CONTENT-03 CONTENT-04 CONTENT-05 CONTENT-06 CONTENT-07 CONTENT-08 PATH-01 PATH-02 PATH-03 ASSESS-01 ASSESS-02 ASSESS-03 ASSESS-04 ASSESS-05 NOTICE-01 NOTICE-02 REPORT-03
+left to right direction
+actor "Faculty" as A
+rectangle "CS-GAMUERS: faculty work" {
+  usecase "Verify student applications" as U0
+  usecase "Write and revise owned courses" as U1
+  usecase "Write and revise owned career paths" as U2
+  usecase "Maintain shared assessment\nwhen assigned as its owner" as U3
+  usecase "Submit content for review" as U4
+  usecase "Request course/path retirement" as U5
+  usecase "Review results for students\nin owned courses" as U6
+}
+A -- U0
+A -- U1
+A -- U2
+A -- U3
+A -- U4
+A -- U5
+A -- U6
+note bottom of A
+Administrator approval is required for Faculty access.
+Program Head approval is required to publish content.
+Career-path ownership grants no extra student access.
+Faculty cannot read private AI conversations.
+end note
+footer CS-GAMUERS | UC-04 | Product behavior
+@enduml

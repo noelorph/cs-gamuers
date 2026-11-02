@@ -1,0 +1,64 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-14  Ask AI through chat
+' Requirements: AI-01 AI-02 AI-03 AI-04 AI-05 AI-06 AI-07 REC-01 REC-02 REC-03 ROAD-01 ROAD-02 ROAD-03 PROFILE-01 DATA-01
+hide footbox
+autonumber
+
+actor "Student" as U
+participant "CS-GAMUERS" as S
+S --> U: Show reminder not to type personal information
+U -> S: Send message in own conversation
+note over U,S
+Apply shared saved-outcome rules (diagram index / FC-07).
+Resolve accessible success before new-generation checks:
+no generation or extra usage, even at 20 used or during outage.
+Permissions, privacy, deletion/expiry and current catalog apply.
+end note
+alt Accessible saved success for the same logical request
+  S --> U: Return saved outcome; usage unchanged; show allowance/reset time
+  note over U,S
+  No course starts or roadmap activation on replay.
+  Preview and explicit acceptance still required for proposals.
+  end note
+else Daily allowance exhausted or AI unavailable
+  S --> U: Explain problem; retain readable history and core learning
+else Personalization requested but profile incomplete
+  S --> U: Request required profile answers; no personalized result yet
+else Request can run
+  note over S
+  Automatically supplied context excludes name,
+  student number, email, other students, and hidden answer keys.
+  Student-written messages are sent as typed.
+  end note
+  alt Response fails
+    S --> U: Explain failure; no allowance consumed or records changed
+  else Response succeeds
+    S --> U: Show response and remaining daily allowance
+    note over S
+    Count one request, including recommendations through chat.
+    Retrying same successful request does not charge twice.
+    end note
+    opt Response suggests courses or a roadmap
+      S --> U: Link to details or present proposed plan for review
+      note over U,S
+      Starting a course or accepting a plan uses
+      the normal Student-controlled flow.
+      AI cannot grade, award, publish, or approve accounts.
+      end note
+    end
+  end
+end
+footer CS-GAMUERS | SS-14 | Product behavior
+@enduml

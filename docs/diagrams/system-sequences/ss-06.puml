@@ -1,0 +1,40 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-06  Student self-deactivation and return
+' Requirements: ACC-17 ACC-18 DATA-01 NOTICE-01 NOTICE-02
+hide footbox
+autonumber
+
+actor "Student" as U
+participant "CS-GAMUERS" as S
+actor "Administrator" as A
+U -> S: Request deactivation and confirm password
+alt Password confirmation fails
+  S --> U: Refuse action; keep account state
+else Password confirmed
+  S --> U: Confirm deactivation and end sessions
+  note over S
+  Block learning access.
+  Preserve profile, attempts, progress,
+  completed courses, and badges.
+  end note
+  ... Student later requests return ...
+  note over U,A
+  Administrator checks current enrollment again.
+  end note
+  A -> S: Approve verified Student reactivation
+  S --> U: Notify reactivation; allow sign-in and learning
+end
+footer CS-GAMUERS | SS-06 | Product behavior
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-03  Reset a forgotten password
+' Requirements: ACC-05 ACC-13 ACC-14 ACC-16 NOTICE-02
+hide footbox
+autonumber
+
+actor "Account holder" as U
+participant "CS-GAMUERS" as S
+U -> S: Request password reset for an email
+S --> U: Same acknowledgment whether or not account exists
+opt Eligible existing account
+  S --> U: Email a single-use reset link
+  note over U,S
+  Link expires after 30 minutes.
+  A newer reset request invalidates older links.
+  end note
+  U -> S: Open reset link and submit new password
+  alt Expired, superseded, or already used link
+    S --> U: Reject reset; allow a new reset request
+  else Valid link and acceptable password
+    S --> U: Confirm password change; require sign-in again
+    note over S
+    End all existing sessions.
+    Preserve role, approval status, deactivation state,
+    and all learning records.
+    end note
+  end
+end
+footer CS-GAMUERS | SS-03 | Product behavior
+@enduml

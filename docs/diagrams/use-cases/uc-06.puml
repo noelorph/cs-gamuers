@@ -1,0 +1,43 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title UC-06  Administrator responsibilities
+' Requirements: PERM-01 PERM-02 PERM-03 PERM-04 PERM-05 ACC-04 ACC-06 ACC-07 ACC-08 ACC-09 ACC-10 ACC-11 ACC-12 ACC-13 ACC-14 ACC-15 ACC-16 ACC-17 ACC-18 ACC-19 ACC-20 REPORT-03 NOTICE-01 NOTICE-02 DATA-01 P-01 P-08
+left to right direction
+actor "Administrator" as A
+rectangle "CS-GAMUERS: account administration" {
+  usecase "Approve student and\nfaculty applications" as U0
+  usecase "Invite Administrators\nand Program Heads" as U1
+  usecase "Correct verified identity details" as U2
+  usecase "Assist recovery and reopen\na rejected application" as U3
+  usecase "Change another staff member role" as U4
+  usecase "Deactivate or reactivate accounts" as U5
+  usecase "Read administrative activity history" as U6
+}
+A -- U0
+A -- U1
+A -- U2
+A -- U3
+A -- U4
+A -- U5
+A -- U6
+note bottom of A
+Reasons and notifications apply as specified in PRD.
+Transfer owned content before removing Faculty access.
+Cannot change own role or deactivate self.
+Cannot remove the last active Administrator.
+Role changes: Faculty, Program Head, Administrator only.
+No learning-score edits, private chat, or publication.
+end note
+footer CS-GAMUERS | UC-06 | Product behavior
+@enduml

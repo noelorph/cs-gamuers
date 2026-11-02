@@ -1,0 +1,39 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam BorderColor #334155
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #B6A16C
+skinparam roundcorner 8
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 300
+title SS-09  Retire a course or career path
+' Requirements: CONTENT-07 CONTENT-08 PATH-02 PATH-03 DISC-04 ROAD-05 ROAD-06 DATA-01 NOTICE-01
+hide footbox
+autonumber
+
+actor "Faculty owner" as F
+participant "CS-GAMUERS" as S
+actor "Program Head" as H
+F -> S: Request retirement of owned course or career path
+S --> H: Show retirement request for review
+H -> S: Decide retirement request
+alt Retirement not approved
+  S --> F: Show review outcome; retain published offering
+else Retirement approved
+  S --> F: Confirm archive state
+  note over S
+  Archived course: no new starts or recommendations.
+  Existing learners continue their started revision.
+  Archived career path: no new recommendations.
+  Accepted roadmaps do not change automatically.
+  Completions and badges remain saved.
+  This is not an urgent takedown.
+  end note
+end
+footer CS-GAMUERS | SS-09 | Product behavior
+@enduml

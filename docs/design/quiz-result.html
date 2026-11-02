@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quiz result · CS-GAMUERS design preview</title>
+    <link rel="stylesheet" href="preview.css" />
+    <script src="preview.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="reviewbar">
+      <details>
+        <summary>Design preview · synthetic content · choose a screen</summary>
+        <nav aria-label="Design review screens">
+          <a href="learning.html">Course learning</a><a href="quiz.html">Quiz · saved</a
+          ><a href="quiz-error.html">Quiz · save failed</a
+          ><a href="quiz-uncertain.html">Quiz · checking submission</a
+          ><a href="quiz-result.html" aria-current="page">Quiz · retake result</a
+          ><a href="authoring.html">Faculty authoring</a
+          ><a href="review.html">Program Head review</a
+          ><a href="reports.html">Reports · aggregate</a
+          ><a href="reports-small.html">Reports · small group</a>
+        </nav>
+        <p>
+          Only preview links, fields, and the mobile drawer work. Gray actions and sidebar labels
+          are illustrative. No data is saved or submitted.
+        </p>
+      </details>
+    </div>
+    <div class="mobilebar">
+      <strong class="brand">CS-GAMUERS</strong
+      ><button
+        type="button"
+        data-menu
+        aria-haspopup="dialog"
+        aria-controls="menu"
+        aria-expanded="false"
+      >
+        Menu
+      </button>
+    </div>
+    <div class="shell">
+      <aside class="sidebar" aria-label="Illustrative Student navigation">
+        <div class="brand">CS-GAMUERS<small>Learn beyond the classroom</small></div>
+        <div class="sidenav" tabindex="0" role="region" aria-label="Workspace navigation preview">
+          <span class="">Dashboard</span><span class="">Browse courses</span
+          ><span class="active">My learning</span><span class="">Suggestions</span
+          ><span class="">Roadmap</span><span class="">AI chat</span
+          ><span class="">Learning profile</span><span class="">Skills assessment</span>
+        </div>
+        <div class="identity">
+          <strong>Student</strong>
+          <p class="small muted">Student example</p>
+        </div>
+      </aside>
+      <main class="content" id="main" tabindex="-1">
+        <header class="pagehead">
+          <h1>Quiz result</h1>
+          <p class="muted">
+            A confirmed retake result, kept separate from the persistent quiz status.
+          </p>
+        </header>
+        <div class="notice success quiz">
+          <h2>Quiz status: Passed</h2>
+          <p>Your earlier passing result remains saved. This retake does not undo your progress.</p>
+        </div>
+        <section class="panel quiz quiz-result">
+          <div class="row">
+            <div>
+              <p class="eyebrow">Latest attempt</p>
+              <h2>3 of 5 correct · 60%</h2>
+            </div>
+            <span class="chip">Passing score: 80%</span>
+          </div>
+          <p class="muted">This attempt is below the passing score. Your highest score is 100%.</p>
+          <hr />
+          <h3>Question 3: What does a conditional statement do?</h3>
+          <p><strong>Your answer:</strong> It repeats an action a fixed number of times.</p>
+          <p>
+            <strong>Correct answer:</strong> It selects an action based on whether a condition is
+            true.
+          </p>
+          <p class="muted">
+            A condition chooses between outcomes. Repeating work is the role of a loop.
+          </p>
+          <p class="small muted">
+            One feedback item is shown as a layout example. The application will show every
+            question’s answer and explanation.
+          </p>
+        </section>
+        <div class="row actions quiz-actions">
+          <a class="button primary" href="learning.html">Back to lesson</a>
+          <button type="button" disabled>Start another attempt</button>
+        </div>
+      </main>
+    </div>
+    <dialog id="menu" aria-labelledby="menu-title">
+      <div class="row">
+        <h2 id="menu-title">Student menu</h2>
+        <button type="button" data-close autofocus>Close</button>
+      </div>
+      <p class="small muted">
+        Illustrative destinations; use the preview chooser to change screens.
+      </p>
+      <div class="sidenav">
+        <span class="">Dashboard</span><span class="">Browse courses</span
+        ><span class="active">My learning</span><span class="">Suggestions</span
+        ><span class="">Roadmap</span><span class="">AI chat</span
+        ><span class="">Learning profile</span><span class="">Skills assessment</span>
+      </div>
+    </dialog>
+  </body>
+</html>
