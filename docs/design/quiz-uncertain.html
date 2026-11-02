@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conditions quiz · CS-GAMUERS design preview</title>
+    <link rel="stylesheet" href="preview.css" />
+    <script src="preview.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="reviewbar">
+      <details>
+        <summary>Design preview · synthetic content · choose a screen</summary>
+        <nav aria-label="Design review screens">
+          <a href="learning.html">Course learning</a><a href="quiz.html">Quiz · saved</a
+          ><a href="quiz-error.html">Quiz · save failed</a
+          ><a href="quiz-uncertain.html" aria-current="page">Quiz · checking submission</a
+          ><a href="quiz-result.html">Quiz · retake result</a
+          ><a href="authoring.html">Faculty authoring</a
+          ><a href="review.html">Program Head review</a
+          ><a href="reports.html">Reports · aggregate</a
+          ><a href="reports-small.html">Reports · small group</a>
+        </nav>
+        <p>
+          Only preview links, fields, and the mobile drawer work. Gray actions and sidebar labels
+          are illustrative. No data is saved or submitted.
+        </p>
+      </details>
+    </div>
+    <div class="mobilebar">
+      <strong class="brand">CS-GAMUERS</strong
+      ><button
+        type="button"
+        data-menu
+        aria-haspopup="dialog"
+        aria-controls="menu"
+        aria-expanded="false"
+      >
+        Menu
+      </button>
+    </div>
+    <div class="shell">
+      <aside class="sidebar" aria-label="Illustrative Student navigation">
+        <div class="brand">CS-GAMUERS<small>Learn beyond the classroom</small></div>
+        <div class="sidenav" tabindex="0" role="region" aria-label="Workspace navigation preview">
+          <span class="">Dashboard</span><span class="">Browse courses</span
+          ><span class="active">My learning</span><span class="">Suggestions</span
+          ><span class="">Roadmap</span><span class="">AI chat</span
+          ><span class="">Learning profile</span><span class="">Skills assessment</span>
+        </div>
+        <div class="identity">
+          <strong>Student</strong>
+          <p class="small muted">Student example</p>
+        </div>
+      </aside>
+      <main class="content" id="main" tabindex="-1">
+        <header class="pagehead">
+          <h1>Conditions quiz</h1>
+          <p class="muted">Programming fundamentals · Revision 2 · Untimed</p>
+        </header>
+        <section class="panel quiz">
+          <div class="row">
+            <p class="small muted">Required quiz · 80% to pass</p>
+            <span class="chip warning">Checking submission</span>
+          </div>
+          <div class="notice info" role="status">
+            <h2>Checking whether your quiz was submitted</h2>
+            <p>
+              The connection dropped before confirmation. We’ll check the saved outcome before
+              offering a retry. Do not submit again.
+            </p>
+          </div>
+          <h2>Your answers are ready</h2>
+          <p>All 5 questions were answered. A result is not confirmed yet.</p>
+          <button type="button" disabled>Checking submission…</button>
+        </section>
+      </main>
+    </div>
+    <dialog id="menu" aria-labelledby="menu-title">
+      <div class="row">
+        <h2 id="menu-title">Student menu</h2>
+        <button type="button" data-close autofocus>Close</button>
+      </div>
+      <p class="small muted">
+        Illustrative destinations; use the preview chooser to change screens.
+      </p>
+      <div class="sidenav">
+        <span class="">Dashboard</span><span class="">Browse courses</span
+        ><span class="active">My learning</span><span class="">Suggestions</span
+        ><span class="">Roadmap</span><span class="">AI chat</span
+        ><span class="">Learning profile</span><span class="">Skills assessment</span>
+      </div>
+    </dialog>
+  </body>
+</html>

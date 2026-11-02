@@ -16,6 +16,8 @@ Detailed system boundaries, schemas, authentication flows, and permission enforc
 | TypeScript | Application types | Retain the existing project language |
 | Supabase | Hosted development backend | PostgreSQL for records, Auth for identity, and Storage for lesson PDFs |
 | Tailwind CSS | Styling | Selected by product owner |
+| shadcn/ui | Locally owned shared UI components, styled with the approved design tokens | Selected and installation authorized by the product owner on 2026-11-02; Radix-based `new-york` registry foundation |
+| Lucide React | Outlined UI icons | Implements the approved design-system icon family |
 | ESLint and Prettier | Code checks and formatting | Selected by product owner |
 | Vitest | Unit and integration tests | Selected by product owner |
 | Playwright | Browser acceptance tests | Selected by product owner |
@@ -147,3 +149,9 @@ Groq imposes account-wide request/token limits independent of the application al
 The former section 6 design decisions now have defaults above and mechanisms in [ARCHITECTURE.md](ARCHITECTURE.md). Remaining checks are implementation evidence: real Gmail receipt, Groq access/quality, native Auth expiry/reissue and trigger compatibility, immediate revocation, local certificate trust, scanner readiness, isolated integration tests, mobile behavior, and measured latency. Do not mark these passed based on documentation or mocks.
 
 The selected architecture must be revised explicitly if a provider cannot satisfy a PRD guarantee. Production hosting, deployment pipelines, and production backup/recovery remain deferred until deployment is planned. External AI roadmaps remain deferred under ROAD-09; this architecture approval does not enable them. Detailed visual design remains separate. No runtime dependency or host tool was installed by this documentation task.
+
+### Shared UI installation evidence (2026-11-02)
+
+The owner separately authorized the component setup: shadcn CLI `4.23.0` (development tooling), Radix UI `1.8.1`, Lucide React `1.66.0`, class-variance-authority `0.7.1`, cn `0.5.1`, and tw-animate-css `1.4.0`, all exactly pinned. Button, Card, Input, Textarea, Badge, and Dialog are locally owned source components. This setup does not implement product workflows or provision services.
+
+The runtime-only npm audit reported zero advisories. The full installation reported 22 development-tooling advisories (2 low, 20 moderate), including shadcn tooling and the ESLint dependency chain. No forced dependency downgrades were applied. Real-screen accessibility and Inter font loading remain implementation work.

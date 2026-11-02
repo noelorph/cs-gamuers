@@ -47,3 +47,15 @@ npx --yes skills@1.7.4 list -a codex --json
 ```
 
 The add command resolves upstream content at execution time; review any resulting skill and lockfile changes. Committed skill files provide the repository's reviewed snapshot. See [AGENTS.md](AGENTS.md) for when to apply each skill.
+
+### Shared UI
+
+Use **shadcn/ui** for standard interface components and **Lucide React** for icons. The installed starter set is Button, Card, Input, Textarea, Badge, and Dialog in `src/components/ui/`. Import these shared components instead of recreating controls in pages.
+
+Add other important primitives (Select, Dropdown Menu, Alert Dialog, Table, Tabs, Checkbox, Radio Group, and Tooltip) when the relevant feature needs them:
+
+```sh
+npm_config_save_exact=true npx --no-install shadcn add <component>
+```
+
+Review generated code against `DESIGN_SYSTEM.md`, especially control sizes, contrast, focus, and disabled states. Configuration lives in `components.json`; theme mappings live in `src/styles/globals.css`. Tailwind Preflight remains omitted. Use named `lucide-react` imports; label icon-only controls and hide decorative icons from assistive technology. Inter font loading is not installed yet.
