@@ -1,5 +1,7 @@
 # CS-GAMUERS technical baseline design
 
+Historical baseline/tooling specification. Its compact-baseline choice and former open decisions describe the 2026-10-27 task. Current defaults are in [TRD.md](../../../TRD.md) section 6 and mechanisms in [ARCHITECTURE.md](../../../ARCHITECTURE.md); the [2026-11-01 handoff](../plans/2026-11-01-cs-gamuers-architecture-handoff-plan.md) supersedes the earlier open-decision status, not its validation history. Do not treat the historical scope/authorization below as authority for new implementation.
+
 Status: the canonical TRD baseline was approved by the product owner on 2026-10-27. This entry summarizes that approved baseline; unresolved decisions and application implementation are not approved by it.
 
 ## Intent and scope

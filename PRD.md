@@ -10,7 +10,9 @@ The application operates independently of the school's existing academic system.
 
 The main reference is [the original use-case and system-sequence document](docs/project-documents/software-engineering-use-cases-and-system-sequence-diagrams.docx). Where that document describes official academic administration, the requirements here follow the supplemental-learning scope we agreed on. Section 18 explains those changes.
 
-This document defines product behavior, permissions, information requirements, and acceptance criteria. Technology choices belong in `TRD.md`, architecture in `ARCHITECTURE.md`, and visual design in `DESIGN_SYSTEM.md` and `docs/design/`. None is selected here.
+This document defines product behavior, permissions, information requirements, and acceptance criteria. [TRD.md](TRD.md) owns technology choices and technical limits; [ARCHITECTURE.md](ARCHITECTURE.md) owns implementation structure. Visual design remains future work in `DESIGN_SYSTEM.md` and `docs/design/` when created. Those documents must preserve this PRD's behavior.
+
+The approved 2026-11-01 architecture targets a school demonstration with one Administrator, three Students, two Faculty, and one Program Head on separate devices sharing a network, hosted by the owner's MacBook with internet available and free-only services. This operating scale does not reduce permissions, privacy thresholds, retained records, or required features. The architecture approval authorizes documentation, not product implementation or public deployment.
 
 ### 1.1 First-release outcomes
 
@@ -137,9 +139,9 @@ ACC-09. The school designates the initial Administrator. Existing approved Admin
 
 ACC-10. Invitees verify the intended invitation email, provide a full name, and create a password. Employee number is optional. Invitations grant access only to the intended recipient after acceptance.
 
-ACC-11. An Administrator can change another staff member's role. They must give a reason, and the system records the change and notifies the affected person. The change ends existing sessions so the person must sign in with their new permissions. Administrators cannot change their own role or remove the last active Administrator.
+ACC-11. An Administrator can change another staff member's role among Faculty, Program Head, and Administrator only. They must give a reason, and the system records the change and notifies the affected person. The change ends existing sessions so the person must sign in with their new permissions. Administrators cannot change their own role or remove the last active Administrator.
 
-ACC-12. Before a faculty member loses their authoring role, the Program Head must transfer their courses, career paths, and any shared skills assessment they own to another approved faculty member. Student-to-staff conversion is outside this release, as specified in section 17.
+ACC-12. Before a faculty member loses their authoring role, the Program Head must transfer their courses, career paths, and any shared skills assessment they own to another approved faculty member. Conversion between Student and staff roles in either direction is outside this release, as specified in section 17.
 
 ### 4.4 Password and assisted recovery
 
@@ -299,7 +301,7 @@ REC-02. Recommend up to three approved career paths and five suitable published 
 
 REC-03. Suggestions for what to study next exclude courses the student already completed. Students who are unsure of their career can receive career suggestions without choosing a career first. Suggestions do not start courses or change an active roadmap.
 
-REC-04. The model, hosting, and exact method for ranking suggestions will be decided in the technical specification. The product requirement is to personalize suggestions while respecting the approved catalog and the rules above.
+REC-04. The selected model, hosting, and ranking constraints are recorded in TRD.md and ARCHITECTURE.md. The exact ranking algorithm must be specified in the guidance feature spec before implementation. The product requirement is to personalize suggestions while respecting the approved catalog and the rules above.
 
 ### 11.2 Roadmap creation and replacement
 
@@ -335,7 +337,7 @@ Messages that students type themselves are sent to the AI, including any persona
 
 AI-03. AI chat cannot change scores, mark learning complete, award badges, approve accounts, or bypass content review. Students still choose whether to start a suggested course or accept a proposed roadmap. Chat cannot make those changes silently.
 
-AI-04. The project aims to avoid paid AI services. No model or provider has been selected, and the application must never switch to a paid service automatically. Free services may become unavailable or run out of capacity.
+AI-04. The free AI provider and model selected for implementation are recorded in TRD.md, with integration defined in ARCHITECTURE.md. The application must never switch to a paid service automatically. Free services may become unavailable or run out of capacity.
 
 AI-05. Each student has an allowance of 20 successful AI requests per day, resetting at midnight Philippine time. A chat message, a recommendation request, or a roadmap request uses one allowance when it succeeds. Asking for recommendations through chat counts once, not twice. Reading saved content uses no allowance. Failed requests do not count, and retrying the same successful request cannot charge it again. Show the remaining allowance and its reset time.
 
@@ -434,7 +436,7 @@ DATA-01. Accounts, quiz attempts, course progress, accepted roadmaps, and badges
 | AC-35 | Blank effort estimates are accepted; supplied invalid hours are rejected; missing estimates produce no duration | P-05 |
 | AC-36 | Core flows support keyboard use, labeled inputs, understandable errors, and status meaning without color alone | P-06 |
 | AC-37 | Reports use course starts within the date range, retain historical deactivated accounts, and hide completion/quiz breakdowns below the five-student threshold | P-07 |
-| AC-38 | Learning preferences can change without identity reassignment; approved identity corrections require Administrator verification; Student-to-staff conversion is unavailable | P-08 |
+| AC-38 | Learning preferences can change without identity reassignment; approved identity corrections require Administrator verification; conversion between Student and any staff role is unavailable in either direction | P-08 |
 
 ## 17. Operating rules
 
@@ -447,7 +449,7 @@ The product owner approved these rules with the PRD.
 | ID | Required behavior |
 |---|---|
 | P-01 | If an email fails after a successful account or content decision, keep the decision and show the current status in the relevant dashboard where the user has access. Account support can see the delivery failure without seeing private learning content. Retrying the email must not repeat the decision. |
-| P-02 | Reject unsafe or unsupported uploads and invalid links with an error next to the affected field. File-size limits and supported text formatting will be specified in `TRD.md`. |
+| P-02 | Reject unsafe or unsupported uploads and invalid links with an error next to the affected field. File-size limits and supported text formatting are specified in `TRD.md` section 6. |
 | P-03 | Keep entered draft data when validation fails and explain what needs correcting. A reviewer cannot approve a changed submission using an outdated review screen. |
 | P-04 | Show 100% only after the completion requirements are met. Display rounding must not make unfinished work appear complete. |
 | P-05 | Supplied study-hour estimates must be positive, finite numbers. Weekly availability cannot exceed 168 hours. Leaving estimates blank remains valid. |
@@ -472,11 +474,11 @@ For groups with fewer than five students, the privacy rule is to show participat
 
 ### 17.3 Identity changes and release boundaries
 
-P-08. Students can update their learning interests and goals. Corrections to approved identity details require Administrator verification. Converting a Student account into a staff account is outside the first-release role-change workflow.
+P-08. Students can update their learning interests and goals. Corrections to approved identity details require Administrator verification. Conversion between Student and any staff role is outside the first-release role-change workflow in either direction. Staff role changes are limited to Faculty, Program Head, and Administrator.
 
 Emergency content removal and suspension before content reassignment have not been added. The application follows the ordinary archive, access, and deactivation rules already agreed.
 
-Password-strength rules, verification and invitation expiry, file-size limits, and text-length limits will be specified in `TRD.md` for later review. The technical specification must preserve the rules already set here, including the 30-minute reset link, unique account identifiers, required content fields, and permission checks.
+Password-strength rules, verification and invitation expiry, file-size limits, and text-length limits are specified in `TRD.md` section 6; enforcement mechanisms are in `ARCHITECTURE.md`. The owner approved the written architecture and referenced technical choices on 2026-11-02; the owner separately authorized its documentation commit on the same date. They preserve the rules set here, including the 30-minute reset link, unique account identifiers, required content fields, and permission checks.
 
 Faculty supply the actual learning materials, career guides, and assessment questions, and the Program Head approves them. No minimum catalog size has been selected. The application must explain when the catalog is empty or cannot support a requested recommendation or roadmap.
 
@@ -500,4 +502,4 @@ External AI roadmaps remain optional and deferred. This is the reminder requeste
 
 The [diagram index](docs/diagrams/README.md) links to separate use-case diagrams, system sequence diagrams, and flowcharts. They must share these role names, requirement IDs, states, and exception rules. System sequence diagrams describe actor/system interactions, not internal architecture.
 
-The PRD is approved. The [documentation handoff plan](docs/superpowers/plans/2026-10-27-cs-gamuers-product-handoff-plan.md) covers the diagrams, consistency checks, and final handoff. The product owner approved the diagram set and handoff plan after rereview on 2026-10-27, as recorded in that plan. Technology and architecture remain separate from this product documentation handoff. Approval of this document does not authorize application code changes.
+The PRD is approved. The [product handoff plan](docs/superpowers/plans/2026-10-27-cs-gamuers-product-handoff-plan.md) records the diagram work approved after rereview on 2026-10-27. The later [architecture handoff plan](docs/superpowers/plans/2026-11-01-cs-gamuers-architecture-handoff-plan.md) records technical alignment without changing product behavior. Approval of these documents does not authorize application code changes.

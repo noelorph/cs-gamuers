@@ -55,7 +55,7 @@ The shared diagnostic provides topic-level guidance and does not award completio
 
 ## FC-06 Personal roadmap lifecycle
 
-Students choose whether to accept a new or replacement roadmap. Archived unstarted courses remain visibly unavailable until the Student accepts another plan. Saved proposals follow FC-07 retrieval before generation gates and still require preview and explicit acceptance. Roadmap progress displays 100% only when every included course is complete; unfinished progress stays below 100% after rounding.
+Students choose whether to accept a new or replacement roadmap. Repeated acceptance of the same active plan returns it without another replacement. A new acceptance rechecks proposal access/eligibility and whether a different roadmap became active since preview; failed checks preserve the current plan and require a revised proposal or fresh confirmation as applicable. Archived unstarted courses remain visibly unavailable until the Student accepts another plan. Saved proposals follow FC-07 retrieval before generation gates and still require preview and explicit acceptance. Roadmap progress displays 100% only when every included course is complete; unfinished progress stays below 100% after rounding.
 
 ![Personal roadmap lifecycle](fc-06.svg)
 
@@ -71,7 +71,7 @@ One allowance covers a successful logical request even when recommendations are 
 
 ## FC-08 Staff and account access safeguards
 
-Administrator-managed account changes cannot remove the last Administrator or abandon Faculty-owned content.
+Administrator-managed account changes cannot remove the last Administrator or abandon Faculty-owned content. Role changes are limited to Faculty, Program Head, and Administrator; Student/staff conversion is excluded in both directions.
 
 ![Staff and account access safeguards](fc-08.svg)
 

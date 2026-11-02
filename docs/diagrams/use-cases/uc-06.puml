@@ -36,6 +36,7 @@ Reasons and notifications apply as specified in PRD.
 Transfer owned content before removing Faculty access.
 Cannot change own role or deactivate self.
 Cannot remove the last active Administrator.
+Role changes: Faculty, Program Head, Administrator only.
 No learning-score edits, private chat, or publication.
 end note
 footer CS-GAMUERS | UC-06 | Product behavior

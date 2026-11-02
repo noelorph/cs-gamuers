@@ -27,8 +27,26 @@ end note
     if (Suitable complete plan available?) then (yes)
       :Preview ordered courses and reasons for explicit acceptance;
       if (Student explicitly accepts?) then (yes)
-        :Make this the one active roadmap;
-        :Preserve course records and badges;
+        if (This roadmap already active for this Student?) then (yes)
+          :Return current plan; do not repeat replacement;
+        else (no)
+          if (Proposal still accessible and eligible at acceptance?) then (yes)
+          else (no)
+            :Refuse acceptance; keep current plan;
+            :Require eligible proposal and another preview/acceptance;
+            note right
+            An archived unstarted course prevents acceptance.
+            end note
+            stop
+          endif
+          if (Active roadmap unchanged since preview?) then (yes)
+          else (no)
+            :Keep current plan; require fresh preview\nand replacement confirmation;
+            stop
+          endif
+          :Make this the one active roadmap;
+          :Preserve course records and badges;
+        endif
       else (no)
         :Keep current active plan, if any;
         stop

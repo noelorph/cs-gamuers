@@ -53,7 +53,7 @@ Program Head oversight covers publication, ownership, and aggregate reports. It 
 
 ## UC-06 Administrator responsibilities
 
-Administrator account support and access control. Learning outcomes and academic publication are outside this role.
+Administrator account support and access control. Role changes are limited to Faculty, Program Head, and Administrator; Student/staff conversion is excluded in both directions. Learning outcomes and academic publication are outside this role.
 
 ![Administrator responsibilities](uc-06.svg)
 

@@ -1,5 +1,7 @@
 # CS-GAMUERS Technical Baseline and Tooling Implementation Plan
 
+Historical completed tooling plan. Current technical defaults and implementation structure are in [TRD.md](../../../TRD.md) and [ARCHITECTURE.md](../../../ARCHITECTURE.md). The [2026-11-01 architecture handoff](2026-11-01-cs-gamuers-architecture-handoff-plan.md) supersedes this task's former open-decision status. Preserve execution evidence below; its implementation/commit instructions authorize no new work and do not override the owner's current no-commit instruction.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Hand off the approved compact technical baseline, then install and verify its development tools.
@@ -79,5 +81,5 @@ Skill sources: [official Supabase agent skills](https://github.com/supabase/agen
 - Ruling: import Tailwind theme/utilities without Preflight to preserve existing browser-default page styling. Keep the configured Turbopack loader.
 - Verification passed: fresh `npm ci`, `npm ls --depth=0`, lint, formatting, type checking, Vitest (1 test), production build, and Chromium Playwright (1 test). No Supabase credentials or remote database operations were needed. Initial browser installation failed because it overlapped a clean install; sequential retry succeeded.
 - npm reported zero vulnerabilities. Existing ESLint 9 emits an unsupported-version notice; upgrading its major is a separate compatibility decision. npm also reports unapproved install scripts for optional `fsevents` and `unrs-resolver`; no script policy was loosened, and all checks passed. Browser-run color-environment warnings did not affect results.
-- No product feature, provider integration, RLS/session enforcement, or hosted database integration was implemented or tested. Open TRD feature decisions remain open.
+- No product feature, provider integration, RLS/session enforcement, or hosted database integration was implemented or tested. TRD feature decisions remained open at this tooling handoff; later selected defaults are recorded in the canonical TRD and architecture.
 - The initial fresh-context review reported no findings, and local-link checks passed. A later full-branch review found one trailing space in `.agents/skills/supabase-postgres-best-practices/references/_contributing.md:30`. The upstream file is retained unchanged to preserve the installed skill snapshot; project-authored changes pass whitespace checks. Future reviews must check the full branch diff, including newly added files, and report this exception explicitly.

@@ -39,16 +39,28 @@ else Saved success retrieved, or new generation succeeds under FC-07
       S --> U: Keep existing active plan, if any
     else Student explicitly accepts or confirms replacement
       U -> S: Accept proposed roadmap
-      S --> U: Set as the one active roadmap; show completion progress
-      note over S
-      Preserve prior course attempts, completions, and badges.
-      Completed included courses count toward this plan.
-      Roadmap progress displays 100% only when every
-      included course is complete.
-      Rounding keeps unfinished progress below 100%.
-      Unstarted courses use latest revision when later started.
-      Profile or assessment changes do not auto-replace the plan.
-      end note
+      alt This roadmap is already the Student's active plan
+        S --> U: Return current plan; do not repeat replacement
+      else Proposal is no longer accessible or eligible
+        S --> U: Refuse acceptance; keep current plan; require an eligible proposal
+        note over U,S
+        Recheck at acceptance, including archived unstarted courses.
+        A revised proposal requires another preview and acceptance.
+        end note
+      else Active roadmap changed since preview
+        S --> U: Keep current plan; require fresh preview and replacement confirmation
+      else Proposal remains eligible and confirmation is current
+        S --> U: Set as the one active roadmap; show completion progress
+        note over S
+        Preserve prior course attempts, completions, and badges.
+        Completed included courses count toward this plan.
+        Roadmap progress displays 100% only when every
+        included course is complete.
+        Rounding keeps unfinished progress below 100%.
+        Unstarted courses use latest revision when later started.
+        Profile or assessment changes do not auto-replace the plan.
+        end note
+      end
     end
   end
 end

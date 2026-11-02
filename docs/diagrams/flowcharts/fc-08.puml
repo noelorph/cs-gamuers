@@ -15,6 +15,11 @@ title FC-08  Staff and account access safeguards
 ' Requirements: PERM-01 PERM-04 ACC-11 ACC-12 ACC-17 ACC-18 ACC-19 NOTICE-01 NOTICE-02 REPORT-03 P-08
 start
 :Administrator selects another account and permitted action;
+if (Role change involves Student as current or destination role?) then (yes)
+  :Refuse conversion; only Faculty, Program Head,\nand Administrator role transitions are allowed;
+  stop
+else (no)
+endif
 if (Own role change or self-deactivation?) then (yes)
   :Refuse action;
   stop

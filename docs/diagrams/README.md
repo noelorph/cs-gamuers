@@ -2,6 +2,8 @@
 
 These diagrams describe the [approved product requirements](../../PRD.md). They are product diagrams, not an architecture or database design. Application implementation is not authorized by this handoff.
 
+Current implementation structure is defined in [ARCHITECTURE.md](../../ARCHITECTURE.md), with limits in [TRD.md](../../TRD.md). The 2026-11-01 architecture handoff preserves these product flows and their requirement IDs. The original reference DOCX and earlier handoff records do not override the canonical PRD. Do not insert services/databases into these actor/system sequence diagrams; architecture views belong in the architecture document.
+
 Start with the use-case diagram for a role, follow a flowchart for its decisions, and open the corresponding system sequence diagram for requests and responses. Each diagram has an editable `.puml` source and a rendered `.svg` preview. The source is authoritative; regenerate its preview after an edit.
 
 ## Reading guide

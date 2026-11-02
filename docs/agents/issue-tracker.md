@@ -1,5 +1,7 @@
 # Specs, plans, and task tracking
 
+Canonical behavior, technical requirements, and architecture live in the root PRD, TRD, and ARCHITECTURE documents respectively. Specification entries may index those documents without duplicating them. Plans track only their authorized scope; historical checklists and commit instructions do not authorize current work or override an explicit no-commit instruction.
+
 Specs and plans live in local Markdown files using the Superpowers layout:
 
 - Specs: `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`.

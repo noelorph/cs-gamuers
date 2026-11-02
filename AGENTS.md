@@ -20,7 +20,15 @@ Use [.agents/skills/supabase/SKILL.md](.agents/skills/supabase/SKILL.md) for Sup
 
 ### Technical requirements
 
-[TRD.md](TRD.md) records the approved technology baseline, technical guarantees, and verification requirements. Read the relevant requirements before implementation and resolve applicable open decisions before implementing affected features; the PRD remains authoritative for product behavior.
+[TRD.md](TRD.md) records the technology baseline, technical guarantees, selected limits, and implementation verification gates. The PRD remains authoritative for product behavior; provider checks listed in the TRD are not claims of working integration.
+
+### Architecture and document authority
+
+Read [ARCHITECTURE.md](ARCHITECTURE.md) before planning or implementing a feature. It defines the selected single Next.js application, Supabase boundaries, permission/session enforcement, transactions, and local MacBook demonstration setup. No vector database, AI framework, separate backend service, or public deployment is selected.
+
+Read in order: this file, relevant PRD requirements, relevant TRD requirements, architecture, then the applicable spec/plan. Specs index canonical documents; plans track scoped work and evidence. Historical handoff plans do not override current canonical decisions or authorize unrelated implementation. Product diagrams remain actor/system views; the original DOCX is historical reference subordinate to the PRD.
+
+The owner approved writing/alignment on 2026-11-01 and the written architecture on 2026-11-02, including the folder responsibilities and referenced AI provider/model. Approval was recorded before the owner separately authorized committing the documentation on 2026-11-02. That authorization does not include feature implementation, service provisioning, or deployment. Later explicit user authorization governs subsequent work. Record unresolved conflicts rather than choosing whichever document is convenient.
 
 ### Issue tracker
 
@@ -28,4 +36,4 @@ Specs live in `docs/superpowers/specs/` and plans in `docs/superpowers/plans/`. 
 
 ### Domain docs
 
-Single-context layout: `GLOSSARY.md` at the repo root and ADRs in `docs/adr/`. See `docs/agents/domain.md`.
+Use PRD section 2 for current domain terms. Optional future `GLOSSARY.md` and `docs/adr/` supplement canonical documents when present; they are not prerequisites or competing specifications. See [domain guidance](docs/agents/domain.md).

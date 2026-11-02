@@ -55,7 +55,7 @@ An Administrator verifies identity offline before authorizing a verified replace
 
 ## SS-05 Manage another account access
 
-Administrator-initiated deactivation, reactivation, and staff-role changes use the same safeguards, applied only where relevant to the requested action.
+Administrator-initiated deactivation, reactivation, and staff-role changes use the same safeguards, applied only where relevant to the requested action. Role changes are limited to Faculty, Program Head, and Administrator; Student/staff conversion is excluded in both directions.
 
 ![Manage another account access](ss-05.svg)
 
@@ -119,7 +119,7 @@ The same catalog and profile rules apply to standalone requests and requests mad
 
 ## SS-13 Preview and accept a personal roadmap
 
-A proposed plan does not become active until the Student accepts it. Its course references do not reserve old revisions for courses not yet started. Saved proposals are retrieved before generation gates under FC-07 and still lead to preview and explicit acceptance. Roadmap progress displays 100% only when every included course is complete; rounding keeps unfinished progress below 100%.
+A proposed plan does not become active until the Student accepts it. Repeated acceptance of the same active plan returns it without another replacement. For a new acceptance, recheck proposal access and eligibility, including archived unstarted courses; a different active roadmap accepted since preview requires fresh preview and replacement confirmation. A rejected acceptance preserves the current plan. Its course references do not reserve old revisions for courses not yet started. Saved proposals are retrieved before generation gates under FC-07 and still lead to preview and explicit acceptance. Roadmap progress displays 100% only when every included course is complete; rounding keeps unfinished progress below 100%.
 
 ![Preview and accept a personal roadmap](ss-13.svg)
 

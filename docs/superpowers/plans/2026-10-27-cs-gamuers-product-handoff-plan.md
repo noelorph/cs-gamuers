@@ -1,5 +1,7 @@
 # CS-GAMUERS product documentation handoff plan
 
+Historical product-documentation work and validation. Current technical structure/defaults are in [ARCHITECTURE.md](../../../ARCHITECTURE.md) and [TRD.md](../../../TRD.md). The [2026-11-01 architecture handoff](2026-11-01-cs-gamuers-architecture-handoff-plan.md) records later alignment. The original scope and future-work discussion below are retained as history; use current canonical decisions for new plans.
+
 Status: diagram set and handoff plan approved by the product owner after rereview on 2026-10-27. The PRD is approved. Application implementation is not authorized.
 
 Goal: deliver a consistent PRD and a readable, editable diagram set that future developers and agents can use without reconstructing the requirements discussion.

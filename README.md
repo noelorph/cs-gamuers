@@ -1,6 +1,8 @@
 # CS-GAMUERS
 
-Supplemental learning application. See [PRD.md](PRD.md) for product behavior and [TRD.md](TRD.md) for the approved technical baseline.
+Supplemental learning application. Read [AGENTS.md](AGENTS.md) for agent guidance, [PRD.md](PRD.md) for product behavior, [TRD.md](TRD.md) for technical requirements/limits, and [ARCHITECTURE.md](ARCHITECTURE.md) for the selected implementation design.
+
+The architecture targets seven users on phones/computers sharing a local network, with the owner's MacBook hosting Next.js over local HTTPS and hosted Supabase, Groq Free, and Gmail providing external services. This design is documented, not implemented. The owner approved the written architecture on 2026-11-02; the documentation commit was separately authorized that day; no public deployment is planned.
 
 ## Local setup
 
@@ -14,7 +16,7 @@ npx playwright install chromium
 npm run dev
 ```
 
-Open http://localhost:3000. The current page and tooling checks require no Supabase credentials. The backend will use a hosted Supabase development project; project provisioning, authentication integration, and database changes are separate work. Keep real credentials out of Git. Production deployment is not configured.
+Open http://localhost:3000. This is the existing development page, not the future multi-device HTTPS demonstration. Current tooling checks need no Supabase credentials. Provisioning, authentication, migrations, Caddy certificates, ClamAV, and provider setup remain future implementation work described in the architecture. Keep credentials out of Git. Production deployment is not configured.
 
 ## Commands
 
@@ -31,7 +33,7 @@ Open http://localhost:3000. The current page and tooling checks require no Supab
 | `npm run test:watch` | Vitest watch mode |
 | `npm run test:e2e` | Build, then run Chromium tests against a managed local server |
 
-Vitest currently checks the existing home component. Integration tests will use `tests/integration/` when features and isolated test records exist. Playwright verifies the real home page title and heading; port 3000 must be free, and an unrelated server is never reused. These smoke checks do not prove PRD acceptance, Supabase permissions, or provider integration. The supported product-browser matrix remains open.
+Vitest currently checks the existing home component. Integration tests will use `tests/integration/` with the isolation rules in the architecture. Playwright currently checks the home title/heading in Chromium; port 3000 must be free, and an unrelated server is never reused. These smoke checks do not prove PRD acceptance, Supabase permissions, or provider integration. TRD section 6 defines the target browser matrix; broader coverage and actual-phone rehearsal remain future work.
 
 Tailwind uses the existing Turbopack loader. Theme and utilities are imported without Preflight so installation does not reset the existing page's browser-default styling.
 
