@@ -31,11 +31,29 @@ Open http://localhost:3000. This is the existing development page, not the futur
 | `npm run typecheck` | Generate Next.js route types and run TypeScript checks |
 | `npm test` | Vitest unit/integration tests, once |
 | `npm run test:watch` | Vitest watch mode |
+| `npm run browser -- <command>` | Interactive Playwright CLI for browser exploration and debugging |
 | `npm run test:e2e` | Build, then run Chromium tests against a managed local server |
 
 Vitest currently checks the home component and shared Button/Dialog behavior. Integration tests will use `tests/integration/` with the isolation rules in the architecture. Playwright currently checks the home title/heading in Chromium; port 3000 must be free, and an unrelated server is never reused. These smoke checks do not prove PRD acceptance, Supabase permissions, or provider integration. TRD section 6 defines the target browser matrix; broader coverage and actual-phone rehearsal remain future work.
 
 Tailwind uses the existing Turbopack loader. Theme and utilities are imported without Preflight so installation does not reset the existing page's browser-default styling.
+
+### Interactive browser workflow
+
+Playwright CLI is included in the existing pinned Playwright development dependency; no global install or additional package is needed. Start `npm run dev`, then use another terminal:
+
+```sh
+npm run browser -- open http://127.0.0.1:3000 --headed
+npm run browser -- snapshot
+npm run browser -- resize 320 800
+npm run browser -- screenshot --filename=.playwright-cli/home-mobile.png
+npm run browser -- console error
+npm run browser -- close
+```
+
+The CLI also supports clicks, form input, network inspection, and traces. Interactive exploration complements the saved tests run by `npm run test:e2e`; it does not establish PRD acceptance or backend permissions. Use synthetic accounts and save storage state, screenshots, and traces under ignored `.playwright-cli/`, especially when they contain private data.
+
+The official agent skill is committed in `.agents/skills/playwright-cli/`. It was generated from the installed Playwright **1.64.1** package using `npm run browser -- install --skills=agents`; repeat that command to initialize a fresh workspace or intentionally refresh the skill after a Playwright upgrade, and review generated changes. See [Playwright's installation documentation](https://playwright.dev/agent-cli/installation).
 
 ## Agent skills
 

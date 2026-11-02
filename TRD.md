@@ -21,6 +21,7 @@ Detailed system boundaries, schemas, authentication flows, and permission enforc
 | ESLint and Prettier | Code checks and formatting | Selected by product owner |
 | Vitest | Unit and integration tests | Selected by product owner |
 | Playwright | Browser acceptance tests | Selected by product owner |
+| Playwright CLI | Interactive agent browser exploration and UI debugging, using the existing Playwright development dependency | Installation authorized by product owner on 2026-11-03; complements acceptance tests |
 | npm | Package installation and scripts | Selected by product owner |
 
 Installed tooling baseline (2026-10-28): Node.js `24.22.1`, npm `11.19.1`, Next.js `16.4.2`, React/React DOM `19.3.0`, TypeScript `5.9.3`, Tailwind CSS/loader `4.3.3`, ESLint `9.39.5`, Prettier `3.9.10`, Vitest `5.0.5`, Playwright `1.64.1`, Supabase JS `2.118.0`, and Supabase SSR `0.12.7`. `package.json` declares exact versions for new packages; `package-lock.json` records the full dependency tree. Node types use `24.19.2` to match the selected runtime and Vitest peer requirements. These versions describe this installation, not a policy to track latest releases. ESLint 9's npm deprecation notice is retained as a follow-up; the approved existing major was not upgraded incidentally.

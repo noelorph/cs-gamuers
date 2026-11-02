@@ -12,6 +12,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "browser": "playwright cli",
     "test:e2e": "npm run build && playwright test"
   },
   "dependencies": {

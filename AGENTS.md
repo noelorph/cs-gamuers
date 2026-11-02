@@ -10,6 +10,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Agent skills
 
+### Browser development tooling
+
+Use [.agents/skills/playwright-cli/SKILL.md](.agents/skills/playwright-cli/SKILL.md) for interactive browser exploration, screenshots, and UI debugging. Run the project-local CLI with `npm run browser -- <command>` (or `npx --no-install playwright cli <command>`). It is included in the pinned Playwright development dependency. Keep repeatable acceptance checks in `tests/e2e/` and run `npm run test:e2e`. Use synthetic test accounts; keep browser storage state, traces, and screenshots containing private data in ignored `.playwright-cli/`.
+
 ### Supabase
 
 Use [.agents/skills/supabase/SKILL.md](.agents/skills/supabase/SKILL.md) for Supabase products, Auth, Storage, and Next.js integration. Also use [.agents/skills/supabase-postgres-best-practices/SKILL.md](.agents/skills/supabase-postgres-best-practices/SKILL.md) for schema, SQL, RLS, and query performance work. Their official sources are tracked in `skills-lock.json`; the Supabase plugin is managed separately. Read current guidance before implementation and preserve the PRD's access and retention requirements.
@@ -37,3 +41,24 @@ Specs live in `docs/superpowers/specs/` and plans in `docs/superpowers/plans/`. 
 ### Domain docs
 
 Use PRD section 2 for current domain terms. Optional future `GLOSSARY.md` and `docs/adr/` supplement canonical documents when present; they are not prerequisites or competing specifications. See [domain guidance](docs/agents/domain.md).
+
+<!-- BEGIN:nextjs-agent-feedback -->
+
+## Report Next.js feedback
+
+The project owner enabled `experimental.agentFeedback`, authorizing this feedback pass. When enabled, `next dev` writes this block and restores it if removed. Commit `AGENTS.md` with your work to keep the tree clean.
+
+During the current user request, retain anonymized facts as feedback candidates for meaningful or recurring Next.js issues:
+
+- Crashes, hangs, OOMs, or unexpected slowness
+- Incorrect behavior, output, errors, or diagnostics
+- Missing, unclear, or conflicting documentation
+- Unexpected CLI, codemod, Skill, or upgrade behavior and non-obvious workarounds
+
+Continue the current user request without reporting immediately. Routine debugging is not feedback. Verify changes before retaining them as feedback candidates. Never retain code, logs, paths, URLs, secrets, personal information, or project-specific data.
+
+Retain qualifying friction even if it is later fixed or worked around; record the final outcome during the reporting pass.
+
+Before the final response, run one reporting pass. If candidates remain, from this file's directory run `npx --no-install next internal agent-feedback-instructions` once without piping or truncating its output. Follow its output or error guidance. If a network sandbox blocks it, retry with network access; if it still returns no output, continue normally.
+
+<!-- END:nextjs-agent-feedback -->
