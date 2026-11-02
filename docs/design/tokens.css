@@ -67,7 +67,7 @@
   --layout-toast-max: 360px;
   --layout-gutter-small: var(--spacing-lg);
   --layout-gutter-medium: var(--spacing-xl);
-  --layout-gutter-large: var(--spacing-xl);
+  --layout-gutter-large: var(--spacing-2xl);
   --breakpoints-medium: 768px;
   --breakpoints-desktop: 1024px;
   --breakpoints-wide: 1280px;

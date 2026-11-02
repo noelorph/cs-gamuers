@@ -102,7 +102,7 @@ layout:
   toast-max: "360px"
   gutter-small: "{spacing.lg}"
   gutter-medium: "{spacing.xl}"
-  gutter-large: "{spacing.xl}"
+  gutter-large: "{spacing.2xl}"
 breakpoints:
   medium: "768px"
   desktop: "1024px"
