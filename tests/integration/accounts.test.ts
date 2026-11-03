@@ -224,6 +224,31 @@ describe('hosted account boundaries', () => {
     expect(await actor(client)).toEqual([]);
   });
 
+  it('creates a native invitation from the active reservation when released invitation history shares its email', async () => {
+    const original = await createFixture('administrator');
+    const replacementEmail = `fixture-${runId.slice(0, 8)}-${randomUUID().slice(0, 8)}@caloocan.sti.edu.ph`;
+    const operation = await harness('identity_operation', {
+      account_id: original.id,
+      email: replacementEmail,
+    });
+    const replacement = await admin.auth.admin.updateUserById(original.id, {
+      email: replacementEmail,
+      app_metadata: { identity_operation_id: operation.operation_id },
+    });
+    expect(Boolean(replacement.error)).toBe(false);
+    await harness('reserve', { email: original.email, role: 'program_head' });
+    const invitation = await admin.auth.admin.generateLink({
+      type: 'invite',
+      email: original.email,
+      options: { data: { full_name: 'Synthetic integration fixture' } },
+    });
+    expect(Boolean(invitation.error)).toBe(false);
+    expect(invitation.data.user!.id === original.id).toBe(false);
+    const account = await harness('inspect', { account_id: invitation.data.user!.id });
+    expect(account.role).toBe('program_head');
+    expect(account.status).toBe('pending');
+  });
+
   it('supports reserved native invitation creation without granting application access', async () => {
     const reservation = await reserveFixture('administrator');
     const link = await admin.auth.admin.generateLink({
