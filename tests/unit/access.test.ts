@@ -51,16 +51,27 @@ describe('request account boundary', () => {
     expect(mocks.rpc).toHaveBeenCalledWith('current_actor');
   });
 
-  it('permits application-status access but requires approval for a role-specific operation', async () => {
-    const actor = { id: 'id', role: 'faculty', application_status: 'pending', active: true };
-    mocks.rpc.mockResolvedValue({ data: [actor], error: null });
-    expect(await requireActor()).toEqual(actor);
-    await expect(requireActor('faculty')).rejects.toThrow('Access denied');
+  it.each(['pending', 'needs_correction', 'rejected'])(
+    'rejects an unapproved %s account even without a required role',
+    async (application_status) => {
+      mocks.rpc.mockResolvedValue({
+        data: [{ id: 'id', role: 'faculty', application_status, active: true }],
+        error: null,
+      });
+      await expect(requireActor()).rejects.toThrow('Access denied');
+    }
+  );
+
+  it('returns the exact trusted Actor projection only after approval and activation', async () => {
+    const actor = { id: 'id', role: 'faculty', application_status: 'approved', active: true };
     mocks.rpc.mockResolvedValue({
-      data: [{ ...actor, application_status: 'approved' }],
+      data: [actor],
       error: null,
     });
-    expect(await requireActor('faculty')).toHaveProperty('role', 'faculty');
+    expect(await requireActor()).toEqual({ id: 'id', role: 'faculty' });
+    expect(await requireActor('faculty')).toEqual({ id: 'id', role: 'faculty' });
     await expect(requireActor('administrator')).rejects.toThrow('Access denied');
+    mocks.rpc.mockResolvedValue({ data: [{ ...actor, active: false }], error: null });
+    await expect(requireActor()).rejects.toThrow('Authentication required');
   });
 });

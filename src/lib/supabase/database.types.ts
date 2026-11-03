@@ -18,8 +18,8 @@ export type Database = {
           id: string;
           identity_blocked: boolean;
           operation_generation: number;
+          revoked_before: string;
           role: Database['public']['Enums']['account_role'];
-          session_revoked_before: string;
           student_number: string | null;
           synthetic: boolean;
         };
@@ -32,8 +32,8 @@ export type Database = {
           id: string;
           identity_blocked?: boolean;
           operation_generation?: number;
+          revoked_before?: string;
           role: Database['public']['Enums']['account_role'];
-          session_revoked_before?: string;
           student_number?: string | null;
           synthetic?: boolean;
         };
@@ -46,8 +46,8 @@ export type Database = {
           id?: string;
           identity_blocked?: boolean;
           operation_generation?: number;
+          revoked_before?: string;
           role?: Database['public']['Enums']['account_role'];
-          session_revoked_before?: string;
           student_number?: string | null;
           synthetic?: boolean;
         };

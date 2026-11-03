@@ -67,7 +67,7 @@ begin
     update public.accounts set application_status=coalesce((args ->> 'status')::public.application_status,application_status),
       active=coalesce((args ->> 'active')::boolean,active) where id=account_id;
   elsif action = 'cutoff' then
-    update public.accounts set session_revoked_before=clock_timestamp() where id=account_id;
+    update public.accounts set revoked_before=clock_timestamp() where id=account_id;
   elsif action = 'remove_session' then
     delete from auth.sessions where user_id=account_id and id=(args ->> 'session_id')::uuid;
   elsif action = 'operation' then

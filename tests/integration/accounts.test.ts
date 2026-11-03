@@ -94,6 +94,13 @@ describe('hosted account boundaries', () => {
       },
     });
     expect(Boolean(result.error)).toBe(true);
+    // Admin creation avoids public email throttling and proves editable metadata cannot authorize creation.
+    const native = await admin.auth.admin.createUser({
+      email: reservation.email,
+      password: fixturePassword,
+      user_metadata: { account_reservation_id: reservation.reservationId, role: 'student' },
+    });
+    expect(native.error?.status).toBe(500);
   });
 
   it('rejects reservation identity mismatch and replay for a different address', async () => {

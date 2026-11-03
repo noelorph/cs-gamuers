@@ -4,8 +4,6 @@ export type ApplicationStatus = 'pending' | 'needs_correction' | 'approved' | 'r
 export type Actor = {
   id: string;
   role: Role;
-  application_status: ApplicationStatus;
-  active: boolean;
 };
 
 export type AccountInput = {

@@ -7,7 +7,7 @@ export async function requireActor(requiredRole?: Role): Promise<Actor> {
   const { data, error } = await client.rpc('current_actor');
   const actor = data?.[0];
   if (error || !actor || !actor.active) throw new Error('Authentication required');
-  if (requiredRole && (actor.role !== requiredRole || actor.application_status !== 'approved'))
+  if (actor.application_status !== 'approved' || (requiredRole && actor.role !== requiredRole))
     throw new Error('Access denied');
-  return actor;
+  return { id: actor.id, role: actor.role };
 }
