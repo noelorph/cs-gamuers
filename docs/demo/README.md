@@ -30,8 +30,8 @@ project; later fixtures must clean only their recorded test-owned IDs.
 | Separate free test target | Created, healthy, distinct and empty; guarded read-only publishable/admin connectivity passed; app integration pending |
 | Gmail sender delivery | TLS/authentication passed; Gmail accepted one sender-only diagnostic and owner confirmed receipt |
 | Controlled school inboxes | Two Student school-domain addresses supplied; third pending; inbox control/receipt unverified |
-| LAN HTTPS origin | School group-member hotspot planned; final origin/reachability pending that network |
-| Caddy | Portable v2.11.7 installed locally; loopback config adaptation passed; runtime validation pending |
+| LAN HTTPS origin | Current Wi-Fi selected; host HTTPS 200 and HTTP 308 measured; school hotspot remains pending |
+| Caddy | Portable v2.11.7 runtime passed on current Wi-Fi; CA-verified host HTTPS check passed |
 | Phone certificate trust and Wi-Fi access | Unverified on intended iPhone and Android |
 | Auth redirect allowlists | Unverified |
 
@@ -43,8 +43,8 @@ to `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`; the demo project reference is
 also configured. Configuration deliberately does not fall back to browser-prefixed
 names. The local-only preparation was performed separately from the tracked
 configuration implementation. All required local demo/test service keys are
-configured; `APP_ORIGIN` is deliberately unset until the school hotspot is
-available. Keep secret keys, SMTP credentials, identities and fixture manifests
+configured; `APP_ORIGIN` is now configured locally for the owner-selected current Wi-Fi;
+its school-hotspot value will be reconfigured at school. Keep secret keys, SMTP credentials, identities and fixture manifests
 out of tracked files and terminal output.
 
 `getAppEnv`, `getAdminEnv` and `getMailEnv` validate only when called. Missing
@@ -97,27 +97,36 @@ the address does not change during rehearsal. A candidate origin such as
 `https://192.168.1.50` is only a placeholder, not an approved or measured address;
 use the actual Mac address when agreeing the origin.
 
-The current network is not the demonstration network. The owner plans a group
-member's hotspot at school on 2026-11-05 (Asia/Manila), as an intended setup
-date only; this has not occurred. The final origin, Wi-Fi reachability, phone trust and
-redirect settings must be measured there. The current Mac address is not an
-approved demonstration origin and has not been assigned to `APP_ORIGIN`.
+The owner selected the existing Wi-Fi for HTTPS now, then the school group-member
+hotspot on 2026-11-05 (Asia/Manila). Current-network host verification passed:
+HTTPS returned 200 with the public root supplied through `curl --cacert`, the
+home heading matched, and HTTP returned 308 to HTTPS. This does not prove
+another device can connect or trusts the CA.
 
-Portable Caddy v2.11.7 is installed at `.playwright-cli/tools/caddy` (ignored),
-using the official macOS Intel archive after SHA-256 verification against release
-metadata. Version/help checks passed. `caddy adapt` passed with a temporary
-loopback HTTPS origin, confirming an internal issuer and `127.0.0.1:3000`
-upstream. Adaptation does not establish runtime validity. `--validate` was not
-used because it provisions modules; no server was started, certificates generated,
-trust stores changed, or listener/firewall settings configured. See the
-[official CLI documentation](https://caddyserver.com/docs/command-line).
+Portable Caddy v2.11.7 is at `.playwright-cli/tools/caddy` (ignored), verified
+against the official release archive SHA-256. The ignored runtime configuration
+`.playwright-cli/caddy/runtime.json` adapts the root Caddyfile with the official
+`skip_install_trust` global option; generated JSON explicitly sets the local CA's
+`install_trust` to false. No global/system trust changes or firewall changes were
+made. See [Caddy global options](https://caddyserver.com/docs/caddyfile/options).
 
-The root `Caddyfile` is a placeholder using the process environment's
-`APP_ORIGIN`. Caddy does not automatically load Next.js `.env` files: supply the
-approved value to its process separately. No LAN origin has been invented.
-Once the final origin is approved and certificate provisioning is ready, use
-`.playwright-cli/tools/caddy validate --config Caddyfile` before running it. Next must listen only on
-loopback, for example `npm run dev -- --hostname 127.0.0.1`.
+Keep the persistent ignored `.playwright-cli/caddy/data` and
+`.playwright-cli/caddy/config` directories. Caddy uses them as `XDG_DATA_HOME`
+and `XDG_CONFIG_HOME`; its private CA stays under
+`.playwright-cli/caddy/data/caddy/pki/authorities/local`. Never delete/recreate
+that CA when switching networks or distribute any private key. The public root
+certificate alone is copied to ignored `docs/demo/caddy-root.local.crt` for
+installation on intended phones. Preserve this same CA when the hotspot origin
+changes: update the local origin/runtime configuration and redirect settings,
+and let Caddy issue a new leaf certificate under the existing trusted CA.
+
+Measured listeners were Next on `127.0.0.1:3000`, Caddy admin on
+`127.0.0.1:2019`, and Caddy HTTP/HTTPS on ports 80/443. No public tunnel or
+provider redirect mutation was used. The existing home page is the only HTTP
+content tested; authentication remains unimplemented. Current Wi-Fi phone trust,
+phone reachability and browser rehearsal remain pending, as do all final hotspot
+checks. Use [Caddy CLI guidance](https://caddyserver.com/docs/command-line) for
+runtime commands; Next must stay loopback-only.
 
 The implementation operator will configure Caddy and, with the holders,
 install/trust its internal CA root certificate on each intended phone.
@@ -127,7 +136,8 @@ from iPhone Safari and Android Chrome over the intended Wi-Fi, and configure the
 approved origin and implemented email flow. Check actual mail receipt and link
 round trips before acceptance. Do not bypass TLS verification, use public
 tunnels, enable payment, or treat desktop browser emulation as phone proof.
-The final-network provisioning, trust and rehearsal steps remain unexecuted.
+Phone trust and rehearsal on both current Wi-Fi and the final hotspot remain
+unverified; runtime HTTPS on the host is measured only for the current Wi-Fi.
 
 ## Current checks
 
