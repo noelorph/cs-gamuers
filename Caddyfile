@@ -1,0 +1,6 @@
+# Placeholder: set APP_ORIGIN to the approved LAN HTTPS origin before use.
+# Certificate trust and phone/Wi-Fi reachability must be verified separately.
+{$APP_ORIGIN} {
+	tls internal
+	reverse_proxy 127.0.0.1:3000
+}
