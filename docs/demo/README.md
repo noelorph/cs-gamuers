@@ -15,18 +15,20 @@ approved the quoted $0/month action, a separate test project was created and
 reported `ACTIVE_HEALTHY`. Its hosted target is distinct from demo. Read-only
 inspection found zero Auth users, storage objects and application tables in the
 test project. The local test URL, publishable key and project reference are now
-configured; the test secret key remains pending. The isolation guard passed with
-that configuration and a read-only test Auth settings request returned HTTP 200
-using the test publishable key. This is not sign-in or application integration
-proof. Do not run bootstrap, global,
+configured, including the test secret key. The isolation guard passed before
+read-only checks: test Auth settings returned HTTP 200 using the publishable key,
+and `auth.admin.listUsers({ page: 1, perPage: 1 })` returned HTTP 200 with an empty
+first page using the test secret key. No users were written or identities printed.
+These checks establish key acceptance/connectivity, not sign-in or application
+integration proof. Do not run bootstrap, global,
 reset, or integration operations against the demo project. Never reset either shared
 project; later fixtures must clean only their recorded test-owned IDs.
 
 | Prerequisite | Measured state |
 | --- | --- |
 | Demo target eligibility | Empty hosted project inspected; eligible |
-| Separate free test target | Created, healthy, distinct and empty; local URL/publishable/ref and read-only Auth settings check passed; secret/app integration pending |
-| Gmail app-password eligibility | TLS connection and SMTP authentication passed; no mail sent or receipt proven |
+| Separate free test target | Created, healthy, distinct and empty; guarded read-only publishable/admin connectivity passed; app integration pending |
+| Gmail sender delivery | TLS/authentication passed; Gmail accepted one sender-only diagnostic and owner confirmed receipt |
 | Controlled school inboxes | Two Student school-domain addresses supplied; third pending; inbox control/receipt unverified |
 | LAN HTTPS origin | School group-member hotspot planned; final origin/reachability pending that network |
 | Caddy | Portable v2.11.7 installed locally; loopback config adaptation passed; runtime validation pending |
@@ -40,7 +42,9 @@ file. Local demo values have been migrated from the old browser-prefixed names
 to `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`; the demo project reference is
 also configured. Configuration deliberately does not fall back to browser-prefixed
 names. The local-only preparation was performed separately from the tracked
-configuration implementation. Keep secret keys, SMTP credentials, identities and fixture manifests
+configuration implementation. All required local demo/test service keys are
+configured; `APP_ORIGIN` is deliberately unset until the school hotspot is
+available. Keep secret keys, SMTP credentials, identities and fixture manifests
 out of tracked files and terminal output.
 
 `getAppEnv`, `getAdminEnv` and `getMailEnv` validate only when called. Missing
@@ -63,7 +67,11 @@ create an app password named `CS-GAMUERS`. Google requires 2-Step Verification;
 the option can be unavailable under some account/security policies. Check
 [Google's app-password guidance](https://support.google.com/mail/answer/185833)
 if it is missing. A local TLS connection and SMTP authentication check passed on 2026-11-04.
-No message was sent; actual delivery and receipt remain unverified.
+One plain diagnostic message was subsequently sent through TLS/465 to the
+configured sender's own inbox. Gmail accepted it and the owner confirmed receipt.
+It contained no credentials or application links and was not sent to participant
+addresses. Participant inbox delivery/ownership and application email-link flows
+remain unverified.
 
 In ignored `.env.local`, set `SMTP_HOST=smtp.gmail.com` and `SMTP_PORT=465`.
 Set `SMTP_USER` to that sender, `SMTP_FROM` to the same sender, and
@@ -90,7 +98,8 @@ the address does not change during rehearsal. A candidate origin such as
 use the actual Mac address when agreeing the origin.
 
 The current network is not the demonstration network. The owner plans a group
-member's hotspot at school; the final origin, Wi-Fi reachability, phone trust and
+member's hotspot at school on 2026-11-05 (Asia/Manila), as an intended setup
+date only; this has not occurred. The final origin, Wi-Fi reachability, phone trust and
 redirect settings must be measured there. The current Mac address is not an
 approved demonstration origin and has not been assigned to `APP_ORIGIN`.
 
@@ -125,6 +134,7 @@ The final-network provisioning, trust and rehearsal steps remain unexecuted.
 `npm test -- tests/unit/env.test.ts` covers configuration and test-target refusal
 without loading local credentials or contacting providers. Run `npm test`,
 `npm run typecheck`, `npm run lint`, and `npm run format:check` for local checks.
-Browser/device, SMTP delivery, sign-in and application integration tests remain pending; no test
+Browser/device, participant SMTP delivery, sign-in and application integration
+tests remain pending; no test
 skip is evidence that an unavailable provider prerequisite passed. Tasks 2–7
 remain blocked on their documented prerequisites.
