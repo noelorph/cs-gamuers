@@ -121,7 +121,7 @@ The owner selected and authorized shadcn/ui setup on 2026-11-02. Shared source c
 
 Normal database access uses a request-scoped Supabase server client carrying the user's session. No browser Supabase client or Realtime subscription is needed. Refresh cookies on the server with Secure, HttpOnly, SameSite=Lax settings; client interactions call Next.js rather than reading tokens. Verify this server-only pattern against the installed SSR package. Never share an authenticated client across requests/users.
 
-Privileged credentials are limited to Auth administration, controlled storage operations, and maintenance. Their paths explicitly check authorization; service credentials bypass RLS and cannot become the general database client. Protected responses/files use `Cache-Control: private, no-store`; no cross-user cache. Validate mutation origins and allowlist redirect destinations.
+Backend secret credentials admit Auth traffic through the server-only API gateway and support authorized Auth administration, controlled storage operations, and maintenance. A secret-key request without a user JWT has service authority, so ordinary data access must first obtain an explicit verified user JWT and pin that identity on every data request; it must fail closed on missing cookies, refresh failure, expiry, and sign-out rather than fall back to service authority. Narrow privileged operations explicitly check their authorization. Protected responses/files use `Cache-Control: private, no-store`; no cross-user cache. Validate mutation origins and allowlist redirect destinations.
 
 ## 3. Local HTTPS and provisioning
 
@@ -134,6 +134,12 @@ Supabase/Groq/Gmail remain external services even though the application is loca
 Future environment examples contain placeholders for `APP_ORIGIN`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `GROQ_API_KEY`, `GROQ_MODEL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and scanner settings. No privileged value uses `NEXT_PUBLIC_` or appears in source, logs, seeds, terminal output, or responses.
 
 Provisioning verifies free plans, Gmail app-password eligibility, school-inbox receipt, Groq model access, and rehearsal capacity. No billing enrollment or paid fallback is authorized. Authentication mail uses the Postgres Send Email Hook described below and the local Gmail worker; ordinary Supabase SMTP is configured for any supported security notifications outside that hook. The default restricted sender is not a fallback.
+
+### Approved free-plan authentication boundary
+
+On 2026-11-04 the owner approved narrowing the exact shared rolling counter to application-mediated authentication submissions. Keep the ten-failed-attempt identifier limit and one-hundred-submission source-IP limit in fifteen minutes. Route key-protected password/token requests through the application admission checks using private backend keys. Migrate all clients first, then revoke every publishable key and deactivate legacy API keys only after isolated native gateway and real-user RLS tests establish the boundary. Ordinary data clients must always carry explicit user identity; no service-authority fallback is permitted.
+
+Native email verification accepts keyless requests and uses provider-native limits outside the exact application counter. Opaque application challenges, server-held native verifiers, thirty-minute proof expiry and denial of ordinary access to proof-only sessions remain mandatory. Unsupported providers remain disabled. This adjustment selects no paid service or new backend; if the private password boundary cannot be proved, stop the affected work rather than substitute an application-only password limit. Record actual hosted configuration separately from code or operator attestations.
 
 ## 4. Accounts, authentication, and recovery
 
