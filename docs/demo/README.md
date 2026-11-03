@@ -10,16 +10,19 @@ with zero Auth users, zero storage objects and zero application tables. Its loca
 configured URL matches that inspected project. It is eligible for the demo-only
 role; it is not an integration-test target. No real school records were found.
 
-The selected organization is on the free plan. Separate test-project provisioning
-is pending owner confirmation of the quoted $0/month action. No separate test
-connection or credentials have been verified. Do not run bootstrap, global, reset,
-or integration operations against the demo project. Never reset either shared
+The selected organization is on the free plan. After the owner explicitly
+approved the quoted $0/month action, a separate test project was created and
+reported `ACTIVE_HEALTHY`. Its hosted target is distinct from demo. Read-only
+inspection found zero Auth users, storage objects and application tables in the
+test project. Test keys are not configured locally; connection through the
+application and Auth integration remain unverified. Do not run bootstrap, global,
+reset, or integration operations against the demo project. Never reset either shared
 project; later fixtures must clean only their recorded test-owned IDs.
 
 | Prerequisite | Measured state |
 | --- | --- |
 | Demo target eligibility | Empty hosted project inspected; eligible |
-| Separate free test target | Pending provisioning and connection proof |
+| Separate free test target | Created, healthy, distinct and empty; local keys/app connection pending |
 | Gmail app-password eligibility | Pending owner/provider verification |
 | Controlled school inboxes | Availability and real receipt unverified |
 | LAN HTTPS origin | Exact approved origin pending |
@@ -49,7 +52,36 @@ reference, and refuses matching targets. It performs no provider requests and
 cannot establish ownership or credential validity. Use only `TEST_SUPABASE_*`
 credentials for test clients; a successful local guard is not provider proof.
 
+## Email preparation
+
+Choose one personal Gmail account as the demo sender. Enable 2-Step Verification,
+then open [Google App Passwords](https://myaccount.google.com/apppasswords) and
+create an app password named `CS-GAMUERS`. Google requires 2-Step Verification;
+the option can be unavailable under some account/security policies. Check
+[Google's app-password guidance](https://support.google.com/mail/answer/185833)
+if it is missing. Eligibility and actual delivery still need verification.
+
+In ignored `.env.local`, set `SMTP_HOST=smtp.gmail.com` and `SMTP_PORT=465`.
+Set `SMTP_USER` to that sender, `SMTP_FROM` to the same sender, and
+`SMTP_PASSWORD` to the generated Gmail app password. Enter real values only
+locally; do not share them in chat or commit them. This document contains no
+sender address or credential.
+
+The three Student holders must control actual `@caloocan.sti.edu.ph` inboxes
+and be able to open received links. The other four accounts need distinct,
+reachable participant-controlled email addresses. Confirm inbox access without
+requesting anyone's email-account password. Each holder will later choose their
+own CS-GAMUERS sign-in password during account setup; that password is separate
+from the single sender's Gmail app password used for SMTP.
+
 ## Local HTTPS preparation
+
+Connect the Mac and intended phones to the same Wi-Fi or hotspot with
+communication between devices allowed. On the Mac, find its Wi-Fi address in **System
+Settings > Wi-Fi > Details > TCP/IP**. Prefer a stable router DHCP reservation so
+the address does not change during rehearsal. A candidate origin such as
+`https://192.168.1.50` is only a placeholder, not an approved or measured address;
+use the actual Mac address when agreeing the origin.
 
 The root `Caddyfile` is a placeholder using the process environment's
 `APP_ORIGIN`. Caddy does not automatically load Next.js `.env` files: supply the
@@ -58,9 +90,11 @@ Once Caddy is installed and an origin approved, validate the configuration with
 `caddy validate --config Caddyfile` before running it. Next must listen only on
 loopback, for example `npm run dev -- --hostname 127.0.0.1`.
 
-Use Caddy's internal CA and install/trust its root certificate on every intended
-phone. Verify the exact HTTPS origin from iPhone Safari and Android Chrome over
-the intended Wi-Fi, and configure the provider's site/redirect allowlists to the
+The implementation operator will install/configure Caddy and, with the holders,
+install/trust its internal CA root certificate on each intended phone.
+[Caddy's HTTPS documentation](https://caddyserver.com/docs/automatic-https)
+explains that each client must trust the local CA. Verify the exact HTTPS origin
+from iPhone Safari and Android Chrome over the intended Wi-Fi, and configure the provider's site/redirect allowlists to the
 approved origin and implemented email flow. Check actual mail receipt and link
 round trips before acceptance. Do not bypass TLS verification, use public
 tunnels, enable payment, or treat desktop browser emulation as phone proof.
