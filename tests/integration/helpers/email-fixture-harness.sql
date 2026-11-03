@@ -20,6 +20,11 @@ begin
     update private.email_proofs set expires_at=clock_timestamp() where id=p.id;
   elsif action='release_reservation' then
     update private.account_reservations set released_at=clock_timestamp() where id=p.reservation_id;
+  elsif action='expire_mail_lease' then
+    update private.mail_work set lease_until=clock_timestamp()-interval '1 second' where proof_id=p.id;
+  elsif action='retry_notice' then
+    update private.mail_work m set due_at=clock_timestamp()-interval '1 second'
+      from private.account_events e where e.id=m.event_id and e.account_id=fixture.account_id;
   elsif action<>'inspect' then raise exception 'Unknown fixture action'; end if;
   return (select jsonb_build_object('id',id,'challenge',delivery_challenge,'lifetime_seconds',extract(epoch from (expires_at-created_at)),
     'delivery_erased',delivery_challenge is null,'native_erased',native_verifier is null,'state',state)

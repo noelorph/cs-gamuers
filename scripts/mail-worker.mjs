@@ -3,6 +3,11 @@ import { rpc } from './operator-env.mjs';
 export async function deliverBatch(client, transport, { origin, from }) {
   const jobs = await rpc(client, 'claim_mail_work', { batch_size: 10 });
   for (const job of jobs) {
+    const current = await rpc(client, 'prepare_mail_work', {
+      work_id: job.id,
+      claim_id: job.lease_id,
+    });
+    if (!current) continue;
     let delivered = false;
     if (job.challenge && Date.parse(job.expires_at) <= Date.now()) {
       await rpc(client, 'reconcile_auth_mail');

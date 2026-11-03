@@ -81,6 +81,63 @@ it('consumes once and resumes only with the original restricted capability', asy
   ).toBe(true);
   expect(await inspect(f.id)).toHaveProperty('delivery_erased', true);
 });
+it('pre-send validation rejects a superseded proof, expired lease and wrong claimant', async () => {
+  const f = await proofFixture();
+  const claimed = await admin.rpc('claim_mail_work', { batch_size: 20 });
+  expect(Boolean(claimed.error)).toBe(false);
+  const job = claimed.data.find((j: { recipient: string }) => j.recipient === f.email);
+  expect(job).toBeTruthy();
+  const args = { work_id: job.id, claim_id: job.lease_id };
+  const ready = await admin.rpc('prepare_mail_work', args);
+  expect(ready.error?.code ?? null).toBe(null);
+  expect(ready.data).toBe(true);
+  expect((await admin.rpc('prepare_mail_work', { ...args, claim_id: runId })).data).toBe(false);
+  expect(Boolean((await anonymous().rpc('prepare_mail_work', args)).error)).toBe(true);
+  await inspect(f.id, 'expire_mail_lease');
+  expect((await admin.rpc('prepare_mail_work', args)).data).toBe(false);
+  const reclaimed = await admin.rpc('claim_mail_work', { batch_size: 20 });
+  const newer = reclaimed.data.find((j: { id: string }) => j.id === job.id);
+  expect(newer.lease_id).not.toBe(job.lease_id);
+  await inspect(f.id, 'age_latest');
+  const reissued = await admin.rpc('queue_generated_auth_email', {
+    target_id: f.id,
+    recipient: f.email,
+    native_type: 'signup',
+    native_verifier: 'synthetic-new-verifier-for-queue-only',
+  });
+  expect(Boolean(reissued.error)).toBe(false);
+  expect(
+    (await admin.rpc('prepare_mail_work', { work_id: job.id, claim_id: newer.lease_id })).data
+  ).toBe(false);
+});
+it('does not send a queued proof superseded while the previous SMTP send is pending', async () => {
+  const { deliverBatch } = await import('../../scripts/mail-worker.mjs');
+  const first = await proofFixture();
+  const second = await proofFixture();
+  const sent: string[] = [];
+  await deliverBatch(
+    admin,
+    {
+      sendMail: async (message: { to: string }) => {
+        sent.push(message.to);
+        if (message.to === first.email) {
+          await inspect(second.id, 'age_latest');
+          const result = await admin.rpc('queue_generated_auth_email', {
+            target_id: second.id,
+            recipient: second.email,
+            native_type: 'signup',
+            native_verifier: 'synthetic-superseding-verifier-for-queue-only',
+          });
+          expect(Boolean(result.error)).toBe(false);
+        }
+        return { accepted: [message.to] };
+      },
+    },
+    { origin: 'https://demo.example', from: 'sender@example.com' }
+  );
+  expect(sent).toContain(first.email);
+  expect(sent).not.toContain(second.email);
+});
 it('expires exactly at 1800 seconds and erases expired secret material', async () => {
   const f = await proofFixture();
   const p = await inspect(f.id);
@@ -567,6 +624,48 @@ it('resumes one bootstrap and commits one real Administrator approval despite ma
     mail_state: 'pending',
     attempts: 1,
   });
+  const setupStatus = async (slot = 'faculty_1') => {
+    const result = await admin.rpc('demo_setup_status', {
+      project_ref: testProjectRef,
+      manifest_hash: manifestHash,
+    });
+    expect(Boolean(result.error)).toBe(false);
+    return result.data.find((row: { slot: string }) => row.slot === slot);
+  };
+  expect(await setupStatus()).toHaveProperty('approval_mail_state', 'pending');
+  await inspect(id, 'retry_notice');
+  const retry = await admin.rpc('claim_mail_work', { batch_size: 20 });
+  const notice = retry.data.find((job: { recipient: string }) => job.recipient === email);
+  expect(notice).toBeTruthy();
+  expect(
+    (await admin.rpc('prepare_mail_work', { work_id: notice.id, claim_id: notice.lease_id })).data
+  ).toBe(true);
+  await admin.rpc('finish_mail_work', {
+    work_id: notice.id,
+    claim_id: notice.lease_id,
+    delivered: true,
+  });
+  expect(await setupStatus()).toHaveProperty('approval_mail_state', 'sent');
+  expect(await inspect(id, 'decision_counts')).toEqual({
+    decisions: 1,
+    notices: 1,
+    mail_state: 'sent',
+    attempts: 2,
+  });
+  for (let attempt = 2; attempt <= 5; attempt++) {
+    await inspect(administratorId, 'retry_notice');
+    const batch = await admin.rpc('claim_mail_work', { batch_size: 20 });
+    const adminNotice = batch.data.find(
+      (job: { recipient: string }) => job.recipient === administratorEmail
+    );
+    expect(adminNotice).toBeTruthy();
+    await admin.rpc('finish_mail_work', {
+      work_id: adminNotice.id,
+      claim_id: adminNotice.lease_id,
+      delivered: false,
+    });
+  }
+  expect(await setupStatus('administrator')).toHaveProperty('approval_mail_state', 'failed');
   const { actor } = await import('./helpers/fixtures');
   expect(await actor((await signIn({ email })).client)).toHaveLength(1);
   await harness('state', { account_id: id, active: false });

@@ -2,6 +2,7 @@ import { readFile, writeFile, rename } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { validateManifest, resumeManifest } from './demo-manifest.mjs';
+import { formatDemoStatus } from './demo-status.mjs';
 import { operatorEnvironment, operatorClients, rpc } from './operator-env.mjs';
 import { hiddenPassword } from './hidden-password.mjs';
 import { validateAccountInput } from '../src/features/accounts/validation.ts';
@@ -45,23 +46,7 @@ async function main() {
   const status = () => rpc(admin, 'demo_setup_status', binding);
   await status();
   if (command === 'status') {
-    const rows = await status();
-    const ready = rows.filter(
-      (row) =>
-        row.status === 'approved' &&
-        row.active === true &&
-        row.identity_blocked === false &&
-        row.proof_complete
-    ).length;
-    console.log(
-      `${ready}/7 accounts approved with completed proof; ${accounts.filter((a) => !a.email).length} email slot pending.`
-    );
-    for (const a of accounts) {
-      const row = rows.find((r) => r.slot === a.slot);
-      console.log(
-        `${a.slot}: ${row?.status ?? 'not prepared'}; mail ${row?.mail_state ?? 'not queued'}`
-      );
-    }
+    for (const line of formatDemoStatus(await status(), accounts)) console.log(line);
     return;
   }
   if (!env.hookReady)

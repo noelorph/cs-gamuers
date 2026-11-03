@@ -103,6 +103,10 @@ export type Database = {
         Args: { claim_id: string; delivered: boolean; work_id: string };
         Returns: undefined;
       };
+      prepare_mail_work: {
+        Args: { claim_id: string; work_id: string };
+        Returns: boolean;
+      };
       queue_generated_auth_email: {
         Args: {
           native_type: string;
