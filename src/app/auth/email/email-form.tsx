@@ -39,6 +39,8 @@ export function EmailForm({ challenge, prepare, confirm, complete }: Props) {
       const result = validateInvitationInput({ fullName, password });
       if ('errors' in result) {
         setFields(result.errors);
+        setError('Check the highlighted fields before accepting your invitation.');
+        requestAnimationFrame(() => status.current?.focus());
         return;
       }
     }

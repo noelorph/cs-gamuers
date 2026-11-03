@@ -2,17 +2,19 @@
 import { spawnSync } from 'node:child_process';
 import { expect, it } from 'vitest';
 
-it.each(['prepare-demo.mjs', 'maintenance.mjs'])(
-  '%s --help works without provider configuration',
-  (script) => {
-    const result = spawnSync(process.execPath, [`scripts/${script}`, '--help'], {
-      env: { PATH: process.env.PATH, NODE_ENV: 'test' },
-      encoding: 'utf8',
-    });
-    expect(result.status).toBe(0);
-    expect(result.stdout).toMatch(/Usage:/);
-  }
-);
+it.each([
+  'scripts/prepare-demo.mjs',
+  'scripts/maintenance.mjs',
+  'tests/integration/helpers/recover-fixtures.mjs',
+])('%s --help works without provider configuration', (script) => {
+  const result = spawnSync(process.execPath, [script, '--help'], {
+    env: { PATH: process.env.PATH, NODE_ENV: 'test' },
+    encoding: 'utf8',
+  });
+  expect(result.status).toBe(0);
+  expect(result.stdout).toMatch(/Usage:/);
+  expect(result.stderr).toBe('');
+});
 it('rejects changed projects and changed fixed identities when resuming setup', async () => {
   const modulePath = '../../scripts/demo-manifest.mjs';
   const subject = await import(modulePath).catch(() => null);

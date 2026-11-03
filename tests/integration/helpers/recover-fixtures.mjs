@@ -1,7 +1,11 @@
 import { loadEnvFile } from 'node:process';
-import { readFile, writeFile, unlink } from 'node:fs/promises';
+import { readFile, unlink } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { createClient } from '@supabase/supabase-js';
-import { assertIsolatedTestTarget } from '../../../src/config/test-target.ts';
+import { saveFixtureJournal } from './fixture-journal.mjs';
+const { assertIsolatedTestTarget } = createRequire(import.meta.url)(
+  '../../../src/config/test-target.ts'
+);
 
 async function recover() {
   if (process.argv.includes('--help')) {
@@ -35,7 +39,7 @@ async function recover() {
   const ids = await client.rpc('test_account_fixture', { ...args, action: 'cleanup_ids' });
   if (ids.error) throw Error('Read ownership failed');
   state.accountIds = [...new Set([...state.accountIds, ...ids.data])];
-  await writeFile(file, JSON.stringify(state), { mode: 0o600 });
+  await saveFixtureJournal(file, state);
   const cleanup = await client.rpc('test_account_fixture', { ...args, action: 'cleanup' });
   if (cleanup.error) throw Error('Application cleanup failed');
   for (const id of state.accountIds) {

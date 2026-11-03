@@ -1,6 +1,7 @@
 import { loadEnvFile } from 'node:process';
+import { createRequire } from 'node:module';
 import { createClient } from '@supabase/supabase-js';
-import { assertIsolatedTestTarget } from '../src/config/test-target.ts';
+const { assertIsolatedTestTarget } = createRequire(import.meta.url)('../src/config/test-target.ts');
 const required = (name) => {
   const value = process.env[name];
   if (!value?.trim()) throw Error(`Missing ${name}`);

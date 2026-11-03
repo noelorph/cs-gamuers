@@ -1,11 +1,14 @@
 import { readFile, writeFile, rename } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
 import { validateManifest, resumeManifest } from './demo-manifest.mjs';
 import { formatDemoStatus } from './demo-status.mjs';
 import { operatorEnvironment, operatorClients, rpc } from './operator-env.mjs';
 import { hiddenPassword } from './hidden-password.mjs';
-import { validateAccountInput } from '../src/features/accounts/validation.ts';
+const { validateAccountInput } = createRequire(import.meta.url)(
+  '../src/features/accounts/validation.ts'
+);
 
 const usage =
   'Usage: node scripts/prepare-demo.mjs bootstrap|applications|invite-head|approve|status --manifest <ignored-local-file> [--test]';

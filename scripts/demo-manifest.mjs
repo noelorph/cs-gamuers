@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
-import {
-  validateAccountInput,
-  validateInvitationInput,
-} from '../src/features/accounts/validation.ts';
+import { createRequire } from 'node:module';
+const { validateAccountInput, validateInvitationInput } = createRequire(import.meta.url)(
+  '../src/features/accounts/validation.ts'
+);
 
 export function validateManifest(manifest) {
   if (

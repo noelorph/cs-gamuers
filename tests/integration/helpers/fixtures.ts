@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile, unlink } from 'node:fs/promises';
+import { mkdir, unlink } from 'node:fs/promises';
 import { loadEnvFile } from 'node:process';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { assertIsolatedTestTarget } from './environment';
+import { saveFixtureJournal } from './fixture-journal.mjs';
 
 try {
   loadEnvFile('.env.local');
@@ -86,11 +87,7 @@ export async function cleanFixtures() {
   const ids = [...new Set([...ownedIds, ...((await harness('cleanup_ids')) as string[])])];
   await mkdir('tests/integration/.artifacts', { recursive: true });
   const recoveryFile = `tests/integration/.artifacts/${runId}.json`;
-  await writeFile(
-    recoveryFile,
-    JSON.stringify({ projectRef: testProjectRef, runId, accountIds: ids }),
-    { mode: 0o600 }
-  );
+  await saveFixtureJournal(recoveryFile, { projectRef: testProjectRef, runId, accountIds: ids });
   await harness('cleanup');
   for (const id of ids) {
     const { error } = await admin.auth.admin.deleteUser(id);
