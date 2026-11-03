@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { mkdir, writeFile, unlink } from 'node:fs/promises';
 import { loadEnvFile } from 'node:process';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { assertIsolatedTestTarget } from './environment';
@@ -82,9 +83,19 @@ export async function actor(client: SupabaseClient) {
 }
 
 export async function cleanFixtures() {
-  const ids = (await harness('cleanup')) as string[];
-  for (const id of new Set([...ownedIds, ...ids])) {
+  const ids = [...new Set([...ownedIds, ...((await harness('cleanup_ids')) as string[])])];
+  await mkdir('tests/integration/.artifacts', { recursive: true });
+  const recoveryFile = `tests/integration/.artifacts/${runId}.json`;
+  await writeFile(
+    recoveryFile,
+    JSON.stringify({ projectRef: testProjectRef, runId, accountIds: ids }),
+    { mode: 0o600 }
+  );
+  await harness('cleanup');
+  for (const id of ids) {
     const { error } = await admin.auth.admin.deleteUser(id);
-    if (error) throw new Error('Synthetic fixture cleanup failed');
+    if (error)
+      throw new Error('Synthetic fixture cleanup failed; retain exact-run recovery artifact');
   }
+  await unlink(recoveryFile);
 }

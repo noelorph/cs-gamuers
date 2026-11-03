@@ -1,7 +1,8 @@
 # Local demonstration readiness
 
-Task 1 configuration is implemented; provider and physical-device proof is pending.
-No authentication or course-draft feature is implemented by this task.
+Task 1 configuration and the Task 2–3 account/proof implementation are present.
+Hosted configuration, trusted-browser completion and seven-holder readiness remain
+pending as detailed below. Course-draft features are not implemented yet.
 
 ## Project roles and evidence
 
@@ -122,8 +123,8 @@ and let Caddy issue a new leaf certificate under the existing trusted CA.
 
 Measured listeners were Next on `127.0.0.1:3000`, Caddy admin on
 `127.0.0.1:2019`, and Caddy HTTP/HTTPS on ports 80/443. No public tunnel or
-provider redirect mutation was used. The existing home page is the only HTTP
-content tested; authentication remains unimplemented. Current Wi-Fi phone trust,
+provider redirect mutation was used. That Task 1 check covered the home page;
+Task 3 confirmation-page checks are recorded below. Current Wi-Fi phone trust,
 phone reachability and browser rehearsal remain pending, as do all final hotspot
 checks. Use [Caddy CLI guidance](https://caddyserver.com/docs/command-line) for
 runtime commands; Next must stay loopback-only.
@@ -144,7 +145,44 @@ unverified; runtime HTTPS on the host is measured only for the current Wi-Fi.
 `npm test -- tests/unit/env.test.ts` covers configuration and test-target refusal
 without loading local credentials or contacting providers. Run `npm test`,
 `npm run typecheck`, `npm run lint`, and `npm run format:check` for local checks.
-Browser/device, participant SMTP delivery, sign-in and application integration
-tests remain pending; no test
-skip is evidence that an unavailable provider prerequisite passed. Tasks 2–7
-remain blocked on their documented prerequisites.
+The isolated native account/proof integration suite passes. Trusted-browser/device
+completion and participant SMTP delivery remain pending; no test skip is evidence
+that an unavailable provider prerequisite passed. Each plan task retains its
+documented acceptance gates.
+
+## Controlled account preparation (Task 3)
+
+The code is implemented; seven-holder readiness is **not** established. No participant invitations or demo database writes were made during Task 3. The third Student email is still blank, and no account is created for that slot. The final requirement remains one Administrator, three Students, two Faculty and one Program Head.
+
+Before operating against a project, apply the application migrations in filename order and designate its protected `private.environment` marker through the reviewed operator provisioning process. Never install test harnesses on demo. Confirm that URL, credentials and project reference match. `--test` uses only the isolated `TEST_*` configuration after the URL/ref guard; use a separate synthetic manifest for tests.
+
+Actual hosted settings must be saved in the **TEST project** first:
+
+1. Authentication → Hooks → Send Email Hook: PostgreSQL function `public.send_auth_email(event jsonb)`. Its execute grant is Auth-only. The function's successful result means queued, not delivered.
+2. Authentication → Email provider: enabled; email confirmation enabled; Email OTP Expiration **1800 seconds**; minimum password **12**. Application validation additionally enforces 12 Unicode code points and at most 72 UTF-8 bytes. Disable anonymous, phone and unused OAuth providers. Magic-link/general recovery hook purposes fail closed.
+3. URL Configuration: Site URL is the exact current `APP_ORIGIN`; the redirect allowlist contains only that origin's `/auth/email` path. Preserve this alignment when changing networks. Local `config.toml` does not change hosted settings.
+4. After these actual settings and a native hook request are verified, set `AUTH_MAIL_HOOK_VERIFIED_PROJECT_REF` locally to that exact project reference. This is an operator attestation, not configuration or independent proof. Recheck and change it explicitly before demo use.
+
+Use an ignored manifest containing `{"accounts":[...]}` with exactly seven named entries: one `administrator`, three `student`, two `faculty`, one `program_head`. Each entry has `role`, `fullName`, `email`; Students also have textual `studentNumber`, Faculty may have `employeeNumber`. Never store a password. The third Student email alone may temporarily be empty. All filled Student emails must use the exact school domain.
+
+```sh
+node scripts/prepare-demo.mjs --help
+npm run demo:prepare -- bootstrap --manifest docs/demo/accounts.local.json
+npm run maintenance
+npm run demo:prepare -- status --manifest docs/demo/accounts.local.json
+npm run demo:prepare -- invite-head --manifest docs/demo/accounts.local.json
+npm run demo:prepare -- applications --manifest docs/demo/accounts.local.json
+npm run demo:prepare -- approve --manifest docs/demo/accounts.local.json
+```
+
+Coordinate each issuance with its holder and the demonstration network: links expire 30 minutes after issuance. Bootstrap reserves exactly one Administrator invitation; its holder verifies email and chooses a password. Subsequent commands require that approved Administrator's real password sign-in. The operator does not approve themselves. Student/Faculty holders enter passwords using the hidden local terminal prompt. Approval is explicitly labeled a synthetic fixture decision and does not claim school-record evidence. Rerunning a command resolves the reserved account and existing decision instead of creating another account/approval.
+
+An ignored mode-0600 state file beside the manifest binds setup to the original project and identities before mutations. Do not delete it to bypass a mismatch. The only incremental identity change allowed is filling the originally blank third Student email; all previously supplied addresses/names/numbers stay fixed. Commands report counts and slot status without printing holder contacts or credentials. `status` counts approved, active, unblocked accounts with completed proof; a missing slot is never counted ready.
+
+The maintenance command performs an immediate pass then repeats every 60 seconds; `--once` performs one pass. It claims at most ten records (database maximum twenty), sends through Nodemailer 10.3.1 outside transaction locks, and uses stable Message-IDs. Initial failure retries after 1, 5, 15 and 60 minutes, then remains failed. Delivery state is independent from the saved decision. SMTP acceptance does not prove inbox receipt. Run it only when the intended recipients are ready; synthetic test suites do not invoke SMTP.
+
+Native invitations use two fenced password operations. If the first native redemption completed but holder setup expired, native invite reissue returns `email_exists`; the operator uses a private recovery verifier only for that same pending invitation. The browser still receives only an invitation capability. General recovery UI and hook purposes remain unavailable. An uncertain native recovery-redemption result requires a fresh operator-issued invitation challenge; it is never assumed successful.
+
+The confirmation page has no third-party resources. GET is inert; confirmation establishes an HttpOnly/Secure/SameSite=Strict opaque cookie in one response before the next POST consumes the proof. Repeating that POST in the same browser resumes a lost response; another capability cannot consume it again. Native proof/session credentials stay on the server. Completion requires a fresh password sign-in. Next request/action logging is restricted for these routes, and the Caddy default runtime logger removes `challenge` query parameters and referrers, including upstream-error logs. Preserve the filter when generating runtime configuration; see [Caddy runtime logging](https://caddyserver.com/docs/caddyfile/options#log) and [query filters](https://caddyserver.com/docs/caddyfile/directives/log#query).
+
+Task 3 verification used real native synthetic Auth sessions and production RPCs in the isolated test project. Chromium 156 inspected confirmation/error states at 1280×900 and 320×740, keyboard focus, overflow, console and network results. Normal HTTPS browser navigation failed `ERR_CERT_AUTHORITY_INVALID`; no bypass was used, and full browser invitation/password completion remains unverified. No Firefox/WebKit, Android/iPhone or real holder receipt claim is made. The production E2E command stopped before Playwright at the existing Turbopack CSS-worker bind-permission failure. All verification servers/browser sessions were stopped. Root coordination still owns actual hosted hook settings, certificate trust, participant-mail timing and final seven-holder rehearsal.

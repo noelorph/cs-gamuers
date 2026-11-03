@@ -58,6 +58,34 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      advance_email_operation: {
+        Args: {
+          capability_hash: string;
+          full_name?: string;
+          proof_id: string;
+          step: string;
+        };
+        Returns: Json;
+      };
+      approve_demo_application: {
+        Args: { project_ref: string; reason: string; target_id: string };
+        Returns: Json;
+      };
+      assert_demo_project: { Args: { project_ref: string }; Returns: undefined };
+      bootstrap_demo_administrator: {
+        Args: {
+          email: string;
+          full_name: string;
+          manifest_hash: string;
+          project_ref: string;
+        };
+        Returns: Json;
+      };
+      claim_email_challenge: {
+        Args: { capability_hash: string; challenge_hash: string };
+        Returns: Json;
+      };
+      claim_mail_work: { Args: { batch_size?: number }; Returns: Json };
       current_actor: {
         Args: never;
         Returns: {
@@ -67,6 +95,46 @@ export type Database = {
           role: Database['public']['Enums']['account_role'];
         }[];
       };
+      demo_setup_status: {
+        Args: { manifest_hash: string; project_ref: string };
+        Returns: Json;
+      };
+      finish_mail_work: {
+        Args: { claim_id: string; delivered: boolean; work_id: string };
+        Returns: undefined;
+      };
+      queue_generated_auth_email: {
+        Args: {
+          native_type: string;
+          native_verifier: string;
+          recipient: string;
+          target_id: string;
+        };
+        Returns: Json;
+      };
+      reconcile_auth_mail: { Args: never; Returns: undefined };
+      reserve_demo_application: {
+        Args: {
+          email: string;
+          employee_number?: string;
+          full_name: string;
+          manifest_hash: string;
+          project_ref: string;
+          slot: string;
+          student_number?: string;
+        };
+        Returns: Json;
+      };
+      reserve_staff_invitation: {
+        Args: {
+          email: string;
+          full_name: string;
+          manifest_hash: string;
+          project_ref: string;
+        };
+        Returns: Json;
+      };
+      send_auth_email: { Args: { event: Json }; Returns: Json };
     };
     Enums: {
       account_role: 'student' | 'faculty' | 'program_head' | 'administrator';

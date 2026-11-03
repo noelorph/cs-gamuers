@@ -26,6 +26,12 @@ begin
       or args ->> 'project_ref' is distinct from 'ggiccvcrkydcimveyrfi' then
     raise exception 'Isolated test marker required';
   end if;
+  if action = 'adopt' then
+    reservation_id := (args->>'reservation_id')::uuid;
+    if not exists(select 1 from private.account_reservations where id=reservation_id and synthetic and email like 'fixture-'||left(run_id::text,8)||'-%@%') then raise exception 'Fixture namespace required'; end if;
+    insert into private.test_fixture_reservations values(run_id,reservation_id) on conflict do nothing;
+    return '{}'::jsonb;
+  end if;
   if action = 'reserve' then
     if lower(btrim(args ->> 'email')) not like 'fixture-' || left(run_id::text,8) || '-%@%' then raise exception 'Fixture namespace required'; end if;
     insert into private.account_reservations(email,full_name,student_number,role,purpose,synthetic,expires_at)
@@ -47,11 +53,18 @@ begin
       'client_guard_membership',exists(select 1 from pg_roles where rolname in ('anon','authenticated','service_role') and pg_has_role(oid,'account_guard_owner','MEMBER'))
     );
   end if;
+  if action = 'cleanup_ids' then
+    return (select coalesce(jsonb_agg(r.account_id) filter(where r.account_id is not null),'[]') from private.account_reservations r join private.test_fixture_reservations f on f.reservation_id=r.id where f.run_id=test_account_fixture.run_id);
+  end if;
   if action = 'cleanup' then
     select array_agg(f.reservation_id) into reservation_ids from private.test_fixture_reservations f where f.run_id=test_account_fixture.run_id;
     select coalesce(jsonb_agg(r.account_id) filter(where r.account_id is not null),'[]') into ids
       from private.account_reservations r join private.test_fixture_reservations f on f.reservation_id=r.id
       where f.run_id=test_account_fixture.run_id;
+    delete from private.demo_setup where bootstrap_id=any(reservation_ids);
+    delete from private.demo_slots ds where ds.reservation_id=any(reservation_ids);
+    delete from private.account_events e where e.account_id=any(reservation_ids);
+    delete from private.account_events e where e.account_id in (select value::uuid from jsonb_array_elements_text(ids));
     delete from private.account_operations o where o.account_id in (select value::uuid from jsonb_array_elements_text(ids));
     delete from private.test_fixture_reservations where test_fixture_reservations.run_id=test_account_fixture.run_id;
     delete from private.account_reservations where id = any(reservation_ids);

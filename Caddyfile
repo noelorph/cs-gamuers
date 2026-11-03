@@ -1,3 +1,17 @@
+{
+	log default {
+		format filter {
+			wrap json
+			fields {
+				request>uri query {
+					delete challenge
+				}
+				request>headers>Referer delete
+			}
+		}
+	}
+}
+
 # Placeholder: set APP_ORIGIN to the approved LAN HTTPS origin before use.
 # Certificate trust and phone/Wi-Fi reachability must be verified separately.
 {$APP_ORIGIN} {

@@ -34,3 +34,23 @@ export function validateAccountInput(
   if (Object.keys(errors).length || (role !== 'student' && role !== 'faculty')) return { errors };
   return { data: { role, fullName, studentNumber, employeeNumber, email, password } };
 }
+
+export function validateInvitationInput(
+  input: unknown
+):
+  | { data: { fullName: string; password: string } }
+  | { errors: { fullName?: string; password?: string } } {
+  const value =
+    input && typeof input === 'object' && !Array.isArray(input)
+      ? (input as Record<string, unknown>)
+      : {};
+  const result = validateAccountInput({
+    role: 'faculty',
+    email: 'invitation@example.com',
+    fullName: value.fullName,
+    password: value.password,
+  });
+  if ('errors' in result)
+    return { errors: { fullName: result.errors.fullName, password: result.errors.password } };
+  return { data: { fullName: result.data.fullName, password: result.data.password } };
+}
