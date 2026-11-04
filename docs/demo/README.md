@@ -1,6 +1,6 @@
 # Local demonstration readiness
 
-Task 1 configuration and the Task 2–3 account/proof implementation are present.
+Task 1 configuration and the Task 2–4 account/proof/sign-in implementation are present.
 Hosted configuration, trusted-browser completion and seven-holder readiness remain
 pending as detailed below. Course-draft features are not implemented yet.
 
@@ -30,7 +30,7 @@ project; later fixtures must clean only their recorded test-owned IDs.
 | Demo target eligibility | Empty hosted project inspected; eligible |
 | Separate free test target | Created, healthy, distinct and empty; guarded read-only publishable/admin connectivity passed; app integration pending |
 | Gmail sender delivery | TLS/authentication passed; Gmail accepted one sender-only diagnostic and owner confirmed receipt |
-| Controlled school inboxes | Two Student school-domain addresses supplied; third pending; inbox control/receipt unverified |
+| Controlled school inboxes | All seven manifest emails supplied, including three valid Student school-domain addresses; inbox control/receipt unverified |
 | LAN HTTPS origin | Current Wi-Fi selected; host HTTPS 200 and HTTP 308 measured; school hotspot remains pending |
 | Caddy | Portable v2.11.7 runtime passed on current Wi-Fi; CA-verified host HTTPS check passed |
 | Phone certificate trust and Wi-Fi access | Unverified on intended iPhone and Android |
@@ -152,7 +152,7 @@ documented acceptance gates.
 
 ## Controlled account preparation (Task 3)
 
-The code is implemented; seven-holder readiness is **not** established. No participant invitations or demo database writes were made during Task 3. The third Student email is still blank, and no account is created for that slot. The final requirement remains one Administrator, three Students, two Faculty and one Program Head.
+The code is implemented; seven-holder readiness is **not** established. No participant invitations or demo database writes were made during Task 3. All seven manifest email slots are now filled and validate, including all three Student school-domain addresses. No demonstration account has been created by this validation. The final requirement remains one Administrator, three Students, two Faculty and one Program Head.
 
 Before operating against a project, apply the application migrations in filename order and designate its protected `private.environment` marker through the reviewed operator provisioning process. Never install test harnesses on demo. Confirm that URL, credentials and project reference match. `--test` uses only the isolated `TEST_*` configuration after the URL/ref guard; use a separate synthetic manifest for tests.
 
@@ -203,3 +203,11 @@ Do these steps **only in isolated TEST first**, without resetting either project
 6. Rehearse the actual HTTPS application with a trusted certificate; never disable TLS validation. Set `PLAYWRIGHT_BASE_URL` and exported `APP_ORIGIN` to that exact local HTTPS origin. Authenticated E2E additionally requires `E2E_AUTH_PROJECT_REF=ggiccvcrkydcimveyrfi`, verified private gateway, and the server actually configured for TEST. Fixture users are synthetic and removed by the harness. Default smoke checks retain their isolated HTTP production server.
 
 The Task 4 database counters and source do not establish deployed gateway, SMTP/hook, trusted HTTPS, current Safari, or physical-device acceptance. Current Mac14 Playwright WebKit is a frozen build; use supported current Safari and real devices for the TRD gate. Keep native Auth limits enabled alongside the shared counters.
+
+### Reviewed Task 4 checkpoint and native mail safety
+
+Source checkpoints `754eadf` and `cfab3e8` passed independent review. The isolated suite passed 152 tests with one explicitly unverified native-gateway probe skipped; typecheck, lint and formatting passed. Development-server checks passed 18 provider-free Chromium/Firefox tests. Chromium sign-in layout/error checks covered desktop and 320 CSS pixels. This does not establish authenticated HTTPS, production E2E, WebKit/current Safari or physical-device coverage. Production build remains blocked by the native CSS-worker bind-permission failure; WebKit failed before page setup.
+
+An earlier negative public-signup test could emit native confirmation mail before the deferred creation guard rolled back signup. It now fails before the provider call unless project-bound TEST hook readiness is verified; a passing Auth error alone is insufficient. After the owner saved the TEST hook, exactly one supported native resend created one private proof and one unclaimed pending mail item with a 1,800-second application expiry. All workers stayed stopped; exact-run cleanup removed the probe. Auth logs showed zero native sends for both that capture and the later full test suite. No participant message was sent. Actual native OTP expiry, delivery/inbox receipt and browser ownership completion remain separate checks.
+
+A fresh TEST Auth settings read confirms Email enabled, confirmation required, and anonymous/Phone/OAuth/SAML/passkeys disabled. Native password validation rejected an 11-ASCII-character synthetic password and accepted 12 through supported admin creation; exact-run cleanup removed the fixture and Auth logs showed zero mail sends. Native expiry and saved URL settings still need their own evidence. The private password gateway remains disabled pending actual TEST key retirement and native gateway proof. Never copy TEST readiness to demo.
