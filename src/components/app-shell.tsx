@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Suspense, type ReactNode } from 'react';
 import { redirect } from 'next/navigation';
 import { requireActor } from '@/lib/access';
@@ -26,7 +27,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
         </form>
       </header>
       <main id="main" className="box-border min-w-0 max-w-[1200px] px-4 py-6 md:px-6 lg:ml-64">
-        <h1 className="m-0 text-2xl font-semibold">{title}</h1>
+        <h1 className="m-0 break-words text-2xl font-semibold">{title}</h1>
         {children}
       </main>
     </>
@@ -52,6 +53,7 @@ async function Destination({ role }: { role: Role }) {
   return (
     <AppShell title={roleLabels[role]}>
       <p>You are signed in.</p>
+      {role === 'faculty' && <Link href={paths.courses}>Course drafts</Link>}
     </AppShell>
   );
 }

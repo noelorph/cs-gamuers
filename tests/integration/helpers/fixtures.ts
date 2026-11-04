@@ -101,6 +101,7 @@ export async function cleanFixtures() {
     const { error } = await admin.auth.admin.deleteUser(id);
     if (error)
       throw new Error('Synthetic fixture cleanup failed; retain exact-run recovery artifact');
+    ownedIds.delete(id);
   }
   await unlink(recoveryFile);
 }

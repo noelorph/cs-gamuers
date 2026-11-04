@@ -1,0 +1,295 @@
+'use client';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { topics, type CourseDraft, type DraftDetails } from '@/features/content/types';
+import { paths } from '@/config/paths';
+import { saveDraft, readDraft } from './actions';
+import { draftError } from './draft-feedback';
+import { DeleteDraftDialog } from './delete-draft-dialog';
+const empty: DraftDetails = {
+  title: '',
+  description: '',
+  primaryTopic: null,
+  difficulty: null,
+  outcomes: [],
+  priorKnowledge: '',
+  estimatedHours: null,
+};
+export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?: string }) {
+  const router = useRouter();
+  const [saved, setSaved] = useState(draft);
+  const [details, setDetails] = useState<DraftDetails>(draft?.details ?? empty);
+  const [hours, setHours] = useState(draft?.details.estimatedHours?.toString() ?? '');
+  const [pending, setPending] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const alert = useRef<HTMLParagraphElement>(null);
+  const lock = useRef(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [fields, setFields] = useState<Record<string, string>>({});
+  const id = saved?.id ?? createId!;
+  useEffect(() => {
+    if (error) alert.current?.focus();
+  }, [error, pending]);
+  useEffect(() => {
+    if (!dirty) return;
+    const unload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    const navigate = (event: MouseEvent) => {
+      const link = (event.target as Element).closest('a[href]');
+      if (
+        link &&
+        !link.getAttribute('href')?.startsWith('#') &&
+        !window.confirm('Discard your unsaved draft changes and leave this page?')
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener('beforeunload', unload);
+    document.addEventListener('click', navigate, true);
+    return () => {
+      window.removeEventListener('beforeunload', unload);
+      document.removeEventListener('click', navigate, true);
+    };
+  }, [dirty]);
+  function change<K extends keyof DraftDetails>(key: K, value: DraftDetails[K]) {
+    setDetails({ ...details, [key]: value });
+    setDirty(true);
+    setMessage('Unsaved changes');
+  }
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (lock.current) return;
+    lock.current = true;
+    setPending(true);
+    setError('');
+    setMessage('');
+    try {
+      const result = await saveDraft(id, saved?.version ?? null, {
+        ...details,
+        estimatedHours: hours.trim() === '' ? null : Number(hours),
+      });
+      if (result.ok) {
+        setSaved(result.value);
+        setDirty(false);
+        setFields({});
+        setMessage('Draft saved');
+        if (!draft) router.replace(paths.courseDraft(id));
+      } else {
+        setError(draftError(result));
+        setFields(result.fields ?? {});
+      }
+    } catch {
+      // A read can detect concurrent changes, but cannot prove this request committed.
+      try {
+        await readDraft(id);
+      } catch {
+        /* Keep the entered values when reconciliation is unavailable. */
+      }
+      setError(
+        'The result could not be confirmed. Your changes are still here. Reload saved draft to inspect it before retrying.'
+      );
+    } finally {
+      lock.current = false;
+      setPending(false);
+    }
+  }
+  function text(key: 'title' | 'description' | 'priorKnowledge', label: string, limit: number) {
+    const Control = key === 'title' ? Input : Textarea;
+    return (
+      <div className="grid gap-2">
+        <label htmlFor={key}>{label}</label>
+        <Control
+          id={key}
+          value={details[key]}
+          aria-describedby={`${key}-help`}
+          aria-invalid={!!fields[key]}
+          onChange={(e) => change(key, e.target.value)}
+        />
+        <p id={`${key}-help`} className="m-0 text-sm text-muted-foreground">
+          {[...details[key]].length} / {limit} characters. {fields[key]}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-6 grid max-w-[960px] gap-6">
+      <p className="m-0">
+        Save an incomplete draft with any fields blank. Title, description, topic, difficulty and
+        outcomes are required before future review; prior knowledge and estimated hours are
+        optional.
+      </p>
+      <form onSubmit={submit} className="grid gap-6">
+        <fieldset disabled={pending} className="m-0 grid min-w-0 gap-6 border-0 p-0">
+          <legend className="sr-only">Course details</legend>
+          {text('title', 'Title', 200)}
+          {text('description', 'Description', 2000)}
+          <div className="grid gap-2">
+            <label htmlFor="primaryTopic">Primary topic</label>
+            <select
+              id="primaryTopic"
+              aria-invalid={!!fields.primaryTopic}
+              aria-describedby="topic-error"
+              className="min-h-11 max-w-full rounded-md border border-input bg-background p-2 text-base focus-visible:outline-ring"
+              value={details.primaryTopic ?? ''}
+              onChange={(e) =>
+                change('primaryTopic', (e.target.value || null) as DraftDetails['primaryTopic'])
+              }
+            >
+              <option value="">Not selected</option>
+              {topics.map((topic) => (
+                <option key={topic}>{topic}</option>
+              ))}
+            </select>
+            {fields.primaryTopic && <p id="topic-error">{fields.primaryTopic}</p>}
+          </div>
+          <div className="grid gap-2">
+            <label htmlFor="difficulty">Difficulty</label>
+            <select
+              id="difficulty"
+              aria-invalid={!!fields.difficulty}
+              aria-describedby="difficulty-error"
+              className="min-h-11 rounded-md border border-input bg-background p-2 text-base focus-visible:outline-ring"
+              value={details.difficulty ?? ''}
+              onChange={(e) =>
+                change('difficulty', (e.target.value || null) as DraftDetails['difficulty'])
+              }
+            >
+              <option value="">Not selected</option>
+              {['Beginner', 'Intermediate', 'Advanced'].map((value) => (
+                <option key={value}>{value}</option>
+              ))}
+            </select>
+            {fields.difficulty && <p id="difficulty-error">{fields.difficulty}</p>}
+          </div>
+          <fieldset className="m-0 grid min-w-0 gap-4 rounded-md border border-border p-4">
+            <legend>Learning outcomes</legend>
+            <p className="m-0 text-sm">
+              Order outcomes with Move up and Move down. Blank outcomes may remain in a draft.
+            </p>
+            {details.outcomes.map((outcome, index) => (
+              <div key={index} className="grid gap-2">
+                <label htmlFor={`outcome-${index}`}>Outcome {index + 1}</label>
+                <Textarea
+                  id={`outcome-${index}`}
+                  aria-describedby={`outcome-${index}-help`}
+                  aria-invalid={!!fields.outcomes}
+                  value={outcome}
+                  onChange={(e) =>
+                    change(
+                      'outcomes',
+                      details.outcomes.map((value, i) => (i === index ? e.target.value : value))
+                    )
+                  }
+                />
+                <p id={`outcome-${index}-help`} className="m-0 text-sm">
+                  {[...outcome].length} / 500 characters. {fields.outcomes}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[-1, 1].map((direction) => (
+                    <Button
+                      key={direction}
+                      type="button"
+                      variant="outline"
+                      disabled={
+                        index + direction < 0 || index + direction >= details.outcomes.length
+                      }
+                      aria-label={`Move outcome ${index + 1} ${direction < 0 ? 'up' : 'down'}`}
+                      onClick={() => {
+                        const next = [...details.outcomes];
+                        [next[index], next[index + direction]] = [
+                          next[index + direction],
+                          next[index],
+                        ];
+                        change('outcomes', next);
+                        document.getElementById(`outcome-${index + direction}`)?.focus();
+                      }}
+                    >
+                      Move {direction < 0 ? 'up' : 'down'}
+                    </Button>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    aria-label={`Remove outcome ${index + 1}`}
+                    onClick={() =>
+                      change(
+                        'outcomes',
+                        details.outcomes.filter((_, i) => i !== index)
+                      )
+                    }
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => change('outcomes', [...details.outcomes, ''])}
+            >
+              Add outcome
+            </Button>
+            {fields.outcomes && <p>{fields.outcomes}</p>}
+          </fieldset>
+          {text('priorKnowledge', 'Recommended prior knowledge (optional)', 2000)}
+          <div className="grid gap-2">
+            <label htmlFor="hours">Estimated hours (optional)</label>
+            <Input
+              id="hours"
+              aria-describedby="hours-error"
+              type="number"
+              step="any"
+              value={hours}
+              aria-invalid={!!fields.estimatedHours}
+              onChange={(e) => {
+                setHours(e.target.value);
+                setDirty(true);
+                setMessage('Unsaved changes');
+              }}
+            />
+            {fields.estimatedHours && <p id="hours-error">{fields.estimatedHours}</p>}
+          </div>
+        </fieldset>
+        {error && (
+          <p
+            ref={alert}
+            tabIndex={-1}
+            role="alert"
+            className="m-0 text-destructive outline-offset-4"
+          >
+            {error}
+          </p>
+        )}
+        <p role="status" className="m-0">
+          {pending ? 'Saving…' : message}
+        </p>
+        <div className="flex flex-wrap gap-4">
+          <Button disabled={pending} type="submit">
+            {pending ? 'Saving…' : 'Save draft'}
+          </Button>
+          {error && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (window.confirm('Discard your entered changes and reload the saved draft?'))
+                  window.location.assign(paths.courseDraft(id));
+              }}
+            >
+              Reload saved draft
+            </Button>
+          )}
+        </div>
+      </form>
+      {saved && <DeleteDraftDialog draft={saved} />}
+    </div>
+  );
+}
