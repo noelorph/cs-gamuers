@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { afterAll, expect, test } from 'vitest';
+import { isGatewayKeyRejection } from './helpers/gateway-evidence';
 import {
   anonymous,
   cleanFixtures,
@@ -54,7 +55,7 @@ test.skipIf(!enabled)(
           body: '{}',
           redirect: 'manual',
         });
-        if (response.status !== 401)
+        if (!isGatewayKeyRejection(response))
           failures.push(`${label} ${path.split('?')[0]} ${response.status}`);
       }
     for (const headers of [
@@ -67,7 +68,7 @@ test.skipIf(!enabled)(
         body: '{}',
         redirect: 'manual',
       });
-      if (response.status !== 401)
+      if (!isGatewayKeyRejection(response))
         failures.push(`authorization-only-or-jwt-key token ${response.status}`);
     }
     const queryKey = await fetch(
@@ -79,7 +80,8 @@ test.skipIf(!enabled)(
         redirect: 'manual',
       }
     );
-    if (queryKey.status !== 401) failures.push(`query-retired-key token ${queryKey.status}`);
+    if (!isGatewayKeyRejection(queryKey))
+      failures.push(`query-retired-key token ${queryKey.status}`);
     // Keyless verification is deliberately outside the application counter; invalid proof must never yield a session.
     for (const method of ['GET', 'POST']) {
       const response = await fetch(`${url}/auth/v1/verify`, {
@@ -95,7 +97,7 @@ test.skipIf(!enabled)(
     expect(status.error).toBeNull();
     expect(
       failures,
-      'Gateway must reject keys before Auth, not merely reject empty credentials'
+      'Every key rejection must carry the observed gateway error header; an Auth 401 is insufficient'
     ).toEqual([]);
   },
   60000

@@ -33,7 +33,7 @@ test('native local sign-out removes database authority from the captured still-u
     (await anonymous().auth.refreshSession({ refresh_token: session.refresh_token })).error
   ).toBeTruthy();
 });
-test('password statuses are narrow; deactivated and proof-only sessions cannot become actors', async () => {
+test('password status projections are narrow and deactivated sessions cannot become actors', async () => {
   const fixture = await createFixture();
   const { client } = await signIn(fixture);
   const pending = await client.rpc('account_status');
