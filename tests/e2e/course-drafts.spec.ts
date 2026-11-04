@@ -32,7 +32,11 @@ test.describe('isolated TEST Faculty drafts', () => {
     await signIn();
     await page.getByRole('link', { name: 'Course drafts' }).click();
     await expect(page.getByText('No course drafts yet.')).toBeVisible();
+    await page.setViewportSize({ width: 320, height: 800 });
     await page.getByRole('link', { name: 'New draft' }).click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(
+      false
+    );
     await page.getByRole('button', { name: 'Save draft' }).click();
     await expect(page).toHaveURL(/\/faculty\/courses\/[0-9a-f-]{36}$/);
     const url = page.url();
@@ -71,6 +75,15 @@ test.describe('isolated TEST Faculty drafts', () => {
     await page.getByRole('button', { name: 'Save draft' }).click();
     await expect(page.getByRole('main').getByRole('alert')).toContainText('Check the fields');
     await expect(page.getByLabel('Title')).toHaveValue('x'.repeat(201));
+    await page.goBack();
+    await expect(page).toHaveURL(/\/faculty\/courses$/);
+    await page.goForward();
+    await expect(page).toHaveURL(url);
+    await expect(page.getByLabel('Title')).toHaveValue('x'.repeat(201));
+    await expect(page.getByRole('main').getByRole('alert')).toContainText('Check the fields');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(
+      false
+    );
     await page.getByLabel('Title').fill('Current');
     await page.route('**/faculty/courses/**', (route) =>
       route.request().method() === 'POST' ? route.abort() : route.continue()

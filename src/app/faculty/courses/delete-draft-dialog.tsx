@@ -14,6 +14,7 @@ import type { CourseDraft } from '@/features/content/types';
 import { paths } from '@/config/paths';
 import { removeDraft, readDraft } from './actions';
 import { draftError } from './draft-feedback';
+import { clearDraftRecovery } from './draft-recovery';
 export function DeleteDraftDialog({ draft }: { draft: CourseDraft }) {
   const router = useRouter();
   const cancel = useRef<HTMLButtonElement>(null);
@@ -28,6 +29,7 @@ export function DeleteDraftDialog({ draft }: { draft: CourseDraft }) {
     try {
       const result = await removeDraft(draft.id, draft.version);
       if (result.ok) {
+        clearDraftRecovery(draft.ownerId, draft.id);
         router.replace(paths.courses);
         router.refresh();
       } else setError(draftError(result));

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { paths } from '@/config/paths';
 import { saveDraft, readDraft } from './actions';
 import { draftError } from './draft-feedback';
 import { DeleteDraftDialog } from './delete-draft-dialog';
+import { draftRecovery, clearDraftRecovery, type DraftRecovery } from './draft-recovery';
 const empty: DraftDetails = {
   title: '',
   description: '',
@@ -18,19 +19,54 @@ const empty: DraftDetails = {
   priorKnowledge: '',
   estimatedHours: null,
 };
-export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?: string }) {
+type DraftFormProps = { draft?: CourseDraft; createId?: string; ownerId?: string };
+const subscribeHydration = () => () => {};
+export function DraftForm(props: DraftFormProps) {
+  const browserReady = useSyncExternalStore(
+    subscribeHydration,
+    () => true,
+    () => false
+  );
+  const ownerId = props.ownerId ?? props.draft?.ownerId;
+  const recoveryKey = ownerId ? `${ownerId}/${props.draft?.id ?? 'new'}` : null;
+  return (
+    <DraftEditor
+      key={browserReady ? 'browser' : 'server'}
+      {...props}
+      ownerId={ownerId}
+      recoveryKey={recoveryKey}
+      recovery={browserReady && recoveryKey ? draftRecovery.get(recoveryKey) : undefined}
+    />
+  );
+}
+function DraftEditor({
+  draft,
+  createId,
+  ownerId,
+  recoveryKey,
+  recovery,
+}: DraftFormProps & { recoveryKey: string | null; recovery?: DraftRecovery }) {
   const router = useRouter();
   const [saved, setSaved] = useState(draft);
-  const [details, setDetails] = useState<DraftDetails>(draft?.details ?? empty);
-  const [hours, setHours] = useState(draft?.details.estimatedHours?.toString() ?? '');
+  const [id] = useState(recovery?.id ?? draft?.id ?? createId!);
+  const [version, setVersion] = useState(recovery?.version ?? draft?.version ?? null);
+  const [details, setDetails] = useState<DraftDetails>(
+    recovery?.details ?? draft?.details ?? empty
+  );
+  const [hours, setHours] = useState(
+    recovery?.hours ?? draft?.details.estimatedHours?.toString() ?? ''
+  );
   const [pending, setPending] = useState(false);
-  const [dirty, setDirty] = useState(false);
+  const [dirty, setDirty] = useState(!!recovery);
   const alert = useRef<HTMLParagraphElement>(null);
   const lock = useRef(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [fields, setFields] = useState<Record<string, string>>({});
-  const id = saved?.id ?? createId!;
+  const [message, setMessage] = useState(recovery ? 'Recovered unsaved changes' : '');
+  const [error, setError] = useState(recovery?.error ?? '');
+  const [fields, setFields] = useState<Record<string, string>>(recovery?.fields ?? {});
+  useEffect(() => {
+    if (dirty && recoveryKey)
+      draftRecovery.set(recoveryKey, { id, version, details, hours, error, fields });
+  }, [recoveryKey, dirty, id, version, details, hours, error, fields]);
   useEffect(() => {
     if (error) alert.current?.focus();
   }, [error, pending]);
@@ -42,13 +78,13 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
     };
     const navigate = (event: MouseEvent) => {
       const link = (event.target as Element).closest('a[href]');
-      if (
-        link &&
-        !link.getAttribute('href')?.startsWith('#') &&
-        !window.confirm('Discard your unsaved draft changes and leave this page?')
-      ) {
+      if (!link || link.getAttribute('href')?.startsWith('#')) return;
+      if (!window.confirm('Discard your unsaved draft changes and leave this page?')) {
         event.preventDefault();
         event.stopPropagation();
+      } else {
+        if (ownerId) clearDraftRecovery(ownerId, id);
+        setDirty(false);
       }
     };
     window.addEventListener('beforeunload', unload);
@@ -57,7 +93,7 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
       window.removeEventListener('beforeunload', unload);
       document.removeEventListener('click', navigate, true);
     };
-  }, [dirty]);
+  }, [dirty, ownerId, id]);
   function change<K extends keyof DraftDetails>(key: K, value: DraftDetails[K]) {
     setDetails({ ...details, [key]: value });
     setDirty(true);
@@ -71,12 +107,14 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
     setError('');
     setMessage('');
     try {
-      const result = await saveDraft(id, saved?.version ?? null, {
+      const result = await saveDraft(id, version, {
         ...details,
         estimatedHours: hours.trim() === '' ? null : Number(hours),
       });
       if (result.ok) {
         setSaved(result.value);
+        setVersion(result.value.version);
+        if (ownerId) clearDraftRecovery(ownerId, id);
         setDirty(false);
         setFields({});
         setMessage('Draft saved');
@@ -103,7 +141,7 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
   function text(key: 'title' | 'description' | 'priorKnowledge', label: string, limit: number) {
     const Control = key === 'title' ? Input : Textarea;
     return (
-      <div className="grid gap-2">
+      <div className="grid min-w-0 gap-2">
         <label htmlFor={key}>{label}</label>
         <Control
           id={key}
@@ -119,24 +157,24 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
     );
   }
   return (
-    <div className="mt-6 grid max-w-[960px] gap-6">
+    <div className="mt-6 grid min-w-0 max-w-[960px] gap-6">
       <p className="m-0">
         Save an incomplete draft with any fields blank. Title, description, topic, difficulty and
         outcomes are required before future review; prior knowledge and estimated hours are
         optional.
       </p>
-      <form onSubmit={submit} className="grid gap-6">
+      <form onSubmit={submit} className="grid min-w-0 gap-6">
         <fieldset disabled={pending} className="m-0 grid min-w-0 gap-6 border-0 p-0">
           <legend className="sr-only">Course details</legend>
           {text('title', 'Title', 200)}
           {text('description', 'Description', 2000)}
-          <div className="grid gap-2">
+          <div className="grid min-w-0 gap-2">
             <label htmlFor="primaryTopic">Primary topic</label>
             <select
               id="primaryTopic"
               aria-invalid={!!fields.primaryTopic}
               aria-describedby="topic-error"
-              className="min-h-11 max-w-full rounded-md border border-input bg-background p-2 text-base focus-visible:outline-ring"
+              className="min-h-11 w-full min-w-0 max-w-full rounded-md border border-input bg-background p-2 text-base focus-visible:outline-ring"
               value={details.primaryTopic ?? ''}
               onChange={(e) =>
                 change('primaryTopic', (e.target.value || null) as DraftDetails['primaryTopic'])
@@ -149,13 +187,13 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
             </select>
             {fields.primaryTopic && <p id="topic-error">{fields.primaryTopic}</p>}
           </div>
-          <div className="grid gap-2">
+          <div className="grid min-w-0 gap-2">
             <label htmlFor="difficulty">Difficulty</label>
             <select
               id="difficulty"
               aria-invalid={!!fields.difficulty}
               aria-describedby="difficulty-error"
-              className="min-h-11 rounded-md border border-input bg-background p-2 text-base focus-visible:outline-ring"
+              className="min-h-11 w-full min-w-0 rounded-md border border-input bg-background p-2 text-base focus-visible:outline-ring"
               value={details.difficulty ?? ''}
               onChange={(e) =>
                 change('difficulty', (e.target.value || null) as DraftDetails['difficulty'])
@@ -174,7 +212,7 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
               Order outcomes with Move up and Move down. Blank outcomes may remain in a draft.
             </p>
             {details.outcomes.map((outcome, index) => (
-              <div key={index} className="grid gap-2">
+              <div key={index} className="grid min-w-0 gap-2">
                 <label htmlFor={`outcome-${index}`}>Outcome {index + 1}</label>
                 <Textarea
                   id={`outcome-${index}`}
@@ -240,7 +278,7 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
             {fields.outcomes && <p>{fields.outcomes}</p>}
           </fieldset>
           {text('priorKnowledge', 'Recommended prior knowledge (optional)', 2000)}
-          <div className="grid gap-2">
+          <div className="grid min-w-0 gap-2">
             <label htmlFor="hours">Estimated hours (optional)</label>
             <Input
               id="hours"
@@ -280,8 +318,11 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
               type="button"
               variant="outline"
               onClick={() => {
-                if (window.confirm('Discard your entered changes and reload the saved draft?'))
+                if (window.confirm('Discard your entered changes and reload the saved draft?')) {
+                  if (ownerId) clearDraftRecovery(ownerId, id);
+                  setDirty(false);
                   window.location.assign(paths.courseDraft(id));
+                }
               }}
             >
               Reload saved draft
@@ -289,7 +330,7 @@ export function DraftForm({ draft, createId }: { draft?: CourseDraft; createId?:
           )}
         </div>
       </form>
-      {saved && <DeleteDraftDialog draft={saved} />}
+      {saved && <DeleteDraftDialog draft={{ ...saved, version: version ?? saved.version }} />}
     </div>
   );
 }

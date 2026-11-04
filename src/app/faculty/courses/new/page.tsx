@@ -6,8 +6,9 @@ import { requireActor } from '@/lib/access';
 import { DraftForm } from '../draft-form';
 async function NewDraft() {
   await connection();
+  let ownerId: string;
   try {
-    await requireActor('faculty');
+    ownerId = (await requireActor('faculty')).id;
   } catch {
     return (
       <AppShell title="New draft">
@@ -17,7 +18,7 @@ async function NewDraft() {
   }
   return (
     <AppShell title="New draft">
-      <DraftForm createId={randomUUID()} />
+      <DraftForm createId={randomUUID()} ownerId={ownerId} />
     </AppShell>
   );
 }

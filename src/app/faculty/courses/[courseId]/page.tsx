@@ -9,7 +9,7 @@ async function Detail({ params }: { params: Promise<{ courseId: string }> }) {
       {result.ok ? (
         <>
           <p>Draft · Revision 1</p>
-          <DraftForm draft={result.value} />
+          <DraftForm key={result.value.id} draft={result.value} />
         </>
       ) : (
         <p role="alert">Draft unavailable.</p>
