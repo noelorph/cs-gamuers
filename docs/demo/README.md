@@ -367,3 +367,77 @@ The normal `demo:prepare status` command passed: 0/7 ready, all not prepared and
 none queued. Its ignored local state file binds the manifest/project only; no
 provider user or mail mutation occurred. Further provider changes await owner CLI
 login and DEMO key retirement, preserving the private backend key.
+
+
+### DEMO Auth and first invitation — 2026-11-04
+
+Owner completed CLI login and API key retirement. Verified no active publishable
+keys and legacy anon disabled; nine empty password/refresh/PKCE requests using
+missing, malformed or retired publishable keys returned recognized 401 gateway
+denials. Private backend settings access remains available. This bounded probe
+does not establish every alternate gateway path or a DEMO user-JWT-as-key matrix.
+
+Official CLI applied six reviewed declared Auth changes: exact local HTTPS Site
+URL and email redirect, 1,800-second expiry, minimum password length 12, and enabled
+PostgreSQL Send Email Hook at public.send_auth_email. Readback found zero declared
+differences and preserved all eight unrelated remote settings.
+
+To verify actual hook invocation before attestation, used the existing validated
+manifest binding and production bootstrap reservation, then native Administrator
+invitation with the reserved identity and exact redirect. No password was supplied.
+Read-only counts confirmed one native user, one pending Administrator, one bound
+reservation, one pending invitation proof with exactly 1,800-second lifetime, and
+one pending invitation mail item. No generateLink/queue-generated reissue followed.
+This is actual native-hook capture, distinct from generated-link operator queueing.
+Only after these checks were local DEMO-bound hook/password readiness recorded.
+
+The one-pass maintenance worker processed that single authorized invitation.
+Readback shows one invitation in sent state, one attempt; provider acceptance is
+not inbox receipt. Status remains 0/7 ready: Administrator pending with proof mail
+sent; other six not prepared. Holder email verification and holder-selected password
+are required before authenticated preparation of other roles. No holder password,
+email confirmation or approval was fabricated; TEST was untouched.
+
+Local production app and retained-CA HTTPS proxy remain running for this holder
+handoff. HTTPS sign-in returned 200 with private/no-store behavior. No new browser
+acceptance run or device trust/reachability verification was performed for this
+operational configuration pass. Stop these two owned services after holder setup;
+maintenance already exited. Preserve the CA. This checkpoint supersedes the prior
+CLI/key/configuration blockers and no-invitation statements, not holder readiness.
+
+
+Administrator holder checkpoint — 2026-11-04: after owner-reported email confirmation, normal DEMO status independently verified 1/7 accounts approved with completed proof. Administrator is approved; other six remain not prepared. No password was requested in chat or supplied by the agent. Subsequent preparation requires the real Administrator hidden Terminal password and, for Student/Faculty creation, each holder-selected hidden password.
+
+
+### Hotspot origin update — 2026-11-04
+
+Owner authorized the new-network setup and subsequent participant confirmation
+emails. Detected the active default-route Wi-Fi interface and private IPv4.
+Updated ignored APP_ORIGIN and the minimal DEMO hosted Site URL/exact email
+redirect. CLI preview asserted exactly those two declared changes; push passed;
+readback found zero declared differences and preserved unrelated remote settings.
+Restarted the owned loopback production app and HTTPS proxy with retained CA.
+The active persistent CA matches the previously distributed public certificate;
+no trust/firewall changes or TEST mutations occurred.
+
+Both HTTPS authentication pages returned 200 under explicit retained-CA validation;
+email page retains no-referrer and private/no-store. Chromium verified the normal
+invalid-credentials response, desktop width 1440 and email page width 320, no
+horizontal overflow and zero browser errors. No real password/proof was used.
+Physical-device hotspot reachability/trust remains holder verification, requested
+from another device. App/proxy remain running for the authorized holder workflow.
+
+Normal status still reports 2/7 ready (Administrator and student_2), with remaining
+five not prepared and no proof mail queued for them. No new participant email was
+sent by this network update. Remaining preparation needs real Administrator and
+Student/Faculty holder passwords through hidden Terminal prompts, followed by
+reviewed delivery; no identity, proof, password or approval was fabricated. Old
+email URLs retain the old network address; coordinate fresh issuance on the new
+network only when holders are ready. Exact address remains ignored local config.
+
+Holder reported that the new HTTPS sign-in page opens on another hotspot device without a certificate warning. This establishes reported reachability/trust for that device only; remaining device matrix and confirmation delivery remain separate.
+
+
+Faculty setup diagnostic — 2026-11-04: first attempt failed local password validation; subsequent valid holder entry created faculty_1 unconfirmed, then native resend was denied with over_email_send_rate_limit (429). Read-only state confirms one bound/consumed Faculty reservation, one unconfirmed native Faculty user with password present and no native confirmation issuance; faculty_2 remains unprepared. Auth logs contain two email-limit denials. Do not recreate faculty_1 or claim a retry changes its password. A password disclosed in conversation was not repeated, stored or used by the agent; holder-controlled rotation remains needed.
+
+Official hosted Auth guidance supports raising the email rate limit with a Send Email Hook. A desired 20/hour local CLI preview returned zero declared differences: the installed CLI does not expose this field in hosted config diff. No limit push was performed; the trial local section was removed. Dashboard automation remains unavailable. Owner instructed to change only the DEMO email send limit to 20/hour; actual setting/readback and resumed delivery remain pending. Email confirmation, native hook, expiry, per-recipient throttles and account guards remain intact. Ignored Faculty helper now reports sanitized stage/slot/code and correct password rules; pure local checks pass, with no extra provider mutation.
