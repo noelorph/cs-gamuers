@@ -1,14 +1,16 @@
 import Link from 'next/link';
+import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, expect, test, vi } from 'vitest';
+const router = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }));
 const actions = vi.hoisted(() => ({
   saveDraft: vi.fn(),
   removeDraft: vi.fn(),
   readDraft: vi.fn(),
 }));
 vi.mock('@/app/faculty/courses/actions', () => actions);
-vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ useRouter: () => router }));
 import { DraftForm } from '@/app/faculty/courses/draft-form';
 import { draftRecovery } from '@/app/faculty/courses/draft-recovery';
 import { DeleteDraftDialog } from '@/app/faculty/courses/delete-draft-dialog';
@@ -78,7 +80,14 @@ test('transport failure reconciles without claiming saved or losing values', asy
   expect(screen.getByRole('status').textContent).not.toContain('saved');
 });
 test('outcome order and optional hours reach the versioned save', async () => {
-  actions.saveDraft.mockResolvedValue({ ok: true, value: { ...draft, version: 2 } });
+  actions.saveDraft.mockResolvedValue({
+    ok: true,
+    value: {
+      ...draft,
+      version: 2,
+      details: { ...draft.details, outcomes: ['Two', 'One'], estimatedHours: 2.5 },
+    },
+  });
   render(
     <DraftForm draft={{ ...draft, details: { ...draft.details, outcomes: ['One', 'Two'] } }} />
   );
@@ -272,4 +281,171 @@ test('pre-ready rendering exposes no controls that hydration can discard', async
       'First editable input survives'
     )
   );
+});
+test('untouched blank create uncertainty survives remount with its original UUID', async () => {
+  actions.saveDraft.mockResolvedValue({ ok: false, code: 'unavailable' });
+  const first = render(<DraftForm createId={draft.id} ownerId="blank-owner" />);
+  fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+  await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+  first.unmount();
+  render(<DraftForm createId="00000000-0000-4000-8000-000000000099" ownerId="blank-owner" />);
+  expect(screen.getByRole('alert').textContent).toContain('could not be confirmed');
+  fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+  await waitFor(() =>
+    expect(actions.saveDraft).toHaveBeenLastCalledWith(
+      draft.id,
+      null,
+      expect.objectContaining({ title: '' })
+    )
+  );
+});
+for (const changedTitle of ['Changed after uncertainty', ''])
+  test(`returned existing create preserves differing entered details (${changedTitle || 'blank'})`, async () => {
+    const persisted = {
+      ...draft,
+      version: 4,
+      details: { ...draft.details, title: 'Original saved title', outcomes: ['Stored outcome'] },
+    };
+    actions.saveDraft
+      .mockRejectedValueOnce(Error('lost response'))
+      .mockResolvedValueOnce({ ok: true, value: persisted });
+    actions.readDraft.mockResolvedValue({ ok: true, value: persisted });
+    render(<DraftForm createId={draft.id} ownerId="retry-owner" />);
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Original saved title' } });
+    fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+    await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: changedTitle } });
+    fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toContain('different details')
+    );
+    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe(changedTitle);
+    expect(screen.getByRole('status').textContent).not.toBe('Draft saved');
+    expect(router.replace).not.toHaveBeenCalled();
+    expect(draftRecovery.get('retry-owner/new')).toEqual(
+      expect.objectContaining({
+        id: draft.id,
+        version: 4,
+        details: expect.objectContaining({ title: changedTitle, outcomes: [] }),
+      })
+    );
+    expect(actions.saveDraft).toHaveBeenCalledTimes(2);
+    actions.saveDraft.mockResolvedValueOnce({ ok: false, code: 'conflict' });
+    fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('another tab'));
+    expect(actions.saveDraft).toHaveBeenLastCalledWith(
+      draft.id,
+      4,
+      expect.objectContaining({ title: changedTitle })
+    );
+    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe(changedTitle);
+  });
+test('direct untouched create mismatch needs an explicit versioned save before confirmation', async () => {
+  const existing = {
+    ...draft,
+    version: 7,
+    details: { ...draft.details, description: 'Already persisted', outcomes: [] },
+  };
+  actions.saveDraft.mockResolvedValueOnce({ ok: true, value: existing });
+  render(<DraftForm createId={draft.id} ownerId="direct-owner" />);
+  fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('different details'));
+  expect((screen.getByLabelText('Description') as HTMLTextAreaElement).value).toBe('');
+  expect(router.replace).not.toHaveBeenCalled();
+  expect(draftRecovery.get('direct-owner/new')?.version).toBe(7);
+  actions.saveDraft.mockResolvedValueOnce({
+    ok: true,
+    value: { ...existing, version: 8, details: { ...draft.details, outcomes: [] } },
+  });
+  fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+  await waitFor(() => expect(screen.getByRole('status').textContent).toBe('Draft saved'));
+  expect(actions.saveDraft).toHaveBeenLastCalledWith(
+    draft.id,
+    7,
+    expect.objectContaining({ description: '' })
+  );
+  expect(draftRecovery.size).toBe(0);
+  expect(router.replace).toHaveBeenCalledTimes(1);
+});
+test('matching persisted details ignore JSON property order', async () => {
+  actions.saveDraft.mockResolvedValue({
+    ok: true,
+    value: {
+      ...draft,
+      details: {
+        outcomes: [],
+        estimatedHours: null,
+        difficulty: null,
+        title: '',
+        priorKnowledge: '',
+        primaryTopic: null,
+        description: '',
+      },
+    },
+  });
+  render(<DraftForm createId={draft.id} ownerId="order-owner" />);
+  fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+  await waitFor(() => expect(screen.getByRole('status').textContent).toBe('Draft saved'));
+  expect(draftRecovery.size).toBe(0);
+});
+test('blank pending create retains its UUID and an obsolete response cannot discard newer recovered work', async () => {
+  let resolve!: (value: unknown) => void;
+  actions.saveDraft.mockReturnValueOnce(
+    new Promise((done) => {
+      resolve = done;
+    })
+  );
+  const first = render(
+    <StrictMode>
+      <DraftForm createId={draft.id} ownerId="pending-owner" />
+    </StrictMode>
+  );
+  fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+  await waitFor(() => expect(draftRecovery.get('pending-owner/new')?.id).toBe(draft.id));
+  first.unmount();
+  render(<DraftForm createId="00000000-0000-4000-8000-000000000099" ownerId="pending-owner" />);
+  fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'New recovered work' } });
+  await act(async () => {
+    resolve({ ok: true, value: { ...draft, details: { ...draft.details, outcomes: [] } } });
+  });
+  await waitFor(() =>
+    expect(draftRecovery.get('pending-owner/new')?.details.title).toBe('New recovered work')
+  );
+  expect(router.replace).not.toHaveBeenCalled();
+});
+test('an obsolete delete completion cannot navigate away from a newer editor', async () => {
+  let resolve!: (value: unknown) => void;
+  actions.removeDraft.mockReturnValueOnce(
+    new Promise((done) => {
+      resolve = done;
+    })
+  );
+  const first = render(
+    <DeleteDraftDialog draft={{ ...draft, details: { ...draft.details, outcomes: [] } }} />
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Delete draft' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm deletion' }));
+  first.unmount();
+  render(<DraftForm createId="00000000-0000-4000-8000-000000000098" ownerId="owner" />);
+  fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Other new draft' } });
+  await act(async () => {
+    resolve({ ok: true, value: null });
+  });
+  expect(router.replace).not.toHaveBeenCalled();
+  expect(draftRecovery.get('owner/new')?.details.title).toBe('Other new draft');
+});
+test('a returned outcome permutation is not reported as the entered order saved', async () => {
+  actions.saveDraft.mockResolvedValue({
+    ok: true,
+    value: { ...draft, details: { ...draft.details, outcomes: ['Two', 'One'] } },
+  });
+  render(<DraftForm createId={draft.id} ownerId="outcome-owner" />);
+  fireEvent.click(screen.getByRole('button', { name: 'Add outcome' }));
+  fireEvent.change(screen.getByLabelText('Outcome 1'), { target: { value: 'One' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Add outcome' }));
+  fireEvent.change(screen.getByLabelText('Outcome 2'), { target: { value: 'Two' } });
+  fireEvent.submit(screen.getByRole('button', { name: 'Save draft' }).closest('form')!);
+  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('different details'));
+  expect((screen.getByLabelText('Outcome 1') as HTMLTextAreaElement).value).toBe('One');
+  expect(router.replace).not.toHaveBeenCalled();
 });

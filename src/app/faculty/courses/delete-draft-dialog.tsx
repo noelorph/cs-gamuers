@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +19,13 @@ export function DeleteDraftDialog({ draft }: { draft: CourseDraft }) {
   const router = useRouter();
   const cancel = useRef<HTMLButtonElement>(null);
   const lock = useRef(false);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   async function remove() {
@@ -28,12 +35,14 @@ export function DeleteDraftDialog({ draft }: { draft: CourseDraft }) {
     setError('');
     try {
       const result = await removeDraft(draft.id, draft.version);
+      if (!mounted.current) return;
       if (result.ok) {
         clearDraftRecovery(draft.ownerId, draft.id);
         router.replace(paths.courses);
         router.refresh();
       } else setError(draftError(result));
     } catch {
+      if (!mounted.current) return;
       try {
         await readDraft(draft.id);
       } catch {
@@ -44,7 +53,7 @@ export function DeleteDraftDialog({ draft }: { draft: CourseDraft }) {
       );
     } finally {
       lock.current = false;
-      setPending(false);
+      if (mounted.current) setPending(false);
     }
   }
   return (

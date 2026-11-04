@@ -19,6 +19,18 @@ const empty: DraftDetails = {
   priorKnowledge: '',
   estimatedHours: null,
 };
+function sameDetails(left: DraftDetails, right: DraftDetails) {
+  return (
+    left.title === right.title &&
+    left.description === right.description &&
+    left.primaryTopic === right.primaryTopic &&
+    left.difficulty === right.difficulty &&
+    left.priorKnowledge === right.priorKnowledge &&
+    left.estimatedHours === right.estimatedHours &&
+    left.outcomes.length === right.outcomes.length &&
+    left.outcomes.every((outcome, index) => outcome === right.outcomes[index])
+  );
+}
 type DraftFormProps = { draft?: CourseDraft; createId?: string; ownerId?: string };
 const subscribeHydration = () => () => {};
 export function DraftForm(props: DraftFormProps) {
@@ -60,6 +72,13 @@ function DraftEditor({
   const [dirty, setDirty] = useState(!!recovery);
   const alert = useRef<HTMLParagraphElement>(null);
   const lock = useRef(false);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const [message, setMessage] = useState(recovery ? 'Recovered unsaved changes' : '');
   const [error, setError] = useState(recovery?.error ?? '');
   const [fields, setFields] = useState<Record<string, string>>(recovery?.fields ?? {});
@@ -104,16 +123,26 @@ function DraftEditor({
     if (lock.current) return;
     lock.current = true;
     setPending(true);
+    setDirty(true);
     setError('');
     setMessage('');
+    const submitted = {
+      ...details,
+      estimatedHours: hours.trim() === '' ? null : Number(hours),
+    };
     try {
-      const result = await saveDraft(id, version, {
-        ...details,
-        estimatedHours: hours.trim() === '' ? null : Number(hours),
-      });
+      const result = await saveDraft(id, version, submitted);
+      if (!mounted.current) return;
       if (result.ok) {
         setSaved(result.value);
         setVersion(result.value.version);
+        if (!sameDetails(submitted, result.value.details)) {
+          setFields({});
+          setError(
+            'A saved draft was recovered with different details. Your entered changes are still here. Choose Save draft to update that version, or Reload saved draft to discard your changes and review it.'
+          );
+          return;
+        }
         if (ownerId) clearDraftRecovery(ownerId, id);
         setDirty(false);
         setFields({});
@@ -124,6 +153,7 @@ function DraftEditor({
         setFields(result.fields ?? {});
       }
     } catch {
+      if (!mounted.current) return;
       // A read can detect concurrent changes, but cannot prove this request committed.
       try {
         await readDraft(id);
@@ -135,7 +165,7 @@ function DraftEditor({
       );
     } finally {
       lock.current = false;
-      setPending(false);
+      if (mounted.current) setPending(false);
     }
   }
   function text(key: 'title' | 'description' | 'priorKnowledge', label: string, limit: number) {
