@@ -14,9 +14,15 @@ export async function proxy(request: NextRequest) {
       return new NextResponse('Request too large.', { status: 413 });
     }
   }
+  // Token-bearing email pages must never disclose their URL, even within the application.
+  const referrerPolicy =
+    request.nextUrl.pathname === '/auth/email' ||
+    request.nextUrl.pathname.startsWith('/auth/email/')
+      ? 'no-referrer'
+      : 'same-origin';
   let response = NextResponse.next({ request });
   response.headers.set('Cache-Control', 'private, no-store');
-  response.headers.set('Referrer-Policy', 'no-referrer');
+  response.headers.set('Referrer-Policy', referrerPolicy);
   if (request.cookies.getAll().some(({ name }) => name.includes('-auth-token'))) {
     try {
       const auth = createCookieAuth(
@@ -28,7 +34,7 @@ export async function proxy(request: NextRequest) {
             for (const { name, value, options } of values)
               response.cookies.set(name, value, { ...options, ...sessionCookieOptions });
             response.headers.set('Cache-Control', 'private, no-store');
-            response.headers.set('Referrer-Policy', 'no-referrer');
+            response.headers.set('Referrer-Policy', referrerPolicy);
           },
         },
         request.headers

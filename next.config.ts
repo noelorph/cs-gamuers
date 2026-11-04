@@ -10,9 +10,13 @@ const nextConfig: NextConfig = {
         source: '/:path(auth|student|faculty|program-head|admin)/:rest*',
         headers: [
           { key: 'Cache-Control', value: 'private, no-store' },
-          { key: 'Referrer-Policy', value: 'no-referrer' },
+          { key: 'Referrer-Policy', value: 'same-origin' },
           { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
         ],
+      },
+      {
+        source: '/auth/email/:rest*',
+        headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }],
       },
     ];
   },
