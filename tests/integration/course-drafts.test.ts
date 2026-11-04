@@ -256,23 +256,52 @@ test('native RPC validation matches Unicode bounds and rejects malformed data', 
     ).data.ok
   ).toBe(true);
 });
-test('deactivation racing a write uses the shared actor lock and captured tokens lose reads and writes', async () => {
+test('revocation observes the actor lock and an ordinary draft writer blocked by its holder', async () => {
   const fixture = await createFixture('faculty');
   await harness('state', { account_id: fixture.id, status: 'approved' });
   const { client } = await signIn(fixture);
   const draft = await create(client);
+  const observation = {
+    action: 'actor_lock_state',
+    run_id: runId,
+    args: { project_ref: testProjectRef, account_id: fixture.id },
+  };
+  expect((await client.rpc('test_course_fixture', observation)).error?.code).toBe('42501');
+  expect(
+    (
+      await admin.rpc('test_course_fixture', {
+        ...observation,
+        args: { ...observation.args, project_ref: 'wrong' },
+      })
+    ).error
+  ).toBeTruthy();
+  expect(await courseHarness('actor_lock_state', { account_id: fixture.id })).toEqual({
+    actorLockAcquired: false,
+  });
   const revoke = courseHarness('revoke_locked', { account_id: fixture.id });
-  await new Promise((resolve) => setTimeout(resolve, 150));
-  const write = client
-    .rpc('update_course_draft', {
+  void revoke.catch(() => {});
+  // Await the holder even if observation fails, before afterAll removes this run's fixtures.
+  try {
+    await expect
+      .poll(() => courseHarness('actor_lock_state', { account_id: fixture.id }), { timeout: 4000 })
+      .toEqual({ actorLockAcquired: true });
+    const write = client.rpc('update_course_draft', {
       course_id: draft.id,
       expected_version: 1,
       details: { ...details, title: 'Race' },
-    })
-    .then((result) => result);
-  await revoke;
-  const result = await write;
-  expect(result.error?.code).toBe('PT401');
+    });
+    const [held, written] = await Promise.allSettled([revoke, write]);
+    expect(held.status).toBe('fulfilled');
+    expect(written.status).toBe('fulfilled');
+    if (held.status === 'fulfilled')
+      expect(held.value).toEqual({ actorLockAcquired: true, writerBlocked: true });
+    if (written.status === 'fulfilled') expect(written.value.error?.code).toBe('PT401');
+  } finally {
+    await revoke;
+  }
+  expect(await courseHarness('actor_lock_state', { account_id: fixture.id })).toEqual({
+    actorLockAcquired: false,
+  });
   expect((await client.from('course_drafts').select('*').eq('id', draft.id)).data).toEqual([]);
   expect(
     (await client.rpc('delete_course_draft', { course_id: draft.id, expected_version: 1 })).error
@@ -281,7 +310,29 @@ test('deactivation racing a write uses the shared actor lock and captured tokens
   expect(
     (await client.rpc('create_course_draft', { course_id: randomUUID(), details })).error?.code
   ).toBe('PT401');
-});
+}, 15000);
+
+test('a sub-1MiB request with 300000 blank outcomes has validator, DAL and native parity', async () => {
+  const { validateDraftDetails } = await import('@/features/content/validation');
+  const { createCourseDraft } = await import('@/features/content/courses');
+  const large = { ...details, outcomes: Array<string>(300000).fill('') };
+  const nativeId = randomUUID();
+  expect(
+    new TextEncoder().encode(JSON.stringify({ course_id: nativeId, details: large })).length
+  ).toBeLessThan(1048576);
+  expect(validateDraftDetails(large).ok).toBe(true);
+  requestClient = actors.a.client;
+  const app = await createCourseDraft(randomUUID(), large);
+  expect.soft(app.ok).toBe(true);
+  if (app.ok) expect(app.value.details.outcomes).toHaveLength(300000);
+  const native = await actors.a.client.rpc('create_course_draft', {
+    course_id: nativeId,
+    details: large,
+  });
+  expect(native.error).toBeNull();
+  expect(native.data.ok).toBe(true);
+  expect(native.data.value.details.outcomes).toHaveLength(300000);
+}, 30000);
 
 test('TEST helpers refuse ordinary callers, wrong markers and other runs', async () => {
   const draft = await create();
@@ -338,15 +389,17 @@ test.each(['empty', 'uncreated reservation'])(
         });
         expect(reservation.error).toBeNull();
       }
-      const result = await admin.rpc('test_course_fixture', {
-        action: 'revoke_locked',
-        run_id: otherRunId,
-        args: { project_ref: testProjectRef, account_id: target.id },
-      });
-      expect.soft(result.error).toMatchObject({
-        code: 'P0001',
-        message: 'Unknown fixture account',
-      });
+      for (const action of ['actor_lock_state', 'revoke_locked']) {
+        const result = await admin.rpc('test_course_fixture', {
+          action,
+          run_id: otherRunId,
+          args: { project_ref: testProjectRef, account_id: target.id },
+        });
+        expect.soft(result.error).toMatchObject({
+          code: 'P0001',
+          message: 'Unknown fixture account',
+        });
+      }
       expect((await harness('inspect', { account_id: target.id })).active).toBe(true);
     } finally {
       const cleanup = await admin.rpc('test_account_fixture', {
