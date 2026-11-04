@@ -14,12 +14,12 @@ export const roleLabels: Record<Role, string> = {
 };
 export function AppShell({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <>
+    <div className="min-h-dvh bg-muted">
       <a href="#main" className="skip-link">
         Skip to content
       </a>
-      <header className="box-border flex flex-wrap items-center justify-between gap-4 border-0 border-b border-solid border-border px-4 py-4 md:px-6 lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:flex-col lg:items-start lg:border-b-0 lg:border-r lg:py-6">
-        <span className="font-semibold">CS-GAMUERS</span>
+      <header className="box-border flex flex-wrap items-center justify-between gap-4 border-0 border-b border-solid border-border bg-card px-4 py-4 md:px-6 lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:flex-col lg:items-start lg:border-b-0 lg:border-r lg:py-6">
+        <span className="text-lg font-semibold text-primary">CS-GAMUERS</span>
         <form action={paths.signOut} method="post">
           <Button type="submit" variant="outline">
             Sign out
@@ -30,7 +30,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
         <h1 className="m-0 break-words text-2xl font-semibold">{title}</h1>
         {children}
       </main>
-    </>
+    </div>
   );
 }
 async function Destination({ role }: { role: Role }) {

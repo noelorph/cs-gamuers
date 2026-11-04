@@ -188,12 +188,15 @@ function DraftEditor({
   }
   return (
     <div className="mt-6 grid min-w-0 max-w-[960px] gap-6">
-      <p className="m-0">
+      <p className="m-0 text-muted-foreground">
         Save an incomplete draft with any fields blank. Title, description, topic, difficulty and
         outcomes are required before future review; prior knowledge and estimated hours are
         optional.
       </p>
-      <form onSubmit={submit} className="grid min-w-0 gap-6">
+      <form
+        onSubmit={submit}
+        className="grid min-w-0 gap-6 rounded-lg border border-border bg-card p-4 md:p-6"
+      >
         <fieldset disabled={pending} className="m-0 grid min-w-0 gap-6 border-0 p-0">
           <legend className="sr-only">Course details</legend>
           {text('title', 'Title', 200)}
