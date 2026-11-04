@@ -316,3 +316,54 @@ send verification mail to external recipients without recipient authorization.
 The safer hosted run excludes exactly that case and leaves workers stopped; its
 result cannot be described as an unqualified full-suite pass. Prior recorded
 native-hook capture remains historical evidence, not newly measured mail delivery.
+
+## DEMO provisioning checkpoint (2026-11-04)
+
+The owner authorized DEMO setup and setup emails. Database provisioning is now
+complete: a fresh empty-target check preceded ordered application of all 22
+production migrations through `course_draft_request_size_boundary`. Remote history
+contains the same ordered migration names, but provider-assigned versions differ
+from local source timestamps. Do not blindly run CLI `db push`; reconcile history
+before any future migration operation.
+
+The protected environment singleton is initialized in `demo` mode for the verified
+DEMO target. All 12 application tables have RLS enabled; no TEST harness tables
+exist. The guard role has login, inheritance and RLS bypass disabled. Post-apply
+counts remain zero for Auth users, application accounts and mail. Security advisors
+reported nine INFO findings for intentionally policy-free private RLS tables and
+no WARN/ERROR findings; see the [Supabase linter explanation](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+
+The modern private backend key passed Auth settings access, and
+`assert_demo_project` passed. Email and confirmation are enabled; phone, anonymous
+and other providers are disabled. Current Wi-Fi matches local APP_ORIGIN. SMTP TLS
+and login passed without sending mail. Actual DEMO hook registration, 1,800-second
+expiry, minimum password length 12, and hosted Site URL/redirect configuration
+remain unverified. One publishable key remains active and legacy keys remain
+enabled; no DEMO readiness attestation has been enabled.
+
+Auth/mail setup is **not ready**. The browser host is unavailable and the CLI is
+not authenticated; no access-token environment fallback is present. The owner can
+log in from their Terminal using
+`DO_NOT_TRACK=1 .playwright-cli/tools/supabase login`. Then verify the actual hosted
+Auth settings and configure the hook and exact application origin. Retire the DEMO
+publishable key and disable legacy API keys while preserving the private backend
+key; establish DEMO gateway verification before enabling its readiness flag or
+sending setup mail. Do not copy TEST attestations.
+
+No Administrator bootstrap/account or participant email has been created/sent.
+Administrator acceptance and holder-selected hidden passwords, all seven email
+proofs and approvals remain required. No workers, servers or services were started
+for this provisioning checkpoint; TEST was untouched. This supersedes historical
+statements that no DEMO database mutation has occurred, without changing their
+dated test evidence.
+
+Final read-only comparison found all 51 production function-body hashes equal to
+TEST, with zero mismatches, zero public TEST RPCs and zero anonymous application
+RPC execute grants. Auth Admin can execute the email hook; anonymous and
+authenticated roles cannot. `course_drafts` uses `security_invoker=true`.
+The existing private backend credential was made available to the normal operator
+in ignored mode-0600 local configuration; no credential was generated or printed.
+The normal `demo:prepare status` command passed: 0/7 ready, all not prepared and
+none queued. Its ignored local state file binds the manifest/project only; no
+provider user or mail mutation occurred. Further provider changes await owner CLI
+login and DEMO key retirement, preserving the private backend key.

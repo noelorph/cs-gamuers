@@ -235,3 +235,40 @@ Read the installed Next.js authentication, authentication-with-cache-components,
 Current primary references consulted for planning: [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client), [Send Email Hook](https://supabase.com/docs/guides/auth/auth-hooks/send-email-hook), [Supabase changelog](https://supabase.com/changelog), and [Nodemailer 10.3.1 package metadata](https://raw.githubusercontent.com/nodemailer/nodemailer/v10.3.1/package.json). Recheck compatibility/advisories at execution, not by changing pinned packages during planning.
 
 Historical handoff: the owner approved the spec/plan on 2026-11-03 with an initial no-start instruction, then separately authorized the recorded implementation. That original pause no longer prevents the scoped execution documented above. Choose native execution or subagent-driven execution only when authorizing implementation. Native execution is recommended for this sequential milestone because account/session/CRUD work shares the same database contracts; it avoids multiple implementers coordinating those changing boundaries. No implementation starts from this handoff alone.
+
+### DEMO database provisioning checkpoint — 2026-11-04
+
+Later owner authorization covers technical DEMO setup and setup emails. Root
+verified an empty DEMO before applying all 22 reviewed production migrations in
+order. Remote history matches their ordered names, with provider-assigned versions
+rather than local source timestamps; future CLI migration application must first
+reconcile that history. Protected singleton mode `demo` is initialized for the
+verified target. All 12 application tables have RLS; no TEST harness tables exist;
+guard login/inheritance/bypass are false. Auth users, accounts and mail remain zero.
+Nine intentional private-table RLS/no-policy INFO advisories, no WARN/ERROR, were
+reported. `assert_demo_project`, backend-key Auth settings access and SMTP TLS/login
+passed; no mail was sent. Current Wi-Fi matches APP_ORIGIN. Email confirmation is
+required and unsupported providers are disabled.
+
+Database provisioning is complete; Auth/mail readiness and Task 1/3 acceptance
+remain open. Actual DEMO hook registration, expiry 1800, minimum password length
+12 and hosted origin/redirect settings are unverified. One publishable key and
+legacy keys remain active; readiness flags are unset. Browser host unavailable;
+CLI unauthenticated with no access-token environment fallback. Owner Terminal CLI
+login is the next access prerequisite, followed by verified hosted settings and
+DEMO key retirement/gateway proof. Preserve the private backend key. No bootstrap,
+participant message, worker/server start, TEST mutation or seven-holder readiness
+claim was made. Administrator invitation acceptance, hidden passwords and all
+holder proofs remain external completion gates. See docs/demo/README.md for the
+current operator handoff. No source change or commit accompanied this checkpoint.
+
+Final checkpoint verification: all 51 DEMO production function-body hashes match
+TEST exactly, zero mismatches; zero public TEST RPCs or anonymous application RPC
+execute grants. Auth Admin hook execution is permitted, anonymous/authenticated
+execution denied; course_drafts is security-invoker. Existing backend credentials
+were made available to operator-local ignored mode-0600 configuration without
+new credential generation/output. Normal demo preparation status passed with 0/7
+ready, all not prepared and none queued; ignored local manifest binding state was
+created, with no provider user/mail mutation. Provider work pauses for owner CLI
+login and DEMO key retirement while preserving its private backend key. This
+checkpoint changes documentation only; no additional tests are required.
