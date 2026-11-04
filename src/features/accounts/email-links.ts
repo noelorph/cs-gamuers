@@ -1,8 +1,7 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { randomBytes } from 'node:crypto';
-import { createClient } from '@supabase/supabase-js';
-import { getAppEnv } from '@/config/env';
+import { createProofAuthClient } from '@/lib/supabase/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { confirmProof, proofHash } from './email-protocol';
 
@@ -31,10 +30,7 @@ export async function confirmEmailChallenge(
   challenge: string
 ): Promise<{ operationId: string; purpose: 'verification' | 'invitation' }> {
   const capability = await readEmailCapability();
-  const env = getAppEnv();
-  const native = createClient(env.supabaseUrl, env.publishableKey, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-  });
+  const native = await createProofAuthClient();
   const result = await confirmProof(createAdminClient(), native, challenge, capability);
   const jar = await cookies();
   jar.set(capabilityCookie, jar.get(capabilityCookie)!.value, {

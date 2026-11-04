@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { randomUUID } from 'node:crypto';
+import { assertNativeMailTestReady } from './helpers/mail-safety';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
   actor,
@@ -80,6 +81,7 @@ describe('hosted account boundaries', () => {
   });
 
   it('rejects public signup even with a valid reservation ID in editable metadata', async () => {
+    assertNativeMailTestReady();
     const reservation = await reserveFixture();
     const result = await anonymous().auth.signUp({
       email: reservation.email,

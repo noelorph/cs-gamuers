@@ -20,6 +20,8 @@ for (const width of [1280, 320]) {
 }
 test('missing or malformed email challenge has no confirmation action', async ({ page }) => {
   await page.goto('/auth/email?challenge=invalid');
-  await expect(page.getByRole('alert')).toContainText('This link is unavailable.');
+  await expect(page.getByRole('main').getByRole('alert')).toContainText(
+    'This link is unavailable.'
+  );
   await expect(page.getByRole('button', { name: 'Confirm email' })).toHaveCount(0);
 });

@@ -10,7 +10,6 @@ import { assertIsolatedTestTarget } from '../integration/helpers/environment';
 const app = {
   APP_ORIGIN: 'https://demo.invalid',
   SUPABASE_URL: 'https://demo-ref.supabase.co',
-  SUPABASE_PUBLISHABLE_KEY: 'synthetic-publishable',
 };
 const isolated = {
   SUPABASE_URL: app.SUPABASE_URL,
@@ -49,7 +48,7 @@ test('configuration imports lazily; missing Supabase fails only its consumer', (
   setEnv({ APP_ORIGIN: app.APP_ORIGIN });
   expect(getAppEnv).toThrow(/SUPABASE_URL/);
   setEnv({ SUPABASE_URL: app.SUPABASE_URL });
-  expect(getAppEnv).toThrow(/SUPABASE_PUBLISHABLE_KEY/);
+  expect(getAppEnv).not.toThrow();
 });
 
 test('SMTP and AI absence does not block application configuration', () => {
@@ -57,7 +56,6 @@ test('SMTP and AI absence does not block application configuration', () => {
   expect(getAppEnv()).toEqual({
     appOrigin: new URL(app.APP_ORIGIN),
     supabaseUrl: app.SUPABASE_URL,
-    publishableKey: app.SUPABASE_PUBLISHABLE_KEY,
   });
   expect(getMailEnv).toThrow(/SMTP_HOST/);
   expect(getAdminEnv).toThrow(/SUPABASE_SECRET_KEY/);

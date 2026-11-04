@@ -9,7 +9,6 @@ function required(name: string): string {
 export function getAppEnv(): {
   appOrigin: URL;
   supabaseUrl: string;
-  publishableKey: string;
 } {
   let appOrigin: URL;
   try {
@@ -29,7 +28,6 @@ export function getAppEnv(): {
   return {
     appOrigin,
     supabaseUrl: required('SUPABASE_URL'),
-    publishableKey: required('SUPABASE_PUBLISHABLE_KEY'),
   };
 }
 

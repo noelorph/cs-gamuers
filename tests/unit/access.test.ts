@@ -2,42 +2,53 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
-const mocks = vi.hoisted(() => ({ rpc: vi.fn(), create: vi.fn(), getAll: vi.fn(), set: vi.fn() }));
-vi.mock('next/headers', () => ({
-  cookies: async () => ({ getAll: mocks.getAll, set: mocks.set }),
+const mocks = vi.hoisted(() => ({
+  rpc: vi.fn(),
+  create: vi.fn(),
+  getSession: vi.fn(),
+  getUser: vi.fn(),
+}));
+vi.mock('@/lib/supabase/auth', () => ({
+  createRequestAuth: async () => ({ getSession: mocks.getSession, getUser: mocks.getUser }),
 }));
 vi.mock('@/config/env', () => ({
-  getAppEnv: () => ({ supabaseUrl: 'https://example.supabase.co', publishableKey: 'example' }),
+  getAppEnv: () => ({ supabaseUrl: 'https://example.supabase.co' }),
+  getAdminEnv: () => ({ secretKey: 'sb_secret_synthetic' }),
 }));
-vi.mock('@supabase/ssr', () => ({ createServerClient: mocks.create }));
+vi.mock('@supabase/supabase-js', () => ({ createClient: mocks.create }));
 import { createRequestClient } from '@/lib/supabase/server';
 import { requireActor } from '@/lib/access';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.getSession.mockResolvedValue({
+    data: { session: { access_token: 'verified-token' } },
+    error: null,
+  });
+  mocks.getUser.mockResolvedValue({ data: { user: { id: 'id' } }, error: null });
   mocks.create.mockImplementation(() => ({ rpc: mocks.rpc }));
 });
 
 describe('request account boundary', () => {
-  it('creates a separate client with secure server-only cookie round trips', async () => {
+  it('pins a verified token per request and refuses missing, expired or unverifiable sessions', async () => {
     const first = await createRequestClient();
     const second = await createRequestClient();
     expect(first).not.toBe(second);
-    const options = mocks.create.mock.calls[0][2];
-    expect(options.cookieOptions).toMatchObject({
-      secure: true,
-      httpOnly: true,
-      sameSite: 'lax',
-      path: '/',
+    expect(await mocks.create.mock.calls[0][2].accessToken()).toBe('verified-token');
+    for (const session of [
+      { data: { session: null }, error: null },
+      { data: { session: null }, error: {} },
+    ]) {
+      mocks.getSession.mockResolvedValue(session);
+      await expect(createRequestClient()).rejects.toThrow('Authentication required');
+    }
+    mocks.getSession.mockResolvedValue({
+      data: { session: { access_token: 'unverified' } },
+      error: null,
     });
-    mocks.getAll.mockReturnValue([{ name: 'a', value: 'b' }]);
-    expect(options.cookies.getAll()).toEqual([{ name: 'a', value: 'b' }]);
-    options.cookies.setAll([{ name: 'a', value: 'c', options: { maxAge: 100 } }]);
-    expect(mocks.set).toHaveBeenCalledWith(
-      'a',
-      'c',
-      expect.objectContaining({ secure: true, httpOnly: true, sameSite: 'lax', maxAge: 100 })
-    );
+    mocks.getUser.mockResolvedValue({ data: { user: null }, error: {} });
+    await expect(createRequestClient()).rejects.toThrow('Authentication required');
+    expect(mocks.create).toHaveBeenCalledTimes(2);
   });
 
   it('fails closed when the database actor check errors or returns no live session', async () => {

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, unlink } from 'node:fs/promises';
 import { loadEnvFile } from 'node:process';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { userTransport } from '../../../src/lib/supabase/user-transport.mjs';
 import { assertIsolatedTestTarget } from './environment';
 import { saveFixtureJournal } from './fixture-journal.mjs';
 
@@ -15,14 +16,14 @@ export const testProjectRef = 'ggiccvcrkydcimveyrfi';
 if (process.env.TEST_SUPABASE_PROJECT_REF !== testProjectRef)
   throw new Error('Unapproved integration target');
 const url = process.env.TEST_SUPABASE_URL!;
-const key = process.env.TEST_SUPABASE_PUBLISHABLE_KEY;
 const secret = process.env.TEST_SUPABASE_SECRET_KEY;
-if (!key || !secret) throw new Error('Missing isolated test credentials');
+if (!secret) throw new Error('Missing isolated test credentials');
 const options = {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
 };
 export const admin = createClient(url, secret, options);
-export const anonymous = () => createClient(url, key, options);
+export const anonymous = () =>
+  createClient(url, secret, { ...options, global: { fetch: userTransport(url, secret) } });
 export const runId = randomUUID();
 export const fixturePassword = `Fixture ${randomUUID()}`;
 const ownedIds = new Set<string>();

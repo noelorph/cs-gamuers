@@ -1,6 +1,7 @@
 'use server';
 import { headers } from 'next/headers';
 import { getAppEnv } from '@/config/env';
+import { admitAuthRequest } from '@/lib/supabase/auth';
 import { confirmEmailChallenge, prepareEmailCapability } from '@/features/accounts/email-links';
 import { completeInvitation } from '@/features/accounts/operations';
 
@@ -33,6 +34,11 @@ export async function acceptInvitation(
 ) {
   try {
     await requireOrigin();
+    // Count the holder submission before its privileged password update.
+    await admitAuthRequest(
+      new Request(new URL('/auth/v1/user', getAppEnv().supabaseUrl), { method: 'PUT' }),
+      await headers()
+    );
     return await completeInvitation(operationId, input);
   } catch {
     return {

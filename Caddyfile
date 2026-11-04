@@ -3,9 +3,7 @@
 		format filter {
 			wrap json
 			fields {
-				request>uri query {
-					delete challenge
-				}
+				request>uri delete
 				request>headers>Referer delete
 			}
 		}
@@ -16,5 +14,11 @@
 # Certificate trust and phone/Wi-Fi reachability must be verified separately.
 {$APP_ORIGIN} {
 	tls internal
-	reverse_proxy 127.0.0.1:3000
+	request_body {
+		max_size 1048576
+	}
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-CS-Proxy {$LOCAL_PROXY_SECRET}
+		header_up X-CS-IP {remote_host}
+	}
 }

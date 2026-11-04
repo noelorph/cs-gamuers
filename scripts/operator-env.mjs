@@ -1,6 +1,8 @@
 import { loadEnvFile } from 'node:process';
 import { createRequire } from 'node:module';
 import { createClient } from '@supabase/supabase-js';
+import { userTransport } from '../src/lib/supabase/user-transport.mjs';
+import { authenticationAdmission } from '../src/lib/supabase/authentication-admission.mjs';
 const { assertIsolatedTestTarget } = createRequire(import.meta.url)('../src/config/test-target.ts');
 const required = (name) => {
   const value = process.env[name];
@@ -32,7 +34,6 @@ export function operatorEnvironment(test) {
     ref,
     url,
     origin: origin.origin,
-    publishable: required(test ? 'TEST_SUPABASE_PUBLISHABLE_KEY' : 'SUPABASE_PUBLISHABLE_KEY'),
     secret: required(test ? 'TEST_SUPABASE_SECRET_KEY' : 'SUPABASE_SECRET_KEY'),
     hookReady: process.env.AUTH_MAIL_HOOK_VERIFIED_PROJECT_REF === ref,
   };
@@ -41,9 +42,23 @@ export function operatorClients(env) {
   const options = {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   };
+  const admin = createClient(env.url, env.secret, options);
   return {
-    admin: createClient(env.url, env.secret, options),
-    user: createClient(env.url, env.publishable, options),
+    admin,
+    user: createClient(env.url, env.secret, {
+      ...options,
+      global: {
+        fetch: userTransport(env.url, env.secret, fetch, (request) =>
+          authenticationAdmission(
+            admin,
+            env.ref,
+            '127.0.0.1',
+            process.env.AUTH_PASSWORD_GATE_VERIFIED_PROJECT_REF,
+            request
+          )
+        ),
+      },
+    }),
   };
 }
 export function smtpEnvironment() {

@@ -67,7 +67,6 @@ it('rejects malformed hosted project references before constructing clients', as
   vi.stubEnv('DEMO_PROJECT_REF', 'user@malformed');
   vi.stubEnv('SUPABASE_URL', 'https://user@malformed.supabase.co');
   vi.stubEnv('APP_ORIGIN', 'https://demo.example');
-  vi.stubEnv('SUPABASE_PUBLISHABLE_KEY', 'synthetic-publishable');
   vi.stubEnv('SUPABASE_SECRET_KEY', 'synthetic-secret');
   const { operatorEnvironment } = await import('../../scripts/operator-env.mjs');
   try {

@@ -1,21 +1,21 @@
 import 'server-only';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { getAppEnv } from '@/config/env';
+import { createClient } from '@supabase/supabase-js';
+import { getAdminEnv, getAppEnv } from '@/config/env';
+import { createRequestAuth } from './auth';
+import { userTransport } from './user-transport.mjs';
 import type { Database } from './database.types';
 
 export async function createRequestClient() {
-  const store = await cookies();
-  const { supabaseUrl, publishableKey } = getAppEnv();
-  const cookieOptions = { secure: true, httpOnly: true, sameSite: 'lax' as const, path: '/' };
-  return createServerClient<Database>(supabaseUrl, publishableKey, {
-    cookieOptions,
-    cookies: {
-      getAll: () => store.getAll(),
-      setAll: (values) => {
-        for (const { name, value, options } of values)
-          store.set(name, value, { ...options, ...cookieOptions });
-      },
-    },
+  const auth = await createRequestAuth();
+  const { data, error } = await auth.getSession();
+  const token = data.session?.access_token;
+  if (error || !token) throw new Error('Authentication required');
+  const verified = await auth.getUser(token);
+  if (verified.error || !verified.data.user) throw new Error('Authentication required');
+  const { supabaseUrl } = getAppEnv();
+  const { secretKey } = getAdminEnv();
+  return createClient<Database>(supabaseUrl, secretKey, {
+    accessToken: async () => token,
+    global: { fetch: userTransport(supabaseUrl, secretKey) },
   });
 }

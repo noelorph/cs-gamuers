@@ -86,6 +86,21 @@ export type Database = {
         Returns: Json;
       };
       claim_mail_work: { Args: { batch_size?: number }; Returns: Json };
+      admit_authentication: {
+        Args: { source_ip: string; identifier?: string | null };
+        Returns: string | null;
+      };
+      finish_authentication: {
+        Args: { attempt_id: string; succeeded: boolean };
+        Returns: undefined;
+      };
+      account_status: {
+        Args: never;
+        Returns: {
+          application_status: Database['public']['Enums']['application_status'];
+          active: boolean;
+        }[];
+      };
       current_actor: {
         Args: never;
         Returns: {
