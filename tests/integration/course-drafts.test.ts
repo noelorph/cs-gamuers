@@ -310,3 +310,52 @@ test('TEST helpers refuse ordinary callers, wrong markers and other runs', async
     (await actors.a.client.from('course_drafts').select('id').eq('id', draft.id)).data
   ).toHaveLength(1);
 });
+
+test.each(['empty', 'uncreated reservation'])(
+  'TEST revocation rejects a different %s run and keeps this run’s account active',
+  async (kind) => {
+    const target = await createFixture('faculty');
+    const otherRunId = randomUUID();
+    const journal = `tests/integration/.artifacts/${otherRunId}.json`;
+    const { saveFixtureJournal } = await import('./helpers/fixture-journal.mjs');
+    const { mkdir, unlink } = await import('node:fs/promises');
+    await mkdir('tests/integration/.artifacts', { recursive: true });
+    await saveFixtureJournal(journal, {
+      projectRef: testProjectRef,
+      runId: otherRunId,
+      accountIds: [],
+    });
+    try {
+      if (kind === 'uncreated reservation') {
+        const reservation = await admin.rpc('test_account_fixture', {
+          action: 'reserve',
+          run_id: otherRunId,
+          args: {
+            project_ref: testProjectRef,
+            email: `fixture-${otherRunId.slice(0, 8)}-${randomUUID()}@example.invalid`,
+            role: 'faculty',
+          },
+        });
+        expect(reservation.error).toBeNull();
+      }
+      const result = await admin.rpc('test_course_fixture', {
+        action: 'revoke_locked',
+        run_id: otherRunId,
+        args: { project_ref: testProjectRef, account_id: target.id },
+      });
+      expect.soft(result.error).toMatchObject({
+        code: 'P0001',
+        message: 'Unknown fixture account',
+      });
+      expect((await harness('inspect', { account_id: target.id })).active).toBe(true);
+    } finally {
+      const cleanup = await admin.rpc('test_account_fixture', {
+        action: 'cleanup',
+        run_id: otherRunId,
+        args: { project_ref: testProjectRef },
+      });
+      if (cleanup.error) throw new Error('Retain exact-run revocation regression journal');
+      await unlink(journal);
+    }
+  }
+);

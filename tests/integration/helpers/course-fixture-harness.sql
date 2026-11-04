@@ -21,7 +21,7 @@ begin
   end if;
   if action='counts' then return jsonb_build_object('courses',(select count(*) from public.courses where owner_id=any(owned_ids)),'revisions',(select count(*) from public.course_revisions r join public.courses c on c.id=r.course_id where c.owner_id=any(owned_ids))); end if;
   if action='revoke_locked' then
-    if not (args->>'account_id')::uuid=any(owned_ids) then raise exception 'Unknown fixture account'; end if;
+    if ((args->>'account_id')::uuid=any(owned_ids)) is not true then raise exception 'Unknown fixture account'; end if;
     perform 1 from public.accounts where id=(args->>'account_id')::uuid for update;
     perform pg_sleep(0.5);
     update public.accounts set active=false where id=(args->>'account_id')::uuid;
