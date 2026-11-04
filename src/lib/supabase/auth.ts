@@ -2,6 +2,7 @@ import 'server-only';
 import { createServerClient, type CookieMethodsServer } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies, headers } from 'next/headers';
+import { connection } from 'next/server';
 import { getAdminEnv, getAppEnv } from '@/config/env';
 import { trustedSourceIp } from '@/lib/request-security';
 import { createAdminClient } from './admin';
@@ -39,6 +40,8 @@ export function createCookieAuth(cookieMethods: CookieMethodsServer, requestHead
   }).auth;
 }
 export async function createRequestAuth() {
+  // SDK session expiry reads the clock, which partial-prefetch runtime shells prohibit.
+  await connection();
   const store = await cookies();
   return createCookieAuth(
     {
