@@ -40,6 +40,8 @@ async function recover() {
   if (ids.error) throw Error('Read ownership failed');
   state.accountIds = [...new Set([...state.accountIds, ...ids.data])];
   await saveFixtureJournal(file, state);
+  const drafts = await client.rpc('test_course_fixture', { ...args, action: 'cleanup' });
+  if (drafts.error && drafts.error.code !== 'PGRST202') throw Error('Draft cleanup failed');
   const cleanup = await client.rpc('test_account_fixture', { ...args, action: 'cleanup' });
   if (cleanup.error) throw Error('Application cleanup failed');
   for (const id of state.accountIds) {

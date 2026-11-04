@@ -89,6 +89,13 @@ export async function cleanFixtures() {
   await mkdir('tests/integration/.artifacts', { recursive: true });
   const recoveryFile = `tests/integration/.artifacts/${runId}.json`;
   await saveFixtureJournal(recoveryFile, { projectRef: testProjectRef, runId, accountIds: ids });
+  const drafts = await admin.rpc('test_course_fixture', {
+    action: 'cleanup',
+    run_id: runId,
+    args: { project_ref: testProjectRef },
+  });
+  if (drafts.error && drafts.error.code !== 'PGRST202')
+    throw new Error('Draft fixture cleanup failed; retain exact-run recovery artifact');
   await harness('cleanup');
   for (const id of ids) {
     const { error } = await admin.auth.admin.deleteUser(id);

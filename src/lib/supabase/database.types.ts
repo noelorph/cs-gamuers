@@ -53,11 +53,132 @@ export type Database = {
         };
         Relationships: [];
       };
+      course_revisions: {
+        Row: {
+          course_id: string;
+          description: string;
+          difficulty: string | null;
+          estimated_hours: number | null;
+          id: string;
+          outcomes: string[];
+          primary_topic: string | null;
+          prior_knowledge: string;
+          revision_number: number;
+          state: string;
+          title: string;
+          updated_at: string;
+          version: number;
+        };
+        Insert: {
+          course_id: string;
+          description: string;
+          difficulty?: string | null;
+          estimated_hours?: number | null;
+          id?: string;
+          outcomes: string[];
+          primary_topic?: string | null;
+          prior_knowledge: string;
+          revision_number?: number;
+          state?: string;
+          title: string;
+          updated_at?: string;
+          version?: number;
+        };
+        Update: {
+          course_id?: string;
+          description?: string;
+          difficulty?: string | null;
+          estimated_hours?: number | null;
+          id?: string;
+          outcomes?: string[];
+          primary_topic?: string | null;
+          prior_knowledge?: string;
+          revision_number?: number;
+          state?: string;
+          title?: string;
+          updated_at?: string;
+          version?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'course_revisions_course_id_fkey';
+            columns: ['course_id'];
+            isOneToOne: false;
+            referencedRelation: 'course_drafts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'course_revisions_course_id_fkey';
+            columns: ['course_id'];
+            isOneToOne: false;
+            referencedRelation: 'courses';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      courses: {
+        Row: {
+          archived_at: string | null;
+          id: string;
+          owner_id: string;
+          published_at: string | null;
+        };
+        Insert: {
+          archived_at?: string | null;
+          id: string;
+          owner_id: string;
+          published_at?: string | null;
+        };
+        Update: {
+          archived_at?: string | null;
+          id?: string;
+          owner_id?: string;
+          published_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'courses_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: {
-      [_ in never]: never;
+      course_drafts: {
+        Row: {
+          details: Json | null;
+          id: string | null;
+          owner_id: string | null;
+          revision_id: string | null;
+          updated_at: string | null;
+          version: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'courses_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Functions: {
+      account_status: {
+        Args: never;
+        Returns: {
+          active: boolean;
+          application_status: Database['public']['Enums']['application_status'];
+        }[];
+      };
+      admit_authentication: {
+        Args: { identifier?: string; source_ip: unknown };
+        Returns: string;
+      };
       advance_email_operation: {
         Args: {
           capability_hash: string;
@@ -86,20 +207,9 @@ export type Database = {
         Returns: Json;
       };
       claim_mail_work: { Args: { batch_size?: number }; Returns: Json };
-      admit_authentication: {
-        Args: { source_ip: string; identifier?: string | null };
-        Returns: string | null;
-      };
-      finish_authentication: {
-        Args: { attempt_id: string; succeeded: boolean };
-        Returns: undefined;
-      };
-      account_status: {
-        Args: never;
-        Returns: {
-          application_status: Database['public']['Enums']['application_status'];
-          active: boolean;
-        }[];
+      create_course_draft: {
+        Args: { course_id: string; details: Json };
+        Returns: Json;
       };
       current_actor: {
         Args: never;
@@ -110,9 +220,17 @@ export type Database = {
           role: Database['public']['Enums']['account_role'];
         }[];
       };
+      delete_course_draft: {
+        Args: { course_id: string; expected_version: number };
+        Returns: Json;
+      };
       demo_setup_status: {
         Args: { manifest_hash: string; project_ref: string };
         Returns: Json;
+      };
+      finish_authentication: {
+        Args: { attempt_id: string; succeeded: boolean };
+        Returns: undefined;
       };
       finish_mail_work: {
         Args: { claim_id: string; delivered: boolean; work_id: string };
@@ -154,6 +272,10 @@ export type Database = {
         Returns: Json;
       };
       send_auth_email: { Args: { event: Json }; Returns: Json };
+      update_course_draft: {
+        Args: { course_id: string; details: Json; expected_version: number };
+        Returns: Json;
+      };
     };
     Enums: {
       account_role: 'student' | 'faculty' | 'program_head' | 'administrator';
