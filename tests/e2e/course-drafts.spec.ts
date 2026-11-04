@@ -29,6 +29,7 @@ test.describe('isolated TEST Faculty drafts', () => {
       await page.getByLabel('Email').fill(account.email);
       await page.getByLabel('Password', { exact: true }).fill(fixtures.fixturePassword);
       await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+      await expect(page).toHaveURL(/\/faculty$/);
     }
     await signIn();
     await page.getByRole('link', { name: 'Course drafts' }).click();
@@ -109,5 +110,126 @@ test.describe('isolated TEST Faculty drafts', () => {
     await page.getByRole('button', { name: 'Confirm deletion' }).click();
     await expect(page).toHaveURL(/\/faculty\/courses$/);
     await expect(page.getByText('No course drafts yet.')).toBeVisible();
+  });
+  test('another Faculty cannot open an existing draft and revocation during save retains input', async ({
+    page,
+    browser,
+  }) => {
+    test.setTimeout(60_000);
+    const owner = await fixtures.createFixture('faculty');
+    const other = await fixtures.createFixture('faculty');
+    for (const account of [owner, other])
+      await fixtures.harness('state', { account_id: account.id, status: 'approved' });
+    async function signIn(target: typeof page, email: string) {
+      await target.goto('/auth/sign-in');
+      await target.getByLabel('Email').fill(email);
+      await target.getByLabel('Password', { exact: true }).fill(fixtures.fixturePassword);
+      await target.getByRole('button', { name: 'Sign in', exact: true }).click();
+      await expect(target).toHaveURL(/\/faculty$/);
+    }
+    await signIn(page, owner.email);
+    await page.getByRole('link', { name: 'Course drafts' }).click();
+    await page.getByRole('link', { name: 'New draft' }).click();
+    await page.getByLabel('Title').fill('Owner-only saved draft');
+    await page.getByRole('button', { name: 'Save draft' }).click();
+    await expect(page).toHaveURL(/\/faculty\/courses\/[0-9a-f-]{36}$/);
+    const url = page.url();
+    const courseId = new URL(url).pathname.split('/').at(-1)!;
+    const otherContext = await browser.newContext({ baseURL: process.env.PLAYWRIGHT_BASE_URL });
+    try {
+      const otherPage = await otherContext.newPage();
+      await signIn(otherPage, other.email);
+      await otherPage.goto(url);
+      await expect(otherPage.getByText('Draft unavailable.')).toBeVisible();
+      await expect(otherPage.getByLabel('Title')).toHaveCount(0);
+      await expect(otherPage.getByRole('button', { name: 'Save draft' })).toHaveCount(0);
+      await expect(otherPage.getByRole('button', { name: 'Delete draft' })).toHaveCount(0);
+    } finally {
+      await otherContext.close();
+    }
+    await page.getByLabel('Title').fill('Unsaved after revocation');
+    let revoked = false;
+    await page.route('**/faculty/courses/**', async (route) => {
+      if (route.request().method() === 'POST' && !revoked) {
+        await fixtures.harness('cutoff', { account_id: owner.id });
+        revoked = true;
+      }
+      await route.continue();
+    });
+    await page.getByRole('button', { name: 'Save draft' }).click();
+    await expect(page.getByRole('main').getByRole('alert')).toContainText('Your session expired');
+    expect(revoked).toBe(true);
+    await expect(page.getByLabel('Title')).toHaveValue('Unsaved after revocation');
+    await expect(page.getByRole('status')).not.toContainText('Draft saved');
+    await page.unrouteAll();
+    const fresh = await fixtures.signIn(owner);
+    const persisted = await fresh.client
+      .from('course_drafts')
+      .select('details,version')
+      .eq('id', courseId)
+      .single();
+    expect(persisted.error).toBeNull();
+    expect(persisted.data?.version).toBe(1);
+    expect(persisted.data?.details).toMatchObject({ title: 'Owner-only saved draft' });
+  });
+  test('lost blank-create response survives history and an explicit retry updates the same draft', async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    const owner = await fixtures.createFixture('faculty');
+    await fixtures.harness('state', { account_id: owner.id, status: 'approved' });
+    await page.goto('/auth/sign-in');
+    await page.getByLabel('Email').fill(owner.email);
+    await page.getByLabel('Password', { exact: true }).fill(fixtures.fixturePassword);
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await expect(page).toHaveURL(/\/faculty$/);
+    await page.getByRole('link', { name: 'Course drafts' }).click();
+    await page.getByRole('link', { name: 'New draft' }).click();
+    await expect(page.getByLabel('Title')).toHaveValue('');
+    let lostResponse = false;
+    await page.route('**/faculty/courses/**', async (route) => {
+      if (route.request().method() === 'POST' && !lostResponse) {
+        lostResponse = true;
+        const committed = await route.fetch();
+        await committed.body();
+        await route.abort();
+      } else {
+        await route.continue();
+      }
+    });
+    await page.getByRole('button', { name: 'Save draft' }).click();
+    await expect(page.getByRole('main').getByRole('alert')).toContainText('could not be confirmed');
+    expect(lostResponse).toBe(true);
+    await expect(page).toHaveURL(/\/faculty\/courses\/new$/);
+    await expect(page.getByRole('status')).not.toContainText('Draft saved');
+    await page.unrouteAll();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/faculty\/courses$/);
+    await page.goForward();
+    await expect(page).toHaveURL(/\/faculty\/courses\/new$/);
+    await expect(page.getByRole('main').getByRole('alert')).toContainText('could not be confirmed');
+    await expect(page.getByLabel('Title')).toHaveValue('');
+    await page.getByLabel('Title').fill('Entered after uncertain blank creation');
+    await page.getByRole('button', { name: 'Save draft' }).click();
+    await expect(page.getByRole('main').getByRole('alert')).toContainText(
+      'recovered with different details'
+    );
+    await expect(page.getByLabel('Title')).toHaveValue('Entered after uncertain blank creation');
+    await expect(page).toHaveURL(/\/faculty\/courses\/new$/);
+    await expect(page.getByRole('status')).not.toContainText('Draft saved');
+    await page.getByRole('button', { name: 'Save draft' }).click();
+    await expect(page).toHaveURL(/\/faculty\/courses\/[0-9a-f-]{36}$/);
+    await expect(page.getByLabel('Title')).toHaveValue('Entered after uncertain blank creation');
+    const fresh = await fixtures.signIn(owner);
+    const persisted = await fresh.client
+      .from('course_drafts')
+      .select('details,version')
+      .eq('owner_id', owner.id);
+    expect(persisted.error).toBeNull();
+    expect(persisted.data).toHaveLength(1);
+    expect(persisted.data?.[0].version).toBe(2);
+    expect(persisted.data?.[0].details).toMatchObject({
+      title: 'Entered after uncertain blank creation',
+    });
   });
 });

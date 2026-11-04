@@ -1,8 +1,14 @@
 # Local demonstration readiness
 
-Task 1 configuration and the Task 2–4 account/proof/sign-in implementation are present.
-Hosted configuration, trusted-browser completion and seven-holder readiness remain
-pending as detailed below. Course-draft features are not implemented yet.
+Account/proof/sign-in and persistent Faculty course-draft implementations are present.
+Local acceptance is in progress; this milestone is not fully accepted. The owner
+confirmed that intended phones and account holders are currently unavailable.
+Real inbox receipt, holder-selected passwords, seven ready accounts, final-network
+rehearsal and physical-device acceptance remain unverified.
+
+The [implementation plan](../superpowers/plans/2026-11-03-authentication-and-course-drafts.md)
+records current verification evidence and open gates. Historical checkpoints below
+are dated observations; the current-state corrections take precedence.
 
 ## Project roles and evidence
 
@@ -28,13 +34,13 @@ project; later fixtures must clean only their recorded test-owned IDs.
 | Prerequisite | Measured state |
 | --- | --- |
 | Demo target eligibility | Empty hosted project inspected; eligible |
-| Separate free test target | Created, healthy, distinct and empty; guarded read-only publishable/admin connectivity passed; app integration pending |
+| Separate free test target | Distinct isolated TEST; real-token account/proof/draft integration exercised with exact-run cleanup |
 | Gmail sender delivery | TLS/authentication passed; Gmail accepted one sender-only diagnostic and owner confirmed receipt |
 | Controlled school inboxes | All seven manifest emails supplied, including three valid Student school-domain addresses; inbox control/receipt unverified |
 | LAN HTTPS origin | Current Wi-Fi selected; host HTTPS 200 and HTTP 308 measured; school hotspot remains pending |
 | Caddy | Portable v2.11.7 runtime passed on current Wi-Fi; CA-verified host HTTPS check passed |
 | Phone certificate trust and Wi-Fi access | Unverified on intended iPhone and Android |
-| Auth redirect allowlists | Unverified |
+| Auth redirect allowlists | Host configuration must match the active origin; DEMO/final-network round trips unverified |
 
 ## Local configuration
 
@@ -80,8 +86,8 @@ Set `SMTP_USER` to that sender, `SMTP_FROM` to the same sender, and
 locally; do not share them in chat or commit them. This document contains no
 sender address or credential.
 
-Six of seven manifest email fields are supplied, including two Student school-
-domain addresses; the third Student field is blank. Addresses are kept only in
+All seven manifest email fields are supplied, including three Student school-
+domain addresses; structure and uniqueness validation passed. Addresses are kept only in
 the ignored local manifest. The three Student holders must control actual `@caloocan.sti.edu.ph` inboxes
 and be able to open received links. The other four accounts need distinct,
 reachable participant-controlled email addresses. Confirm inbox access without
@@ -145,8 +151,8 @@ unverified; runtime HTTPS on the host is measured only for the current Wi-Fi.
 `npm test -- tests/unit/env.test.ts` covers configuration and test-target refusal
 without loading local credentials or contacting providers. Run `npm test`,
 `npm run typecheck`, `npm run lint`, and `npm run format:check` for local checks.
-The isolated native account/proof integration suite passes. Trusted-browser/device
-completion and participant SMTP delivery remain pending; no test skip is evidence
+The isolated native account/proof integration suite passes. Full browser/device
+acceptance and participant SMTP delivery remain pending; no test skip is evidence
 that an unavailable provider prerequisite passed. Each plan task retains its
 documented acceptance gates.
 
@@ -197,17 +203,115 @@ Do these steps **only in isolated TEST first**, without resetting either project
 
 1. Confirm the actual Send Email Hook is enabled for `public.send_auth_email`, confirmation is ON, email proof expiry is 1800 seconds, minimum password length is 12, unsupported anonymous/phone/OAuth providers are OFF, and site/redirect allowlists contain only the approved application origin/email path. Establish actual native-hook capture with no default-provider mail before setting the project-bound hook-readiness attestation. The current full hosted suite must not run before this evidence.
 2. In Project Settings → API Keys, inventory active publishable keys and legacy API-key status. Confirm every caller has migrated to a private secret key; keep retired values privately for negative tests. Do not print or commit keys.
-3. Delete every publishable key and deactivate legacy API keys in TEST. These are manual configuration changes, **not performed by this implementation**. Preserve the private secret key. Record key IDs/status only and allow propagation.
+3. Delete every publishable key and deactivate legacy API keys in TEST. These controlled TEST changes have been performed and verified; repeat only through an explicitly authorized provider operation when configuration changes. Preserve the private secret key. Record key IDs/status only and allow propagation.
 4. Run the opt-in native gateway probe described in `tests/integration/helpers/README.md`; confirm password/refresh/PKCE and other key-protected endpoints reject absent/retired/JWT-as-key credentials at the gateway. Separately inspect unsupported providers, callback/authorize, alternate hosts/path variants and query/header forms. Native keyless verification remains provider-limited. Repeat the proof after propagation/restart and run ordinary-user negative RLS/session tests using the backend key. A script pass covers only its listed cases.
 5. Only after those proofs, set `AUTH_PASSWORD_GATE_VERIFIED_PROJECT_REF` to the exact verified project. This variable is operator readiness, not independent proof. Without it application Auth submissions fail closed. Do not copy TEST readiness into demo.
-6. Rehearse the actual HTTPS application with a trusted certificate; never disable TLS validation. Set `PLAYWRIGHT_BASE_URL` and exported `APP_ORIGIN` to that exact local HTTPS origin. Authenticated E2E additionally requires `E2E_AUTH_PROJECT_REF=ggiccvcrkydcimveyrfi`, verified private gateway, and the server actually configured for TEST. Fixture users are synthetic and removed by the harness. Default smoke checks retain their isolated HTTP production server.
+6. Rehearse the actual HTTPS application with a trusted certificate; never disable TLS validation. Set `PLAYWRIGHT_BASE_URL` and exported `APP_ORIGIN` to that exact local HTTPS origin. Authenticated E2E additionally requires `E2E_AUTH_PROJECT_REF=$TEST_SUPABASE_PROJECT_REF`, verified private gateway, and the server actually configured for TEST. Fixture users are synthetic and removed by the harness. Default smoke checks retain their isolated HTTP production server.
 
 The Task 4 database counters and source do not establish deployed gateway, SMTP/hook, trusted HTTPS, current Safari, or physical-device acceptance. Current Mac14 Playwright WebKit is a frozen build; use supported current Safari and real devices for the TRD gate. Keep native Auth limits enabled alongside the shared counters.
 
-### Reviewed Task 4 checkpoint and native mail safety
+### Historical Task 4 checkpoint and current native mail safety
 
-Source checkpoints `754eadf` and `cfab3e8` passed independent review. The isolated suite passed 152 tests with one explicitly unverified native-gateway probe skipped; typecheck, lint and formatting passed. Development-server checks passed 18 provider-free Chromium/Firefox tests. Chromium sign-in layout/error checks covered desktop and 320 CSS pixels. This does not establish authenticated HTTPS, production E2E, WebKit/current Safari or physical-device coverage. Production build remains blocked by the native CSS-worker bind-permission failure; WebKit failed before page setup.
+Source checkpoints `754eadf` and `cfab3e8` passed independent review. The isolated suite passed 152 tests with one explicitly unverified native-gateway probe skipped; typecheck, lint and formatting passed. Development-server checks passed 18 provider-free Chromium/Firefox tests. Chromium sign-in layout/error checks covered desktop and 320 CSS pixels. This does not establish authenticated HTTPS, production E2E, WebKit/current Safari or physical-device coverage. That tool-run production E2E attempt stopped at the native CSS-worker bind-permission failure; the owner later supplied a successful normal-Terminal production build, and the final required tool-run command also built successfully on `42c9ffb`. WebKit remains blocked before app interaction as recorded below.
 
-An earlier negative public-signup test could emit native confirmation mail before the deferred creation guard rolled back signup. It now fails before the provider call unless project-bound TEST hook readiness is verified; a passing Auth error alone is insufficient. After the owner saved the TEST hook, exactly one supported native resend created one private proof and one unclaimed pending mail item with a 1,800-second application expiry. All workers stayed stopped; exact-run cleanup removed the probe. Auth logs showed zero native sends for both that capture and the later full test suite. No participant message was sent. Actual native OTP expiry, delivery/inbox receipt and browser ownership completion remain separate checks.
+An earlier negative public-signup test could emit native confirmation mail before the deferred creation guard rolled back signup. It now fails before the provider call unless project-bound TEST hook readiness is verified; a passing Auth error alone is insufficient. After the owner saved the TEST hook, exactly one supported native resend created one private proof and one unclaimed pending mail item with a 1,800-second application expiry. All workers stayed stopped; exact-run cleanup removed the probe. Auth logs showed zero native sends for both that capture and the later full test suite. No participant message was sent. A later timed native verification succeeded at approximately 1,790 seconds and rejected at 1,810 seconds, bracketing the selected 1,800-second expiry. Exact-instant expiry, delivery/inbox receipt and browser ownership completion remain separate checks.
 
-A fresh TEST Auth settings read confirms Email enabled, confirmation required, and anonymous/Phone/OAuth/SAML/passkeys disabled. Native password validation rejected an 11-ASCII-character synthetic password and accepted 12 through supported admin creation; exact-run cleanup removed the fixture and Auth logs showed zero mail sends. Native expiry and saved URL settings still need their own evidence. The private password gateway remains disabled pending actual TEST key retirement and native gateway proof. Never copy TEST readiness to demo.
+A fresh TEST Auth settings read confirms Email enabled, confirmation required, and anonymous/Phone/OAuth/SAML/passkeys disabled. Native password validation rejected an 11-ASCII-character synthetic password and accepted 12 through supported admin creation; exact-run cleanup removed the fixture and Auth logs showed zero mail sends. The timed native expiry evidence above supersedes the earlier unverified status; final-network URL/link round trips still need their own evidence. TEST modern publishable keys have been retired and legacy keys disabled. The fresh opt-in native probe passed its 57 gateway negatives; a separate 15-request password/refresh/PKCE matrix returned recognized gateway denials. Private backend access and real-user session behavior survive. This supports command-local isolated TEST browser acceptance, not DEMO readiness or every possible alternate path/domain. Never copy TEST readiness to demo.
+
+
+## Current local verification and rehearsal procedure
+
+The source includes Faculty list/create/edit/delete, incomplete blank drafts,
+ordered outcomes, version conflicts, retained failed-save input, safe destructive
+confirmation and browser-history recovery. There is no Submit/Publish control,
+lesson editor, learning/report workflow or public deployment.
+
+The final required tool-run `npm run test:e2e` successfully built production source
+`42c9ffb`: compilation, TypeScript and all 14 generated pages passed with Cache
+Components and partial prefetching retained. This supersedes the historical
+CSS-worker IPC/port-bind blocker and supplements the earlier owner-supplied normal
+Terminal build. A build pass alone does not establish browser-suite success.
+The exact production/development browser outcomes are recorded in the plan. WebKit currently fails before app interaction with
+`Page.overrideSetting: Unknown setting: PushAPIEnabled`; no WebKit application
+pass or current Safari/device coverage is established. Installed versions and TLS
+validation remain unchanged.
+
+The required production command's default browser phase exited 1: 19 passed,
+24 explicitly guarded authenticated-case skips and 8 WebKit setup failures.
+Eighteen passes were Chromium/Firefox smoke checks; one WebKit-labeled pass was
+request-only and provides no WebKit browser coverage. No Chromium/Firefox smoke
+failed. Skips do not prove authenticated acceptance; see the plan for the separate
+trusted-HTTPS production TEST run.
+
+The same production build then passed all 34 guarded authenticated Chromium/Firefox
+cases (17 per engine), zero skips/failures, in 2.8 minutes. These cover four-role
+sign-in/out, persistent draft CRUD, conflicts, failed saves/history retention,
+actual Faculty B access denial, session revocation during save and committed blank
+creation with a lost response followed by a safe stable retry. Task 6 source and
+behavior are complete within this bounded coverage.
+
+Production engines were Chromium 156.0.8078.4 and Firefox 157.0; actual CLI engines
+were Chromium 156.0.8078.80 and Firefox 157.0. CLI screenshots were inspected at
+1440×900, 1024×768 and 320×800, including long content, without observed overflow;
+200% text enlargement and narrow dialog focus/Escape/return were checked. The
+production suites use 1280×720 defaults and explicit 320×800 draft/sign-in checks.
+Actual 400% zoom, latest-two-stable desktop matrix and intended physical devices
+remain unverified. Bundled engines do not establish current Safari/device coverage.
+
+Final production CLI validation at 320×800 retained the 201-character title,
+focused its error and showed no overflow; console errors/failed requests were empty.
+Private/no-store and ordinary/proof referrer policies were verified. Exact-run
+cleanup returned all measured account/session/course/proof/mail/fixture counts to
+zero; owned browser sessions and listeners were closed, private temporary state
+removed and the persistent Caddy CA preserved. Matching Auth logs contained zero
+mail sends. No participant mail, worker run or DEMO mutation occurred.
+
+For a repeatable isolated TEST rehearsal:
+
+1. Stop mail/maintenance workers. Verify the isolation guard, protected TEST marker,
+   fixture harness and current private gateway before starting a TEST-configured
+   loopback application. Keep readiness flags command-local and do not repoint
+   demo operator commands or copy TEST attestations to DEMO.
+2. Keep Caddy as the HTTPS LAN entry with the shared private proxy secret. Verify
+   the actual configured origin with trusted certificates. Do not publish origin,
+   credentials, fixture state or participant identities in evidence.
+3. Export `APP_ORIGIN` and `PLAYWRIGHT_BASE_URL` to that same trusted origin and
+   `E2E_AUTH_PROJECT_REF` to `$TEST_SUPABASE_PROJECT_REF`. Only after checking the
+   corresponding evidence, set command-local hook/password gateway readiness to
+   that exact TEST reference. The fixture helper refuses other or matching targets.
+4. Run the required local checks and `npm run test:e2e`; record build and browser
+   results separately. `npx --no-install playwright test` against the
+   already-running HTTPS development server can establish development-browser
+   coverage only. The guarded E2E suites create synthetic users, never send SMTP,
+   and remove only their recorded run-owned records. Retain an interrupted cleanup
+   journal and use the exact-run recovery procedure in the fixture README.
+5. With actual holders/devices available, use the controlled preparation commands
+   above, coordinate each 30-minute invitation with its recipient, verify receipt
+   and chosen-password setup, then rehearse four-role sign-in/sign-out and Faculty
+   CRUD/ownership denial over the intended LAN. Record actual browser versions,
+   device trust, viewport/focus/error cases and seven-account readiness.
+6. Rehearse seven simultaneous users and at least 100 non-AI core reads/writes;
+   measure the TRD p95 two-second target, excluding mail. No such measurement has
+   been completed. The full 20-published-course learning/report dataset remains
+   later scope because this milestone has no publication/learning implementation.
+7. Close verification browser sessions and servers; verify exact-run zero residue.
+   Keep manifests, screenshots, storage state, journals and private CA material in
+   their ignored locations. Never reset either hosted project.
+
+Skipped/unavailable: real holder receipt/setup, Android Chrome/iPhone Safari,
+latest-two-stable desktop/device matrix, final hotspot and seven-user performance.
+Risk: local synthetic acceptance is not evidence that the demonstration is ready
+for participants or that the full product is complete.
+
+
+Final static checks passed: lint (zero warnings), formatting and typecheck.
+The serial isolated hosted regression passed 31 files / 222 tests, with exactly
+one mail-capable native signup case excluded (223 total), exit 0 in 155.32 seconds.
+The opt-in native gateway probe was included. This is a filtered-suite result.
+
+The final local verification pass did not rerun the mail-capable native public-signup
+negative case. Automatic approval review rejected that command because it could
+send verification mail to external recipients without recipient authorization.
+The safer hosted run excludes exactly that case and leaves workers stopped; its
+result cannot be described as an unqualified full-suite pass. Prior recorded
+native-hook capture remains historical evidence, not newly measured mail delivery.
