@@ -151,7 +151,8 @@ unverified; runtime HTTPS on the host is measured only for the current Wi-Fi.
 `npm test -- tests/unit/env.test.ts` covers configuration and test-target refusal
 without loading local credentials or contacting providers. Run `npm test`,
 `npm run typecheck`, `npm run lint`, and `npm run format:check` for local checks.
-The isolated native account/proof integration suite passes. Full browser/device
+Earlier isolated native account/proof checks passed; the current filtered suite
+passes with exactly one mail-capable native signup case excluded. Full browser/device
 acceptance and participant SMTP delivery remain pending; no test skip is evidence
 that an unavailable provider prerequisite passed. Each plan task retains its
 documented acceptance gates.
