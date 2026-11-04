@@ -6,31 +6,66 @@ import { createRequestClient } from '@/lib/supabase/server';
 import { paths } from '@/config/paths';
 import type { Role } from '@/features/accounts/types';
 import { Button } from './ui/button';
+import { AppNav, type NavItem } from './app-nav';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from './ui/sidebar';
 export const roleLabels: Record<Role, string> = {
   student: 'Student',
   faculty: 'Faculty',
   program_head: 'Program Head',
   administrator: 'Administrator',
 };
-export function AppShell({ title, children }: { title: string; children: ReactNode }) {
+export const facultyNav: NavItem[] = [
+  { label: 'Home', href: paths.roleHome('faculty') },
+  { label: 'Course drafts', href: paths.courses },
+];
+const navByRole: Partial<Record<Role, NavItem[]>> = { faculty: facultyNav };
+export function AppShell({
+  title,
+  nav = [],
+  children,
+}: {
+  title: string;
+  nav?: NavItem[];
+  children: ReactNode;
+}) {
   return (
-    <div className="min-h-dvh bg-muted">
+    <SidebarProvider className="bg-muted">
       <a href="#main" className="skip-link">
         Skip to content
       </a>
-      <header className="box-border flex flex-wrap items-center justify-between gap-4 border-0 border-b border-solid border-border bg-card px-4 py-4 md:px-6 lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:flex-col lg:items-start lg:border-b-0 lg:border-r lg:py-6">
-        <span className="text-lg font-semibold text-primary">CS-GAMUERS</span>
-        <form action={paths.signOut} method="post">
-          <Button type="submit" variant="outline">
-            Sign out
-          </Button>
-        </form>
-      </header>
-      <main id="main" className="box-border min-w-0 max-w-[1200px] px-4 py-6 md:px-6 lg:ml-64">
-        <h1 className="m-0 break-words text-2xl font-semibold">{title}</h1>
-        {children}
-      </main>
-    </div>
+      <Sidebar aria-label="Primary">
+        <SidebarHeader className="px-4 py-4">
+          <span className="text-lg font-semibold text-primary">CS-GAMUERS</span>
+        </SidebarHeader>
+        <SidebarContent>
+          <AppNav items={nav} />
+        </SidebarContent>
+        <SidebarFooter className="p-4">
+          <form action={paths.signOut} method="post">
+            <Button type="submit" variant="outline" className="w-full">
+              Sign out
+            </Button>
+          </form>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset className="min-w-0 bg-muted">
+        <div className="flex items-center gap-2 px-4 pt-4 md:px-6">
+          <SidebarTrigger />
+        </div>
+        <main id="main" className="box-border min-w-0 max-w-[1200px] px-4 py-6 md:px-6">
+          <h1 className="m-0 break-words text-2xl font-semibold">{title}</h1>
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 async function Destination({ role }: { role: Role }) {
@@ -51,7 +86,7 @@ async function Destination({ role }: { role: Role }) {
   }
   if (destination) redirect(destination);
   return (
-    <AppShell title={roleLabels[role]}>
+    <AppShell title={roleLabels[role]} nav={navByRole[role]}>
       <p>You are signed in.</p>
       {role === 'faculty' && <Link href={paths.courses}>Course drafts</Link>}
     </AppShell>

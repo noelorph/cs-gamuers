@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { AppShell } from '@/components/app-shell';
+import { AppShell, facultyNav } from '@/components/app-shell';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { paths } from '@/config/paths';
 async function Drafts() {
   const result = await listOwnCourseDrafts();
   return (
-    <AppShell title="Course drafts">
+    <AppShell title="Course drafts" nav={facultyNav}>
       <p className="mt-4">
         <Button asChild>
           <Link href={paths.newCourse}>New draft</Link>
