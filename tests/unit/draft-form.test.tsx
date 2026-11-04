@@ -258,3 +258,18 @@ test('only confirmed deletion clears recoverable edits', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Confirm deletion' }));
   await waitFor(() => expect(draftRecovery.size).toBe(0));
 });
+test('pre-ready rendering exposes no controls that hydration can discard', async () => {
+  const props = { draft: { ...draft, details: { ...draft.details, outcomes: [] } } };
+  const html = renderToString(<DraftForm {...props} />);
+  expect(html).not.toContain('<input');
+  expect(html).toContain('Loading draft editor');
+  render(<DraftForm {...props} />);
+  fireEvent.change(screen.getByLabelText('Title'), {
+    target: { value: 'First editable input survives' },
+  });
+  await waitFor(() =>
+    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe(
+      'First editable input survives'
+    )
+  );
+});

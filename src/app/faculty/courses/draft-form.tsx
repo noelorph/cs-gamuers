@@ -27,15 +27,15 @@ export function DraftForm(props: DraftFormProps) {
     () => true,
     () => false
   );
+  if (!browserReady) return <p role="status">Loading draft editor…</p>;
   const ownerId = props.ownerId ?? props.draft?.ownerId;
   const recoveryKey = ownerId ? `${ownerId}/${props.draft?.id ?? 'new'}` : null;
   return (
     <DraftEditor
-      key={browserReady ? 'browser' : 'server'}
       {...props}
       ownerId={ownerId}
       recoveryKey={recoveryKey}
-      recovery={browserReady && recoveryKey ? draftRecovery.get(recoveryKey) : undefined}
+      recovery={recoveryKey ? draftRecovery.get(recoveryKey) : undefined}
     />
   );
 }

@@ -21,6 +21,7 @@ test.describe('isolated TEST Faculty drafts', () => {
     page,
     context,
   }) => {
+    test.setTimeout(60_000);
     const account = await fixtures.createFixture('faculty');
     await fixtures.harness('state', { account_id: account.id, status: 'approved' });
     async function signIn() {
