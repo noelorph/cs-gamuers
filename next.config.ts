@@ -3,7 +3,10 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   allowedDevOrigins: process.env.APP_ORIGIN ? [new URL(process.env.APP_ORIGIN).hostname] : [],
   // Email challenges and holder passwords must not enter development request/action logs.
-  logging: { incomingRequests: { ignore: [/\/auth\//] }, serverFunctions: false },
+  logging: {
+    incomingRequests: { ignore: [/\/auth\//, /\/admin\/sign-in/] },
+    serverFunctions: false,
+  },
   async headers() {
     return [
       {

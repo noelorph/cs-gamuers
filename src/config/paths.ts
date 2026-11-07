@@ -7,6 +7,9 @@ const roleHomes = {
 
 export const paths = {
   signIn: '/auth/sign-in',
+  adminSignIn: '/admin/sign-in',
+  login: (role: keyof typeof roleHomes) =>
+    role === 'administrator' ? ('/admin/sign-in' as const) : ('/auth/sign-in' as const),
   authStatus: '/auth/status',
   authEmail: '/auth/email',
   signOut: '/auth/sign-out',

@@ -27,7 +27,7 @@ test.describe('isolated TEST Faculty drafts', () => {
     async function signIn() {
       await page.goto('/auth/sign-in');
       await page.getByLabel('Email').fill(account.email);
-      await page.getByLabel('Password', { exact: true }).fill(fixtures.fixturePassword);
+      await page.getByLabel('Password (required)', { exact: true }).fill(fixtures.fixturePassword);
       await page.getByRole('button', { name: 'Sign in', exact: true }).click();
       await expect(page).toHaveURL(/\/faculty$/);
     }
@@ -123,7 +123,9 @@ test.describe('isolated TEST Faculty drafts', () => {
     async function signIn(target: typeof page, email: string) {
       await target.goto('/auth/sign-in');
       await target.getByLabel('Email').fill(email);
-      await target.getByLabel('Password', { exact: true }).fill(fixtures.fixturePassword);
+      await target
+        .getByLabel('Password (required)', { exact: true })
+        .fill(fixtures.fixturePassword);
       await target.getByRole('button', { name: 'Sign in', exact: true }).click();
       await expect(target).toHaveURL(/\/faculty$/);
     }
@@ -180,7 +182,7 @@ test.describe('isolated TEST Faculty drafts', () => {
     await fixtures.harness('state', { account_id: owner.id, status: 'approved' });
     await page.goto('/auth/sign-in');
     await page.getByLabel('Email').fill(owner.email);
-    await page.getByLabel('Password', { exact: true }).fill(fixtures.fixturePassword);
+    await page.getByLabel('Password (required)', { exact: true }).fill(fixtures.fixturePassword);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page).toHaveURL(/\/faculty$/);
     await page.getByRole('link', { name: 'Course drafts' }).click();

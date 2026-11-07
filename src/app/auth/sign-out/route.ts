@@ -14,12 +14,12 @@ export async function POST(request: Request) {
     return new Response('Request too large.', { status: 413 });
   }
   try {
-    await signOut();
+    const destination = await signOut();
+    return NextResponse.redirect(new URL(destination, getAppEnv().appOrigin), 303);
   } catch {
     return new Response(
       'Sign out could not be completed. Return to the application and try again.',
       { status: 503, headers: { 'Cache-Control': 'private, no-store' } }
     );
   }
-  return NextResponse.redirect(new URL('/auth/sign-in', getAppEnv().appOrigin), 303);
 }

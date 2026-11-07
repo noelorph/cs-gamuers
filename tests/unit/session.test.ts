@@ -7,22 +7,36 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
   getSession: vi.fn(),
   adminOut: vi.fn(),
+  commit: vi.fn(),
+  clientToken: vi.fn(),
 }));
 vi.mock('@/lib/supabase/auth', () => ({
   AuthenticationThrottled: class extends Error {},
+  createStagedAuth: async () => ({
+    auth: { signInWithPassword: mocks.signIn },
+    commit: mocks.commit,
+  }),
   createRequestAuth: async () => ({
     signInWithPassword: mocks.signIn,
     signOut: mocks.signOut,
     getSession: mocks.getSession,
   }),
 }));
-vi.mock('@/lib/supabase/server', () => ({ createRequestClient: async () => ({ rpc: mocks.rpc }) }));
+vi.mock('@/lib/supabase/server', () => ({
+  createRequestClient: async () => ({ rpc: mocks.rpc }),
+  createUserClient: (token: string) => {
+    mocks.clientToken(token);
+    return { rpc: mocks.rpc };
+  },
+}));
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({ auth: { admin: { signOut: mocks.adminOut } } }),
 }));
 import { signIn, signOut } from '@/features/accounts/session';
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.adminOut.mockResolvedValue({ error: null });
+  mocks.rpc.mockResolvedValue({ data: [], error: null });
   mocks.signIn.mockResolvedValue({ data: { session: { access_token: 'token' } }, error: null });
 });
 test.each([
@@ -35,9 +49,12 @@ test.each([
     data: [{ id: 'x', role, active: true, application_status: 'approved' }],
     error: null,
   });
-  expect(await signIn({ email: ' User@example.invalid ', password: 'unaltered password' })).toEqual(
-    { ok: true, destination: path }
-  );
+  expect(
+    await signIn(
+      { email: ' User@example.invalid ', password: 'unaltered password' },
+      role === 'administrator' ? 'admin' : 'standard'
+    )
+  ).toEqual({ ok: true, destination: path });
 });
 test('missing email and incorrect password share generic feedback', async () => {
   mocks.signIn.mockResolvedValue({
@@ -45,7 +62,7 @@ test('missing email and incorrect password share generic feedback', async () => 
     error: { code: 'invalid_credentials', status: 400 },
   });
   for (const email of ['missing@example.invalid', 'existing@example.invalid'])
-    expect(await signIn({ email, password: 'wrong' })).toEqual({
+    expect(await signIn({ email, password: 'wrong' }, 'standard')).toEqual({
       ok: false,
       code: 'invalid_credentials',
     });
@@ -55,14 +72,18 @@ test('a private gateway configuration error is unavailable, not incorrect creden
     data: { session: null },
     error: { status: 401, code: 'invalid_api_key' },
   });
-  expect(await signIn({ email: 'existing@example.invalid', password: 'password' })).toEqual({
+  expect(
+    await signIn({ email: 'existing@example.invalid', password: 'password' }, 'standard')
+  ).toEqual({
     ok: false,
     code: 'unavailable',
   });
 });
 test('provider outage stays unavailable', async () => {
   mocks.signIn.mockRejectedValue(Error('network'));
-  expect(await signIn({ email: 'existing@example.invalid', password: 'wrong' })).toEqual({
+  expect(
+    await signIn({ email: 'existing@example.invalid', password: 'wrong' }, 'standard')
+  ).toEqual({
     ok: false,
     code: 'unavailable',
   });
@@ -74,18 +95,23 @@ test.each(['pending', 'needs_correction', 'rejected'])(
       data: [{ id: 'x', role: 'faculty', active: true, application_status }],
       error: null,
     });
-    expect(await signIn({ email: 'existing@example.invalid', password: 'password' })).toEqual({
+    expect(
+      await signIn({ email: 'existing@example.invalid', password: 'password' }, 'standard')
+    ).toEqual({
       ok: true,
       destination: '/auth/status',
     });
   }
 );
-test('deactivated or proof-only account receives no role destination', async () => {
+test('proof-only account cannot establish an application session', async () => {
   mocks.rpc.mockResolvedValue({ data: [], error: null });
-  expect(await signIn({ email: 'existing@example.invalid', password: 'password' })).toEqual({
-    ok: true,
-    destination: '/auth/status',
+  expect(
+    await signIn({ email: 'existing@example.invalid', password: 'password' }, 'standard')
+  ).toEqual({
+    ok: false,
+    code: 'unavailable',
   });
+  expect(mocks.commit).not.toHaveBeenCalled();
 });
 test('sign-out refuses to report success or clear cookies if native removal fails', async () => {
   mocks.getSession.mockResolvedValue({
@@ -97,6 +123,83 @@ test('sign-out refuses to report success or clear cookies if native removal fail
   expect(mocks.signOut).not.toHaveBeenCalled();
   mocks.adminOut.mockResolvedValue({ error: null });
   mocks.signOut.mockResolvedValue({ error: null });
-  await expect(signOut()).resolves.toBeUndefined();
+  await expect(signOut()).resolves.toBe('/auth/sign-in');
   expect(mocks.adminOut).toHaveBeenCalledWith('captured', 'local');
 });
+
+test.each([
+  ['administrator', 'standard', '/admin/sign-in'],
+  ['student', 'admin', '/auth/sign-in'],
+  ['faculty', 'admin', '/auth/sign-in'],
+  ['program_head', 'admin', '/auth/sign-in'],
+] as const)('%s cannot establish a session at %s sign-in', async (role, portal, destination) => {
+  mocks.rpc.mockResolvedValue({
+    data: [{ id: 'x', role, active: true, application_status: 'approved' }],
+    error: null,
+  });
+  mocks.adminOut.mockResolvedValue({ error: null });
+  expect(await signIn({ email: 'existing@example.invalid', password: 'password' }, portal)).toEqual(
+    { ok: false, code: 'wrong_portal', destination }
+  );
+  expect(mocks.commit).not.toHaveBeenCalled();
+  expect(mocks.clientToken).toHaveBeenCalledWith('token');
+  expect(mocks.adminOut).toHaveBeenCalledWith('token', 'local');
+  expect(mocks.signOut).not.toHaveBeenCalled();
+});
+test('canonical lookup failure discards the attempted session without accepting cookies', async () => {
+  mocks.rpc.mockResolvedValue({ data: null, error: { code: 'unavailable' } });
+  mocks.adminOut.mockResolvedValue({ error: null });
+  expect(
+    await signIn({ email: 'existing@example.invalid', password: 'password' }, 'standard')
+  ).toEqual({ ok: false, code: 'unavailable' });
+  expect(mocks.commit).not.toHaveBeenCalled();
+  expect(mocks.adminOut).toHaveBeenCalledWith('token', 'local');
+});
+
+test.each(['standard', 'admin'] as const)(
+  'deactivated accounts cannot establish sessions at %s sign-in',
+  async (portal) => {
+    mocks.rpc.mockResolvedValueOnce({ data: [], error: null }).mockResolvedValueOnce({
+      data: [{ active: false, application_status: 'approved' }],
+      error: null,
+    });
+    mocks.adminOut.mockResolvedValue({ error: null });
+    expect(
+      await signIn({ email: 'existing@example.invalid', password: 'password' }, portal)
+    ).toEqual({ ok: false, code: 'deactivated' });
+    expect(mocks.commit).not.toHaveBeenCalled();
+  }
+);
+test.each([
+  ['administrator', '/admin/sign-in'],
+  ['faculty', '/auth/sign-in'],
+] as const)('%s sign-out returns its login portal', async (role, destination) => {
+  mocks.getSession.mockResolvedValue({
+    data: { session: { access_token: 'captured' } },
+    error: null,
+  });
+  mocks.rpc.mockResolvedValue({
+    data: [{ id: 'x', role, active: true, application_status: 'approved' }],
+    error: null,
+  });
+  mocks.adminOut.mockResolvedValue({ error: null });
+  mocks.signOut.mockResolvedValue({ error: null });
+  expect(await signOut()).toBe(destination);
+});
+
+test.each(['returned', 'thrown'])(
+  'failed attempted-session cleanup (%s) is unavailable',
+  async (failure) => {
+    mocks.rpc.mockResolvedValue({
+      data: [{ id: 'x', role: 'administrator', active: true, application_status: 'approved' }],
+      error: null,
+    });
+    if (failure === 'returned') mocks.adminOut.mockResolvedValue({ error: { status: 503 } });
+    else mocks.adminOut.mockRejectedValue(Error('network'));
+    expect(
+      await signIn({ email: 'existing@example.invalid', password: 'password' }, 'standard')
+    ).toEqual({ ok: false, code: 'unavailable' });
+    expect(mocks.commit).not.toHaveBeenCalled();
+    expect(mocks.signOut).not.toHaveBeenCalled();
+  }
+);

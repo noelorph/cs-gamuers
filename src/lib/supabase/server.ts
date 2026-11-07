@@ -12,6 +12,11 @@ export async function createRequestClient() {
   if (error || !token) throw new Error('Authentication required');
   const verified = await auth.getUser(token);
   if (verified.error || !verified.data.user) throw new Error('Authentication required');
+  return createUserClient(token);
+}
+
+export function createUserClient(token: string) {
+  if (!token) throw new Error('Authentication required');
   const { supabaseUrl } = getAppEnv();
   const { secretKey } = getAdminEnv();
   return createClient<Database>(supabaseUrl, secretKey, {

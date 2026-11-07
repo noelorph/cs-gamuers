@@ -60,6 +60,28 @@ export async function createRequestAuth() {
     await headers()
   );
 }
+export async function createStagedAuth() {
+  await connection();
+  const store = await cookies();
+  let pending: Parameters<NonNullable<CookieMethodsServer['setAll']>>[0] = [];
+  const auth = createCookieAuth(
+    {
+      // Keep chunk names for replacement cleanup without loading or refreshing the old session.
+      getAll: () => store.getAll().map(({ name }) => ({ name, value: '' })),
+      setAll: (values) => {
+        pending = values;
+      },
+    },
+    await headers()
+  );
+  return {
+    auth,
+    commit() {
+      for (const { name, value, options } of pending)
+        store.set(name, value, { ...options, ...sessionCookieOptions });
+    },
+  };
+}
 export async function createProofAuthClient() {
   const { supabaseUrl } = getAppEnv();
   const { secretKey } = getAdminEnv();

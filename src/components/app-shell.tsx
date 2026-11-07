@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Suspense, type ReactNode } from 'react';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { requireActor } from '@/lib/access';
 import { createRequestClient } from '@/lib/supabase/server';
 import { paths } from '@/config/paths';
@@ -76,12 +77,14 @@ async function Destination({ role }: { role: Role }) {
     try {
       const result = await (await createRequestClient()).rpc('current_actor');
       const actor = result.data?.[0];
+      if (result.error || !actor) throw new Error('Authentication required');
       destination =
         actor?.active && actor.application_status === 'approved'
           ? paths.roleHome(actor.role)
           : paths.authStatus;
     } catch {
-      destination = paths.signIn;
+      const ended = (await cookies()).getAll().some(({ name }) => name.includes('-auth-token'));
+      destination = paths.login(role) + (ended ? '?session=ended' : '');
     }
   }
   if (destination) redirect(destination);
