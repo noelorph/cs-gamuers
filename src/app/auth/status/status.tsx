@@ -38,7 +38,11 @@ export function ApplicationStatus({ initial }: { initial: ApplicationResult }) {
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [editing]);
-  async function run(action: () => Promise<ApplicationResult>, success: string) {
+  async function run(
+    action: () => Promise<ApplicationResult>,
+    success: string,
+    closeEditor = false
+  ) {
     if (pending) return;
     setPending(true);
     setError('');
@@ -47,7 +51,7 @@ export function ApplicationStatus({ initial }: { initial: ApplicationResult }) {
       const next = await action();
       if (next.ok) {
         setResult(next);
-        setEditing(false);
+        if (closeEditor) setEditing(false);
         setMessage(success);
       } else if (next.code === 'forbidden') {
         setResult(next);
@@ -82,7 +86,14 @@ export function ApplicationStatus({ initial }: { initial: ApplicationResult }) {
         Skip to content
       </a>
       <header className="flex flex-wrap items-center justify-between gap-4 border-0 border-b border-solid border-border bg-card px-4 py-6 md:px-6">
-        <Link href="/" className="text-lg font-semibold text-primary no-underline">
+        <Link
+          href="/"
+          className="text-lg font-semibold text-primary no-underline"
+          onNavigate={(event) => {
+            if (editing && !window.confirm('Discard unsaved changes and leave this application?'))
+              event.preventDefault();
+          }}
+        >
           CS-GAMUERS
         </Link>
         <form action={paths.signOut} method="post">
@@ -206,7 +217,8 @@ export function ApplicationStatus({ initial }: { initial: ApplicationResult }) {
                             studentNumber: application.role === 'student' ? number : null,
                             employeeNumber: application.role === 'faculty' ? number || null : null,
                           }),
-                        'Changes saved.'
+                        'Changes saved.',
+                        true
                       );
                     }}
                   >
@@ -354,7 +366,7 @@ export function ApplicationStatus({ initial }: { initial: ApplicationResult }) {
                     !editing ||
                     window.confirm('Discard unsaved changes and reload the current application?')
                   )
-                    void run(readApplication, 'Status refreshed.');
+                    void run(readApplication, 'Status refreshed.', true);
                 }}
               >
                 {error ? 'Reload current application' : 'Refresh status'}

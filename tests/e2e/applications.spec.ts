@@ -337,6 +337,67 @@ test.describe('application status and authorized review', () => {
     await expect(page.getByText(email, { exact: true }).first()).toBeVisible();
   });
 
+  test('replacement email actions preserve the unsaved identity draft and current version', async ({
+    page,
+  }) => {
+    const f = await fixtures.createFixture();
+    const client = (await fixtures.signIn(f)).client;
+    await login(page, f.email);
+    await page.getByRole('button', { name: 'Edit application', exact: true }).click();
+    const name = 'Synthetic unsaved identity draft';
+    const number = '00' + crypto.randomUUID();
+    await page.getByLabel('Full name (required)').fill(name);
+    await page.getByLabel('Student number (required)').fill(number);
+    await page
+      .getByLabel('Replacement email (required)', { exact: true })
+      .fill(
+        `fixture-${fixtures.runId.slice(0, 8)}-${crypto.randomUUID().slice(0, 8)}@caloocan.sti.edu.ph`
+      );
+    await page.getByRole('button', { name: 'Verify replacement email', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('verification queued');
+    await expect(page.getByLabel('Full name (required)')).toHaveValue(name);
+    await expect(page.getByLabel('Student number (required)')).toHaveValue(number);
+    expect((await client.rpc('application_details')).data.version).toBe(2);
+    await page.getByRole('button', { name: 'Cancel replacement email', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('cancelled');
+    await expect(page.getByLabel('Full name (required)')).toHaveValue(name);
+    await expect(page.getByLabel('Student number (required)')).toHaveValue(number);
+    expect((await client.rpc('application_details')).data.version).toBe(3);
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Changes saved');
+    expect((await client.rpc('application_details')).data).toMatchObject({
+      version: 4,
+      full_name: name,
+      student_number: number,
+      email: f.email,
+    });
+  });
+  test('wordmark navigation asks before abandoning unsaved identity edits', async ({ page }) => {
+    const f = await fixtures.createFixture();
+    await login(page, f.email);
+    await page.getByRole('button', { name: 'Edit application', exact: true }).click();
+    await page.getByLabel('Full name (required)').fill('Synthetic draft to retain');
+    await page.getByLabel('Student number (required)').fill('00999');
+    let leave = false;
+    const prompts: string[] = [];
+    page.on('dialog', async (dialog) => {
+      prompts.push(dialog.message());
+      if (leave) await dialog.accept();
+      else await dialog.dismiss();
+    });
+    const wordmark = page.getByRole('link', { name: 'CS-GAMUERS', exact: true });
+    await wordmark.focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/auth\/status$/);
+    expect(prompts).toHaveLength(1);
+    await expect(page.getByLabel('Full name (required)')).toHaveValue('Synthetic draft to retain');
+    await expect(page.getByLabel('Student number (required)')).toHaveValue('00999');
+    leave = true;
+    await wordmark.focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL('https://127.0.0.1:3443/');
+    expect(prompts).toHaveLength(2);
+  });
   for (const width of [1280, 320])
     test(`pending applicant edits same application at ${width}px`, async ({ page }) => {
       const f = await fixtures.createFixture();
