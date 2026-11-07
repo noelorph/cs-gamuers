@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { randomBytes, randomUUID } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { AuthApiError } from '@supabase/supabase-js';
 import { mkdir } from 'node:fs/promises';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 import {
@@ -353,6 +354,75 @@ test('resend acknowledges unknown and ineligible addresses equally and throttles
       code: 'throttled',
     });
   }
+});
+test.each([
+  'native 429',
+  'native returned failure',
+  'native thrown failure',
+  'lookup returned failure',
+  'lookup thrown failure',
+])('unbound resend does not expose account state during %s', async (failure) => {
+  const pending = await createFixture('faculty', false);
+  const confirmed = await createFixture('faculty');
+  const rejected = await createFixture('faculty', false);
+  await harness('state', { account_id: rejected.id, status: 'rejected' });
+  if (failure === 'lookup returned failure') {
+    vi.spyOn(admin.auth.admin, 'getUserById').mockResolvedValue({
+      data: { user: null },
+      error: new AuthApiError('Lookup unavailable', 500, 'unexpected_failure'),
+    });
+  } else if (failure === 'lookup thrown failure') {
+    vi.spyOn(admin.auth.admin, 'getUserById').mockRejectedValue(new Error('Lookup response lost'));
+  } else if (failure === 'native thrown failure') {
+    vi.spyOn(admin.auth, 'resend').mockRejectedValue(new Error('Delivery response lost'));
+  } else {
+    vi.spyOn(admin.auth, 'resend').mockResolvedValue({
+      data: { user: null, session: null },
+      error: new AuthApiError(
+        'Delivery unavailable',
+        failure === 'native 429' ? 429 : 500,
+        failure === 'native 429' ? 'over_email_send_rate_limit' : 'unexpected_failure'
+      ),
+    });
+  }
+  const responses = [];
+  for (const email of [input('faculty').email, pending.email, confirmed.email, rejected.email]) {
+    responses.push(await resendVerification(email));
+  }
+  expect(responses).toEqual(Array(4).fill({ ok: true, code: 'acknowledged' }));
+});
+test.each([
+  'native 429',
+  'native returned failure',
+  'native thrown failure',
+  'lookup returned failure',
+  'lookup thrown failure',
+])('bound registration preserves useful retry feedback during %s', async (failure) => {
+  if (failure === 'lookup returned failure') {
+    vi.spyOn(admin.auth.admin, 'getUserById').mockResolvedValue({
+      data: { user: null },
+      error: new AuthApiError('Lookup unavailable', 500, 'unexpected_failure'),
+    });
+  } else if (failure === 'lookup thrown failure') {
+    vi.spyOn(admin.auth.admin, 'getUserById').mockRejectedValue(new Error('Lookup response lost'));
+  } else if (failure === 'native thrown failure') {
+    vi.spyOn(admin.auth, 'resend').mockRejectedValue(new Error('Delivery response lost'));
+  } else {
+    vi.spyOn(admin.auth, 'resend').mockResolvedValue({
+      data: { user: null, session: null },
+      error: new AuthApiError(
+        'Delivery unavailable',
+        failure === 'native 429' ? 429 : 500,
+        failure === 'native 429' ? 'over_email_send_rate_limit' : 'unexpected_failure'
+      ),
+    });
+  }
+  const session = browser();
+  expect(await jar.run(session, () => registerAccount(input('faculty')))).toEqual({
+    ok: false,
+    code: failure === 'native 429' ? 'throttled' : 'unavailable',
+  });
+  expect(session.values.get('__Host-registration')).toMatch(/^[a-f0-9]{64}$/);
 });
 test('public reservation binds normalized identity and rejects privileged role requests', async () => {
   const input = args();

@@ -33,7 +33,8 @@ function failure(error: unknown): { ok: false; code: 'throttled' | 'unavailable'
   };
 }
 async function issueVerification(
-  email: string
+  email: string,
+  boundRegistration: boolean
 ): Promise<
   | { ok: true; code: 'acknowledged'; queued: boolean }
   | { ok: false; code: 'throttled' | 'unavailable' }
@@ -48,19 +49,24 @@ async function issueVerification(
   if (result.error || !result.data) return { ok: false, code: 'unavailable' };
   if (result.data === 'throttled') return { ok: false, code: 'throttled' };
   if (result.data !== 'acknowledge') {
-    const target = await admin.auth.admin.getUserById(result.data);
-    if (target.error || target.data.user?.email !== email)
-      return { ok: false, code: 'unavailable' };
-    if (target.data.user.email_confirmed_at)
-      return { ok: true, code: 'acknowledged', queued: false };
-    const sent = await admin.auth.resend({
-      type: 'signup',
-      email,
-      options: { emailRedirectTo: new URL('/auth/email', getAppEnv().appOrigin).href },
-    });
-    if (sent.error)
-      return { ok: false, code: sent.error.status === 429 ? 'throttled' : 'unavailable' };
-    return { ok: true, code: 'acknowledged', queued: true };
+    try {
+      const target = await admin.auth.admin.getUserById(result.data);
+      if (target.error || target.data.user?.email !== email)
+        throw new Error('Verification unavailable');
+      if (target.data.user.email_confirmed_at)
+        return { ok: true, code: 'acknowledged', queued: false };
+      const sent = await admin.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: new URL('/auth/email', getAppEnv().appOrigin).href },
+      });
+      if (sent.error?.status === 429) throw new AuthenticationThrottled();
+      if (sent.error) throw sent.error;
+      return { ok: true, code: 'acknowledged', queued: true };
+    } catch (error) {
+      // Unbound callers must not learn which addresses require native lookup or mail.
+      if (boundRegistration) return failure(error);
+    }
   }
   return { ok: true, code: 'acknowledged', queued: false };
 }
@@ -112,7 +118,7 @@ export async function registerAccount(input: unknown): Promise<RegistrationResul
     }
     let queued = false;
     if (reservation) {
-      const verification = await issueVerification(value.email);
+      const verification = await issueVerification(value.email, true);
       if (!verification.ok) return verification;
       queued = verification.queued;
     }
@@ -129,7 +135,7 @@ export async function resendVerification(email: string): Promise<VerificationRes
     email = email.trim().toLowerCase();
     if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return { ok: false, code: 'invalid_input' };
-    const result = await issueVerification(email);
+    const result = await issueVerification(email, false);
     return result.ok ? { ok: true, code: 'acknowledged' } : result;
   } catch (error) {
     return failure(error);
