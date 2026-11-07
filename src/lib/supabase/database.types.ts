@@ -250,6 +250,10 @@ export type Database = {
         Returns: Json;
       };
       reconcile_auth_mail: { Args: never; Returns: undefined };
+      request_registration_verification: {
+        Args: { email: string };
+        Returns: string;
+      };
       reserve_demo_application: {
         Args: {
           email: string;
@@ -258,6 +262,17 @@ export type Database = {
           manifest_hash: string;
           project_ref: string;
           slot: string;
+          student_number?: string;
+        };
+        Returns: Json;
+      };
+      reserve_registration: {
+        Args: {
+          capability_hash: string;
+          email: string;
+          employee_number?: string;
+          full_name: string;
+          role: Database['public']['Enums']['account_role'];
           student_number?: string;
         };
         Returns: Json;

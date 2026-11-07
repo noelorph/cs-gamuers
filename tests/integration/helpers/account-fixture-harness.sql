@@ -26,6 +26,30 @@ begin
       or args ->> 'project_ref' is distinct from 'ggiccvcrkydcimveyrfi' then
     raise exception 'Isolated test marker required';
   end if;
+  if action = 'expire_registration' then
+    if args->>'email' not like 'fixture-'||run_id::text||'-%@%' then raise exception 'Fixture namespace required'; end if;
+    update private.account_reservations set expires_at=clock_timestamp()-interval '1 second'
+      where email=args->>'email' and synthetic and registration_capability_hash is not null and purpose='registration';
+    return '{}'::jsonb;
+  end if;
+  if action = 'age_verification_requests' then
+    if args->>'email' not like 'fixture-'||run_id::text||'-%@%' then raise exception 'Fixture namespace required'; end if;
+    update private.verification_requests set created_at=created_at-interval '61 seconds'
+      where email_hash=sha256(convert_to(args->>'email','UTF8'));
+    return '{}'::jsonb;
+  end if;
+  if action = 'adopt_registration' then
+    if args->>'email' not like 'fixture-'||run_id::text||'-%@%' then raise exception 'Fixture namespace required'; end if;
+    select r.id into reservation_id from private.account_reservations r
+      where r.email=args->>'email' and r.synthetic and r.registration_capability_hash is not null and r.released_at is null;
+    if not found then return null; end if;
+    insert into private.test_fixture_reservations values(run_id,reservation_id) on conflict do nothing;
+    return (select jsonb_build_object('reservation_id',r.id,'account_id',r.account_id,'email',r.email,'full_name',r.full_name,
+      'student_number',r.student_number,'employee_number',r.employee_number,'role',r.role,
+      'application_status',a.application_status,'active',a.active,
+      'account_count',(select count(*) from public.accounts where email=r.email))
+      from private.account_reservations r left join public.accounts a on a.id=r.account_id where r.id=reservation_id);
+  end if;
   if action = 'adopt' then
     reservation_id := (args->>'reservation_id')::uuid;
     if not exists(select 1 from private.account_reservations where id=reservation_id and synthetic and email like 'fixture-'||left(run_id::text,8)||'-%@%') then raise exception 'Fixture namespace required'; end if;
@@ -52,6 +76,14 @@ begin
       'guard_login_or_bypass',(select rolcanlogin or rolbypassrls or rolsuper from pg_roles where rolname='account_guard_owner'),
       'client_guard_membership',exists(select 1 from pg_roles where rolname in ('anon','authenticated','service_role') and pg_has_role(oid,'account_guard_owner','MEMBER'))
     );
+  end if;
+  if action in ('cleanup_ids','cleanup') then
+    -- A crashed public request may commit before its caller can adopt the reservation.
+    insert into private.test_fixture_reservations(run_id,reservation_id)
+      select run_id,r.id from private.account_reservations r
+      where r.synthetic and r.registration_capability_hash is not null
+        and r.email like 'fixture-'||run_id::text||'-%@%'
+      on conflict do nothing;
   end if;
   if action = 'cleanup_ids' then
     return (select coalesce(jsonb_agg(r.account_id) filter(where r.account_id is not null),'[]') from private.account_reservations r join private.test_fixture_reservations f on f.reservation_id=r.id where f.run_id=test_account_fixture.run_id);
