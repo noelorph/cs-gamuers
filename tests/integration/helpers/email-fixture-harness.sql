@@ -7,7 +7,7 @@ declare p private.email_proofs; account_id uuid := (args->>'account_id')::uuid;
 begin
   if not exists(select 1 from private.environment where mode='test' and project_ref='ggiccvcrkydcimveyrfi') or args->>'project_ref' is distinct from 'ggiccvcrkydcimveyrfi' then raise exception 'Isolated test marker required'; end if;
   if not exists(select 1 from private.test_fixture_reservations f join private.account_reservations r on r.id=f.reservation_id where f.run_id=test_email_fixture.run_id and r.account_id=fixture.account_id) then raise exception 'Unknown fixture account'; end if;
-  select * into p from private.email_proofs where email_proofs.account_id=fixture.account_id order by generation desc limit 1;
+  select * into p from private.email_proofs where email_proofs.account_id=fixture.account_id order by created_at desc,id desc limit 1;
   if action='decision_counts' then
     return (select jsonb_build_object('decisions',(select count(*) from private.account_events where account_events.account_id=fixture.account_id and event='application_approved'),'notices',count(*),'mail_state',min(m.state),'attempts',max(m.attempts)) from private.mail_work m join private.account_events e on e.id=m.event_id where e.account_id=fixture.account_id and e.event='application_approved');
   elsif action='hook_recovery' then

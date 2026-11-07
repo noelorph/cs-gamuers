@@ -7,7 +7,7 @@ import { validateInvitationInput } from '@/features/accounts/validation';
 
 type Confirmation = {
   operationId: string;
-  purpose: 'verification' | 'invitation';
+  purpose: 'verification' | 'invitation' | 'replacement';
   invitation?: { email: string; role: 'administrator' | 'program_head' };
 };
 type Props = {
@@ -22,6 +22,7 @@ type Props = {
 export function EmailForm({ challenge, prepare, confirm, complete }: Props) {
   const [operation, setOperation] = useState<Confirmation | null>(null);
   const [done, setDone] = useState(false);
+  const [replacementDone, setReplacementDone] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [fields, setFields] = useState<{
@@ -46,12 +47,18 @@ export function EmailForm({ challenge, prepare, confirm, complete }: Props) {
           tabIndex={-1}
           className="focus:outline-solid focus:outline-3 focus:outline-ring focus:outline-offset-2 m-0 text-2xl font-semibold"
         >
-          {operation ? 'Invitation accepted' : 'Email verified'}
+          {replacementDone
+            ? 'Replacement email verified'
+            : operation
+              ? 'Invitation accepted'
+              : 'Email verified'}
         </h1>
         <p role="status">
-          {operation
-            ? 'Your invitation is complete. Sign in with your CS-GAMUERS password.'
-            : 'Email verified. Your application still needs approval.'}
+          {replacementDone
+            ? 'Your email was changed. Previous sessions have ended. Sign in with your replacement email and existing password.'
+            : operation
+              ? 'Your invitation is complete. Sign in with your CS-GAMUERS password.'
+              : 'Email verified. Your application still needs approval.'}
         </p>
         <Link
           href={
@@ -110,8 +117,10 @@ export function EmailForm({ challenge, prepare, confirm, complete }: Props) {
         else {
           progressed = true;
           if (window.location.search) window.history.replaceState(null, '', '/auth/email');
-          if (result.purpose === 'verification') setDone(true);
-          else setOperation(result);
+          if (result.purpose === 'verification' || result.purpose === 'replacement') {
+            setReplacementDone(result.purpose === 'replacement');
+            setDone(true);
+          } else setOperation(result);
         }
       } else {
         const result = await complete(operation.operationId, {

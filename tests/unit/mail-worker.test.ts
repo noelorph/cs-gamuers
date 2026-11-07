@@ -98,3 +98,82 @@ it('revalidates each waiting job after another send and skips superseded work', 
   expect(sent).toEqual(['first@example.com']);
   expect(validated).toEqual(['first', 'second']);
 });
+it.each(['needs_correction', 'rejected', 'reopened'])(
+  'delivers %s with the saved reason without repeating the decision',
+  async (kind) => {
+    const { deliverBatch } = await import('../../scripts/mail-worker.mjs');
+    const sent: { text: string; subject: string }[] = [];
+    const calls: string[] = [];
+    const client = {
+      rpc: async (name: string) => {
+        calls.push(name);
+        return {
+          error: null,
+          data:
+            name === 'claim_mail_work'
+              ? [
+                  {
+                    id: 'decision',
+                    lease_id: 'claim',
+                    recipient: 'fixture@example.invalid',
+                    kind,
+                    reason: 'Correct the enrollment name.\nKeep leading zeros.',
+                  },
+                ]
+              : name === 'prepare_mail_work'
+                ? true
+                : null,
+        };
+      },
+    };
+    await deliverBatch(
+      client,
+      {
+        sendMail: async (message: { text: string; subject: string }) => {
+          sent.push(message);
+          return { accepted: ['fixture@example.invalid'] };
+        },
+      },
+      { origin: 'https://demo.example', from: 'sender@example.invalid' }
+    );
+    expect(sent[0].text).toContain('Correct the enrollment name.\nKeep leading zeros.');
+    expect(sent[0].text).toContain('/auth/sign-in');
+    expect(sent[0].subject).toContain('application');
+    expect(calls).toEqual(['claim_mail_work', 'prepare_mail_work', 'finish_mail_work']);
+  }
+);
+it('sends the old-address identity notice without calling it an application rejection', async () => {
+  const { deliverBatch } = await import('../../scripts/mail-worker.mjs');
+  let text = '';
+  const client = {
+    rpc: async (name: string) => ({
+      error: null,
+      data:
+        name === 'claim_mail_work'
+          ? [
+              {
+                id: 'identity',
+                lease_id: 'lease',
+                recipient: 'old@example.invalid',
+                kind: 'identity_changed',
+                reason: 'The email on your CS-GAMUERS application was changed.',
+              },
+            ]
+          : name === 'prepare_mail_work'
+            ? true
+            : null,
+    }),
+  };
+  await deliverBatch(
+    client,
+    {
+      sendMail: async (message: { text: string }) => {
+        text = message.text;
+        return { accepted: ['old@example.invalid'] };
+      },
+    },
+    { origin: 'https://demo.example', from: 'fixture@example.invalid' }
+  );
+  expect(text).toContain('email was changed');
+  expect(text).not.toContain('was rejected');
+});

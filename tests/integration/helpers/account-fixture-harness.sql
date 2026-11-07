@@ -89,6 +89,11 @@ begin
     return (select coalesce(jsonb_agg(r.account_id) filter(where r.account_id is not null),'[]') from private.account_reservations r join private.test_fixture_reservations f on f.reservation_id=r.id where f.run_id=test_account_fixture.run_id);
   end if;
   if action = 'cleanup' then
+    -- Adopt replacement reservations only for accounts already owned by this exact run.
+    insert into private.test_fixture_reservations(run_id,reservation_id)
+      select run_id,r.id from private.account_reservations r where r.synthetic and r.account_id in
+        (select owned.account_id from private.account_reservations owned join private.test_fixture_reservations f on f.reservation_id=owned.id where f.run_id=test_account_fixture.run_id)
+      on conflict do nothing;
     select array_agg(f.reservation_id) into reservation_ids from private.test_fixture_reservations f where f.run_id=test_account_fixture.run_id;
     select coalesce(jsonb_agg(r.account_id) filter(where r.account_id is not null),'[]') into ids
       from private.account_reservations r join private.test_fixture_reservations f on f.reservation_id=r.id

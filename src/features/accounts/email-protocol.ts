@@ -8,7 +8,7 @@ const unavailable = () => new Error('This link is unavailable. Ask the operator 
 type Proof = {
   proof_id: string;
   account_id: string;
-  purpose: 'verification' | 'invitation';
+  purpose: 'verification' | 'invitation' | 'replacement';
   state: 'claimed' | 'verified' | 'complete';
   operation_id: string | null;
   operation_state?: string;
@@ -59,7 +59,8 @@ export async function confirmProof(
   client: SupabaseClient,
   nativeClient: SupabaseClient,
   challenge: string,
-  capabilityHash: string
+  capabilityHash: string,
+  admitReplacement?: () => Promise<unknown>
 ) {
   if (!/^[a-f0-9]{64}$/.test(challenge) || !/^[a-f0-9]{64}$/.test(capabilityHash))
     throw unavailable();
@@ -69,6 +70,32 @@ export async function confirmProof(
   });
   if (claimed.error || !claimed.data) throw unavailable();
   let proof = claimed.data as Proof;
+  if (proof.purpose === 'replacement') {
+    let current = await advance(client, proof.proof_id, capabilityHash, 'inspect');
+    if (current.operation_state === 'verified' || current.operation_state === 'applying') {
+      if (!admitReplacement) throw unavailable();
+      await admitReplacement();
+      if (current.operation_state === 'verified')
+        current = await advance(client, proof.proof_id, capabilityHash, 'apply');
+      const user = await client.auth.admin.getUserById(proof.account_id);
+      if (user.error || !user.data.user) throw unavailable();
+      await client.auth.admin
+        .updateUserById(proof.account_id, {
+          email: proof.recipient,
+          email_confirm: true,
+          app_metadata: {
+            ...user.data.user.app_metadata,
+            identity_operation_id: proof.operation_id,
+          },
+        })
+        .catch(() => null);
+      current = await advance(client, proof.proof_id, capabilityHash, 'inspect');
+    }
+    if (current.operation_state === 'auth_applied')
+      current = await advance(client, proof.proof_id, capabilityHash, 'finish');
+    if (current.state !== 'complete') throw unavailable();
+    return { operationId: proof.proof_id, purpose: proof.purpose, expiresAt: proof.expires_at };
+  }
   if (proof.state === 'claimed') {
     let state = await advance(client, proof.proof_id, capabilityHash, 'inspect');
     if (proof.native_type === 'invite' && state.operation_state !== 'auth_applied') {

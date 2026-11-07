@@ -21,11 +21,12 @@ export async function deliverBatch(client, transport, { origin, from }) {
         from,
         to: job.recipient,
         messageId: `<${job.id}@cs-gamuers.local>`,
-        subject:
-          job.kind === 'approved' ? 'CS-GAMUERS account ready' : 'Confirm your CS-GAMUERS email',
+        subject: url ? 'Confirm your CS-GAMUERS email' : 'CS-GAMUERS application update',
         text: url
           ? `Confirm your email using this link on the demonstration network:\n\n${url}\n\nThis link expires 30 minutes after issue. Opening it does not accept it. If you did not expect this email, ignore it.`
-          : 'Your demonstration account decision has been saved. Sign in with your own password on the demonstration network.',
+          : job.kind === 'identity_changed'
+            ? `Your application email was changed.\n\n${job.reason}\n\nIf you did not request this, contact an Administrator.`
+            : `Your application ${job.kind === 'approved' ? 'was approved' : job.kind === 'needs_correction' ? 'needs correction' : job.kind === 'reopened' ? 'was reopened for review' : 'was rejected'}.\n\n${job.reason ?? ''}\n\nView the current status: ${origin}/auth/sign-in\n\nSign in with your own CS-GAMUERS password on the demonstration network.`,
         disableFileAccess: true,
         disableUrlAccess: true,
       });

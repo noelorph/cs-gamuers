@@ -17,6 +17,8 @@ export const paths = {
   facultySignUp: '/auth/sign-up/faculty',
   signOut: '/auth/sign-out',
   courses: '/faculty/courses',
+  applications: (role: 'faculty' | 'administrator') =>
+    role === 'faculty' ? '/faculty/applications' : '/admin/applications',
   newCourse: '/faculty/courses/new',
   roleHome: (role: keyof typeof roleHomes) => roleHomes[role],
   courseDraft: (id: string) => `/faculty/courses/${encodeURIComponent(id)}`,

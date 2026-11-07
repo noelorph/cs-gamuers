@@ -12,6 +12,8 @@ export type Database = {
         Row: {
           active: boolean;
           application_status: Database['public']['Enums']['application_status'];
+          application_version: number;
+          applied_at: string;
           email: string;
           employee_number: string | null;
           full_name: string;
@@ -26,6 +28,8 @@ export type Database = {
         Insert: {
           active?: boolean;
           application_status?: Database['public']['Enums']['application_status'];
+          application_version?: number;
+          applied_at?: string;
           email: string;
           employee_number?: string | null;
           full_name: string;
@@ -40,6 +44,8 @@ export type Database = {
         Update: {
           active?: boolean;
           application_status?: Database['public']['Enums']['application_status'];
+          application_version?: number;
+          applied_at?: string;
           email?: string;
           employee_number?: string | null;
           full_name?: string;
@@ -188,6 +194,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      application_details: { Args: { target_id?: string }; Returns: Json };
       apply_invitation_details: {
         Args: {
           capability_hash: string;
@@ -211,11 +218,26 @@ export type Database = {
         };
         Returns: Json;
       };
+      cancel_application_email: {
+        Args: { expected_version: number };
+        Returns: Json;
+      };
       claim_email_challenge: {
         Args: { capability_hash: string; challenge_hash: string };
         Returns: Json;
       };
       claim_mail_work: { Args: { batch_size?: number }; Returns: Json };
+      correct_student_number: {
+        Args: {
+          error_verified: boolean;
+          expected_version: number;
+          reason: string;
+          replacement_number: string;
+          student_number: string;
+          target_id: string;
+        };
+        Returns: Json;
+      };
       create_course_draft: {
         Args: { course_id: string; details: Json };
         Returns: Json;
@@ -245,6 +267,13 @@ export type Database = {
         Args: { claim_id: string; delivered: boolean; work_id: string };
         Returns: undefined;
       };
+      list_applications: {
+        Args: {
+          applicant_role?: Database['public']['Enums']['account_role'];
+          status?: Database['public']['Enums']['application_status'];
+        };
+        Returns: Json;
+      };
       prepare_mail_work: {
         Args: { claim_id: string; work_id: string };
         Returns: boolean;
@@ -259,6 +288,10 @@ export type Database = {
         Returns: Json;
       };
       reconcile_auth_mail: { Args: never; Returns: undefined };
+      request_application_email: {
+        Args: { email: string; expected_version: number };
+        Returns: Json;
+      };
       request_registration_verification: {
         Args: { email: string };
         Returns: string;
@@ -292,6 +325,30 @@ export type Database = {
           full_name: string;
           manifest_hash: string;
           project_ref: string;
+        };
+        Returns: Json;
+      };
+      resubmit_application: {
+        Args: { expected_version: number };
+        Returns: Json;
+      };
+      review_application: {
+        Args: {
+          attestations: Json;
+          decision: string;
+          expected_version: number;
+          reason: string;
+          request_id: string;
+          target_id: string;
+        };
+        Returns: Json;
+      };
+      save_application: {
+        Args: {
+          employee_number: string;
+          expected_version: number;
+          full_name: string;
+          student_number: string;
         };
         Returns: Json;
       };

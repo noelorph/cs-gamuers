@@ -26,8 +26,16 @@ export const roleLabels: Record<Role, string> = {
 export const facultyNav: NavItem[] = [
   { label: 'Home', href: paths.roleHome('faculty') },
   { label: 'Course drafts', href: paths.courses },
+  { label: 'Student applications', href: paths.applications('faculty') },
 ];
-const navByRole: Partial<Record<Role, NavItem[]>> = { faculty: facultyNav };
+export const adminNav: NavItem[] = [
+  { label: 'Home', href: paths.roleHome('administrator') },
+  { label: 'Applications', href: paths.applications('administrator') },
+];
+const navByRole: Partial<Record<Role, NavItem[]>> = {
+  faculty: facultyNav,
+  administrator: adminNav,
+};
 export function AppShell({
   title,
   nav = [],
