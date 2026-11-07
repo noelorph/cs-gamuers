@@ -89,6 +89,7 @@ cs-gamuers/
 │   └── e2e/                        # Playwright user flows
 ├── docs/
 │   ├── agents/                     # Agent workflow and domain guidance
+│   ├── design/                     # Scoped UI references and design verification
 │   ├── diagrams/                   # Product diagrams, previews, traceability
 │   ├── project-documents/          # Historical reference material
 │   └── superpowers/
@@ -158,7 +159,7 @@ Create the pending application atomically with the Auth user through a narrow de
 
 Bootstrap is an operator command, not a web endpoint. Under a database lock reserve one invitation only when no Administrator exists. Invite the school-designated email normally; no shared password or silent email verification. Interrupted/expired bootstrap resumes/reissues that invitation. Once accepted, additional Administrators use the ordinary invitation flow.
 
-All roles share email/password sign-in. Pending/Needs correction/Rejected accounts have only PRD application access. Deactivated accounts have no authenticated application access. Email verification never grants manual approval. One Administrator cannot perform their own assisted recovery; normal email reset remains possible, and a second Administrator must be legitimately appointed for assisted recovery. No emergency backdoor.
+All roles use email/password authentication. The owner-approved [role authentication plan](docs/superpowers/plans/2026-11-06-role-authentication.md) separates Administrator entry at `/admin/sign-in` from Student/Faculty/Program Head entry at `/auth/sign-in`, reusing shared controls and authentication services. This route separation is a planned extension; it does not change the database permission or session boundary. The [UI reference](docs/design/authentication/role-authentication.md) specifies the affected screens. Pending/Needs correction/Rejected accounts have only PRD application access. Deactivated accounts have no authenticated application access. Email verification never grants manual approval. One Administrator cannot perform their own assisted recovery; normal email reset remains possible, and a second Administrator must be legitimately appointed for assisted recovery. No emergency backdoor.
 
 ### Immediate revocation and state changes
 
