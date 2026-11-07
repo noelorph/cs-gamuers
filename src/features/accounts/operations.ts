@@ -6,7 +6,7 @@ import { capabilityCookie, capabilityOptions, readEmailCapability } from './emai
 
 export async function completeInvitation(
   operationId: string,
-  input: { fullName: string; password: string }
+  input: { fullName: string; password: string; employeeNumber?: string | null }
 ): Promise<{ complete: true }> {
   const capability = await readEmailCapability();
   if (!/^[a-f0-9-]{36}$/.test(operationId)) throw new Error('Confirm the email link again.');

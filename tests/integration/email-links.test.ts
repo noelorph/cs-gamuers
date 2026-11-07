@@ -269,11 +269,37 @@ it('completes a real native invitation through two fenced operations and require
   const cap = capability();
   const operation = await subject.confirmProof(admin, anonymous(), p.challenge, cap);
   expect(operation.purpose).toBe('invitation');
+  expect(operation).toHaveProperty('invitation', { email: f.email, role: 'program_head' });
+  expect(
+    Boolean(
+      (
+        await admin.rpc('apply_invitation_details', {
+          proof_id: operation.operationId,
+          capability_hash: capability(),
+          employee_number: 'intruder',
+          full_name: 'Intruder',
+        })
+      ).error
+    )
+  ).toBe(true);
+  expect(
+    Boolean(
+      (
+        await anonymous().rpc('apply_invitation_details', {
+          proof_id: operation.operationId,
+          capability_hash: cap,
+          employee_number: 'intruder',
+          full_name: 'Intruder',
+        })
+      ).error
+    )
+  ).toBe(true);
   expect(await subject.confirmProof(admin, anonymous(), p.challenge, cap)).toEqual(operation);
   const password = 'Holder chosen synthetic passphrase';
   await subject.finishInvitation(admin, operation.operationId, cap, {
     fullName: 'Synthetic invited holder',
     password,
+    employeeNumber: '001-A',
   });
   await subject.finishInvitation(admin, operation.operationId, cap, {
     fullName: 'Synthetic invited holder',
@@ -281,6 +307,15 @@ it('completes a real native invitation through two fenced operations and require
   });
   const signed = await signIn(f, password);
   expect(await actor(signed.client)).toHaveLength(1);
+  expect((await inspect(id)).employee_number).toBe('001-A');
+  const replay = await admin.rpc('apply_invitation_details', {
+    proof_id: operation.operationId,
+    capability_hash: cap,
+    employee_number: 'changed-after-approval',
+    full_name: 'Changed after approval',
+  });
+  expect(Boolean(replay.error)).toBe(true);
+  expect((await inspect(id)).employee_number).toBe('001-A');
   expect(await inspect(id)).toHaveProperty('native_erased', true);
 });
 it('rejects completion after reservation release and maintenance clears the cancelled proof', async () => {
@@ -423,10 +458,10 @@ it('maintenance finalizes an Auth-applied password without retaining or replayin
   const p = await inspect(id);
   const cap = capability();
   const proof = await confirmProof(admin, anonymous(), p.challenge, cap);
-  const applying = await admin.rpc('advance_email_operation', {
+  const applying = await admin.rpc('apply_invitation_details', {
     proof_id: proof.operationId,
     capability_hash: cap,
-    step: 'apply',
+    employee_number: '000-RECONCILED',
     full_name: 'Synthetic holder',
   });
   expect(Boolean(applying.error)).toBe(false);
@@ -436,7 +471,7 @@ it('maintenance finalizes an Auth-applied password without retaining or replayin
   });
   expect(Boolean(result.error)).toBe(false);
   expect(Boolean((await admin.rpc('reconcile_auth_mail')).error)).toBe(false);
-  expect(await inspect(id)).toHaveProperty('state', 'complete');
+  expect(await inspect(id)).toMatchObject({ state: 'complete', employee_number: '000-RECONCILED' });
 });
 it('can reissue the native invitation after an interrupted verified setup', async () => {
   const { reserveFixture } = await import('./helpers/fixtures');

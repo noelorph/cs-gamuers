@@ -38,8 +38,8 @@ export function validateAccountInput(
 export function validateInvitationInput(
   input: unknown
 ):
-  | { data: { fullName: string; password: string } }
-  | { errors: { fullName?: string; password?: string } } {
+  | { data: { fullName: string; password: string; employeeNumber: string | null } }
+  | { errors: { fullName?: string; password?: string; employeeNumber?: string } } {
   const value =
     input && typeof input === 'object' && !Array.isArray(input)
       ? (input as Record<string, unknown>)
@@ -48,9 +48,22 @@ export function validateInvitationInput(
     role: 'faculty',
     email: 'invitation@example.com',
     fullName: value.fullName,
+    employeeNumber: value.employeeNumber,
     password: value.password,
   });
   if ('errors' in result)
-    return { errors: { fullName: result.errors.fullName, password: result.errors.password } };
-  return { data: { fullName: result.data.fullName, password: result.data.password } };
+    return {
+      errors: {
+        fullName: result.errors.fullName,
+        password: result.errors.password,
+        employeeNumber: result.errors.employeeNumber,
+      },
+    };
+  return {
+    data: {
+      fullName: result.data.fullName,
+      password: result.data.password,
+      employeeNumber: result.data.employeeNumber,
+    },
+  };
 }

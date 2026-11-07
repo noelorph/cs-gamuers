@@ -24,13 +24,13 @@ export async function confirmEmail(challenge: string) {
   } catch {
     return {
       error:
-        'This link is unavailable or still resolving. Retry shortly, or ask the operator for a new email.',
+        'This link is no longer available. It may have expired or been replaced. Try again to check this link, request verification, or contact your inviter.',
     };
   }
 }
 export async function acceptInvitation(
   operationId: string,
-  input: { fullName: string; password: string }
+  input: { fullName: string; password: string; employeeNumber?: string | null }
 ) {
   try {
     await requireOrigin();

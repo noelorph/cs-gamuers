@@ -15,6 +15,7 @@ type Proof = {
   native_verifier?: string;
   native_type: 'signup' | 'invite' | 'recovery';
   recipient: string;
+  role: 'program_head' | 'administrator';
   expires_at: string;
 };
 
@@ -101,14 +102,22 @@ export async function confirmProof(
     }
     proof = await advance(client, proof.proof_id, capabilityHash, 'redeemed');
   }
-  return { operationId: proof.proof_id, purpose: proof.purpose, expiresAt: proof.expires_at };
+  const current = await advance(client, proof.proof_id, capabilityHash, 'inspect');
+  return {
+    operationId: proof.proof_id,
+    purpose: proof.purpose,
+    expiresAt: proof.expires_at,
+    ...(proof.purpose === 'invitation' && {
+      invitation: { email: current.recipient, role: current.role },
+    }),
+  };
 }
 
 export async function finishInvitation(
   client: SupabaseClient,
   operationId: string,
   capabilityHash: string,
-  input: { fullName: string; password: string }
+  input: { fullName: string; password: string; employeeNumber?: string | null }
 ): Promise<{ complete: true }> {
   const validated = validateInvitationInput(input);
   if (!('data' in validated)) throw new Error('Check your name and password.');
@@ -116,7 +125,14 @@ export async function finishInvitation(
   if (proof.purpose !== 'invitation') throw unavailable();
   if (proof.state === 'complete') return { complete: true };
   if (proof.operation_state === 'verified') {
-    proof = await advance(client, operationId, capabilityHash, 'apply', validated.data.fullName);
+    const staged = await client.rpc('apply_invitation_details', {
+      proof_id: operationId,
+      capability_hash: capabilityHash,
+      employee_number: validated.data.employeeNumber,
+      full_name: validated.data.fullName,
+    });
+    if (staged.error) throw unavailable();
+    proof = staged.data as Proof;
     await markPasswordOperation(client, proof, validated.data.password).catch(() => null);
     // Read the durable fence even when the Auth response is lost or reports failure.
     proof = await advance(client, operationId, capabilityHash, 'inspect');

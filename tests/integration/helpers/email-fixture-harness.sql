@@ -27,7 +27,7 @@ begin
       from private.account_events e where e.id=m.event_id and e.account_id=fixture.account_id;
   elsif action<>'inspect' then raise exception 'Unknown fixture action'; end if;
   return (select jsonb_build_object('id',id,'challenge',delivery_challenge,'lifetime_seconds',extract(epoch from (expires_at-created_at)),
-    'delivery_erased',delivery_challenge is null,'native_erased',native_verifier is null,'state',state)
+    'employee_number',(select employee_number from public.accounts where accounts.id=fixture.account_id),'delivery_erased',delivery_challenge is null,'native_erased',native_verifier is null,'state',state)
     from private.email_proofs where id=p.id);
 end;
 $$;

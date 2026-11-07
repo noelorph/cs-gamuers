@@ -188,6 +188,15 @@ export type Database = {
         };
         Returns: Json;
       };
+      apply_invitation_details: {
+        Args: {
+          capability_hash: string;
+          employee_number: string;
+          full_name: string;
+          proof_id: string;
+        };
+        Returns: Json;
+      };
       approve_demo_application: {
         Args: { project_ref: string; reason: string; target_id: string };
         Returns: Json;

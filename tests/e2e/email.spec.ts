@@ -15,6 +15,8 @@ for (const width of [1280, 320]) {
       false
     );
     await page.keyboard.press('Tab');
+    await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+    await page.getByRole('button', { name: 'Confirm email' }).focus();
     await expect(page.getByRole('button', { name: 'Confirm email' })).toBeFocused();
   });
 }

@@ -52,6 +52,19 @@ export function SignInPage({
               <SessionFeedback searchParams={searchParams} />
             </Suspense>
             {children}
+            {!admin && (
+              <div className="mt-6 space-y-4 text-sm">
+                <p>
+                  <Link href="/auth/sign-up/student">Apply as a Student</Link>
+                </p>
+                <p>
+                  <Link href="/auth/sign-up/faculty">Apply as Faculty</Link>
+                </p>
+                <p>
+                  Email not verified yet? <Link href="/auth/verify-email">Verify your email</Link>
+                </p>
+              </div>
+            )}
             {admin && (
               <p className="mb-0 mt-6 text-sm text-muted-foreground">
                 Administrator accounts are created by invitation.

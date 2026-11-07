@@ -9,6 +9,9 @@ export default function Home() {
         <Button asChild>
           <a href="/auth/sign-in">Sign in</a>
         </Button>
+        <a href="/auth/sign-up/student">Apply as a Student</a>
+        <a href="/auth/sign-up/faculty">Apply as Faculty</a>
+        <a href="/admin/sign-in">Administrator sign in</a>
       </div>
     </main>
   );

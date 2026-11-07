@@ -26,9 +26,11 @@ export async function readEmailCapability() {
   if (!value || !/^[a-f0-9]{64}$/.test(value)) throw new Error('Confirm the email link again.');
   return proofHash(value);
 }
-export async function confirmEmailChallenge(
-  challenge: string
-): Promise<{ operationId: string; purpose: 'verification' | 'invitation' }> {
+export async function confirmEmailChallenge(challenge: string): Promise<{
+  operationId: string;
+  purpose: 'verification' | 'invitation';
+  invitation?: { email: string; role: 'administrator' | 'program_head' };
+}> {
   const capability = await readEmailCapability();
   const native = await createProofAuthClient();
   const result = await confirmProof(createAdminClient(), native, challenge, capability);
@@ -37,5 +39,9 @@ export async function confirmEmailChallenge(
     ...capabilityOptions,
     expires: new Date(result.expiresAt),
   });
-  return { operationId: result.operationId, purpose: result.purpose };
+  return {
+    operationId: result.operationId,
+    purpose: result.purpose,
+    ...(result.invitation && { invitation: result.invitation }),
+  };
 }
