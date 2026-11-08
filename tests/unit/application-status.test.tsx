@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { Application } from '@/features/accounts/application-types';
 vi.mock('@/app/auth/status/actions', () => ({
@@ -149,3 +149,34 @@ it('discards an identity draft only after a confirmed successful reload', async 
   await waitFor(() => expect(screen.getByRole('status').textContent).toBe('Status refreshed.'));
   expect(screen.queryByLabelText('Full name (required)')).toBeNull();
 });
+
+it.each(['student', 'faculty'] as const)(
+  'locks %s identity inputs while the submitted save is pending',
+  async (role) => {
+    let finish!: (value: Awaited<ReturnType<typeof saveCorrection>>) => void;
+    vi.mocked(saveCorrection).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    render(<ApplicationStatus initial={{ ok: true, value: { ...saved, role } }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit application' }));
+    const name = screen.getByLabelText('Full name (required)') as HTMLInputElement;
+    const number = screen.getByLabelText(
+      role === 'student' ? 'Student number (required)' : 'Employee number (optional)'
+    ) as HTMLInputElement;
+    fireEvent.change(name, { target: { value: 'Submitted name' } });
+    fireEvent.submit(screen.getByRole('button', { name: 'Save changes' }).closest('form')!);
+    expect(name.disabled).toBe(true);
+    expect(number.disabled).toBe(true);
+    await act(async () =>
+      finish({ ok: true, value: { ...saved, role, full_name: 'Submitted name', version: 2 } })
+    );
+    expect(screen.getByRole('status').textContent).toBe('Changes saved.');
+    fireEvent.click(screen.getByRole('button', { name: 'Edit application' }));
+    expect((screen.getByLabelText('Full name (required)') as HTMLInputElement).value).toBe(
+      'Submitted name'
+    );
+  }
+);

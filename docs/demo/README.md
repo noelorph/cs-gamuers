@@ -2,7 +2,8 @@
 
 Account/proof/sign-in and persistent Faculty course-draft implementations are present.
 Local acceptance resumed on 2026-11-08 after the owner's November 7 pause; this milestone is not fully accepted. The [implementation handoff](../implementation-status/2026-11-07-role-authentication.md) preserves the pause and resumed evidence, unfinished checks and next steps. The owner
-confirmed that intended phones and account holders are currently unavailable.
+later said some intended phones or inboxes are available; the exact items have not
+yet been identified for a witnessed acceptance check.
 Real inbox receipt, holder-selected passwords, seven ready accounts, final-network
 rehearsal and physical-device acceptance remain unverified.
 
@@ -44,7 +45,9 @@ notice. These are same-account operations, with retained history and no new role
 The role-authentication migrations and TEST-only fixture harness updates were applied
 only to the exact isolated TEST target after checking target identity. Local migration
 filenames and connector-assigned hosted versions differ; the plan records their
-mapping. Task 5 adds no migration or provider setting. DEMO has not received this
+mapping. A later review correction adds a forward migration, applied only to
+TEST, requiring completed current-email proof before a new application review
+decision. DEMO has not received this
 extension's migrations or rollout verification. Review its existing migration history,
 select DEMO explicitly, apply only the missing application migrations in order, and
 verify real account/proof/role flows before demonstrating this source against DEMO.
@@ -88,6 +91,17 @@ count/digest pairs unchanged and the TEST marker intact. The subsequent full
 unit/integration run passed 330 tests with two opt-in skips and no failures,
 including the previously blocked bootstrap test. Missing coverage remains
 unfinished acceptance work.
+
+After whole-branch review, a forward TEST migration now blocks decisions on
+unverified Pending applications while preserving Administrator reopening of a
+legacy rejection. The queue hides unverified Pending applications, and the
+direct detail view gives guidance without review controls. Correction fields
+lock during Save, and valid sessions opening a wrong-role review URL return to
+their authorized home or status. Focused application and role-route checks
+passed in Chromium and Firefox at desktop and 320 CSS pixels. The final full
+unit/integration run on these corrections passed 343 tests with two opt-in
+skips. The earlier failed full attempts and the still-open browser, inbox,
+device and DEMO checks are recorded in the implementation handoff.
 
 ## Project roles and evidence
 

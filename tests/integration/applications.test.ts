@@ -32,6 +32,10 @@ beforeAll(async () => {
 
 async function applicant(role = 'student') {
   const f = await createFixture(role, false);
+  await verifyApplicant(f);
+  return { ...f, client: (await signIn(f)).client };
+}
+async function verifyApplicant(f: { id: string; email: string }) {
   // Generated native proof is test transport; this does not assert native hook or inbox delivery.
   const link = await admin.auth.admin.generateLink({
     type: 'signup',
@@ -52,7 +56,6 @@ async function applicant(role = 'student') {
     args: { project_ref: testProjectRef, account_id: f.id },
   });
   await confirmProof(admin, anonymous(), p.data.challenge, proofHash(randomUUID()));
-  return { ...f, client: (await signIn(f)).client };
 }
 const read = (client: SupabaseClient, id?: string) =>
   client.rpc('application_details', { target_id: id ?? null });
@@ -80,6 +83,50 @@ const decision = (
   });
 
 describe('ordinary-session application review', { timeout: 15000 }, () => {
+  it.each(['approve', 'needs_correction', 'reject'])(
+    'refuses %s before current-email proof without stranding the native unconfirmed applicant',
+    async (choice) => {
+      const f = await createFixture('student', false);
+      expect((await admin.auth.admin.getUserById(f.id)).data.user?.email_confirmed_at).toBeFalsy();
+      await expect(signIn(f)).rejects.toThrow('email_not_confirmed');
+      for (const reviewer of [faculty, administrator]) {
+        expect((await decision(reviewer, f.id, 1, choice)).error?.code).toBe('55000');
+      }
+      expect((await read(administrator, f.id)).data).toMatchObject({
+        status: 'pending',
+        version: 1,
+        email_verified: false,
+        history: [],
+      });
+      expect(await applicationHarness('inspect', f.id)).toMatchObject({ events: 0, notices: 0 });
+      const queue = await faculty.rpc('list_applications', { status: 'pending' });
+      expect(queue.error).toBeNull();
+      expect(queue.data.some((a: { id: string }) => a.id === f.id)).toBe(false);
+      await verifyApplicant(f);
+      const client = (await signIn(f)).client;
+      expect(
+        (await faculty.rpc('list_applications', { status: 'pending' })).data.some(
+          (a: { id: string }) => a.id === f.id
+        )
+      ).toBe(true);
+      expect((await decision(faculty, f.id, 1, 'needs_correction')).error).toBeNull();
+      expect(
+        (
+          await client.rpc('save_application', {
+            expected_version: 2,
+            full_name: 'Corrected verified applicant',
+            student_number: f.studentNumber,
+            employee_number: null,
+          })
+        ).error
+      ).toBeNull();
+      expect((await client.rpc('resubmit_application', { expected_version: 3 })).error).toBeNull();
+      expect((await decision(faculty, f.id, 4)).error).toBeNull();
+      expect((await read(client)).data).toMatchObject({ status: 'approved', email_verified: true });
+    },
+    20000
+  );
+
   it('allows Faculty to read and approve a verified Student with a recorded notice', async () => {
     const f = await applicant();
     const detail = await read(faculty, f.id);
@@ -208,6 +255,24 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
     });
     await harness('state', { account_id: f.id, active: false });
     expect((await decision(administrator, f.id, 3)).error?.code).toBe('42501');
+  });
+
+  it('allows only verified-error Administrator reopening to recover a legacy unverified rejection', async () => {
+    const f = await createFixture('student', false);
+    await harness('state', { account_id: f.id, status: 'rejected' });
+    const version = (await read(administrator, f.id)).data.version;
+    expect((await decision(faculty, f.id, version, 'reopen')).error?.code).toBe('42501');
+    expect(
+      (await decision(administrator, f.id, version, 'reopen', { attestations: {} })).error?.code
+    ).toBe('23514');
+    expect((await decision(administrator, f.id, version, 'reopen')).error).toBeNull();
+    expect((await read(administrator, f.id)).data).toMatchObject({
+      status: 'pending',
+      email_verified: false,
+    });
+    await verifyApplicant(f);
+    const client = (await signIn(f)).client;
+    expect((await read(client)).data).toMatchObject({ status: 'pending', email_verified: true });
   });
 
   it('rechecks reviewer revocation even for a previously saved request ID', async () => {

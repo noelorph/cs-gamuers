@@ -53,9 +53,19 @@ test('cross-origin sign-out is rejected and GET cannot sign out', async ({ reque
   expect((await request.get('/auth/sign-out')).status()).toBe(405);
 });
 test('all protected destinations refuse a missing session', async ({ page }) => {
-  for (const path of ['/student', '/faculty', '/program-head', '/admin', '/auth/status']) {
+  for (const path of [
+    '/student',
+    '/faculty',
+    '/program-head',
+    '/admin',
+    '/admin/applications',
+    '/faculty/applications',
+    '/auth/status',
+  ]) {
     await page.goto(path);
-    await expect(page).toHaveURL(path === '/admin' ? /\/admin\/sign-in/ : /\/auth\/sign-in/);
+    await expect(page).toHaveURL(
+      path.startsWith('/admin') ? /\/admin\/sign-in/ : /\/auth\/sign-in/
+    );
   }
 });
 
@@ -108,6 +118,15 @@ test.describe('explicit synthetic HTTPS rehearsal', () => {
       await expect(page).toHaveURL(new RegExp(`${destination}$`));
       for (const other of ['/student', '/faculty', '/program-head', '/admin']) {
         await page.goto(other);
+        await expect(page).toHaveURL(new RegExp(`${destination}$`));
+      }
+      for (const review of ['/admin/applications', '/faculty/applications']) {
+        if (
+          (role === 'administrator' && review === '/admin/applications') ||
+          (role === 'faculty' && review === '/faculty/applications')
+        )
+          continue;
+        await page.goto(review);
         await expect(page).toHaveURL(new RegExp(`${destination}$`));
       }
       await page.getByRole('button', { name: 'Sign out' }).click();
@@ -199,6 +218,12 @@ test.describe('explicit synthetic HTTPS rehearsal', () => {
       await expect(page).toHaveURL(new RegExp(`${login}\\?session=ended$`));
       await expect(page.getByText('Your session ended. Sign in again.')).toBeVisible();
       await expect(page.getByText('You are signed in.')).toHaveCount(0);
+      for (const review of ['/admin/applications', '/faculty/applications']) {
+        await page.goto(review);
+        await expect(page).toHaveURL(
+          review.startsWith('/admin') ? /\/admin\/sign-in/ : /\/auth\/sign-in/
+        );
+      }
     });
   for (const [state, home] of [
     ['revoked', '/admin'],
@@ -232,5 +257,10 @@ test.describe('explicit synthetic HTTPS rehearsal', () => {
     await expect(page).toHaveURL(/\/auth\/status$/);
     await expect(page.getByRole('heading', { name: 'Your application' })).toBeVisible();
     await expect(page.getByText('Pending review', { exact: true })).toBeVisible();
+    for (const review of ['/admin/applications', '/faculty/applications']) {
+      await page.goto(review);
+      await expect(page).toHaveURL(/\/auth\/status$/);
+      await expect(page.getByRole('heading', { name: 'Your application' })).toBeVisible();
+    }
   });
 });

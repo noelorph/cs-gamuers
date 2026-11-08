@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { createRequestClient } from '@/lib/supabase/server';
 import { requireActor } from '@/lib/access';
 import { AppShell, adminNav, facultyNav } from '@/components/app-shell';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,11 +19,22 @@ async function Review({
   role: 'faculty' | 'administrator';
   searchParams: Query;
 }) {
+  let destination: string | null = null;
   try {
     await requireActor(role);
   } catch {
-    redirect(paths.login(role));
+    destination = paths.login(role);
+    try {
+      const { data, error } = await (await createRequestClient()).rpc('current_actor');
+      const actor = data?.[0];
+      if (!error && actor?.active)
+        destination =
+          actor.application_status === 'approved' ? paths.roleHome(actor.role) : paths.authStatus;
+    } catch {
+      // Missing or revoked sessions return to the requested role's login.
+    }
   }
+  if (destination) redirect(destination);
   const query = await searchParams;
   const status: ApplicationStatus =
     typeof query.status === 'string' && Object.hasOwn(applicationLabels, query.status)

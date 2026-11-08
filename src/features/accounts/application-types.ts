@@ -55,5 +55,6 @@ export const applicationError = {
   email_reserved:
     'This email cannot be used for this application. Check the address or contact an Administrator.',
   number_reserved: 'An Administrator must verify this student number before it can be reassigned.',
-  email_pending: 'Complete or cancel replacement email verification before continuing.',
+  email_pending:
+    'Complete current email verification, or complete or cancel any pending replacement, before continuing.',
 };

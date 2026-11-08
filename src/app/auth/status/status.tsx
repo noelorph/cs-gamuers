@@ -231,6 +231,7 @@ export function ApplicationStatus({ initial }: { initial: ApplicationResult }) {
                       <label htmlFor="application-name">Full name (required)</label>
                       <Input
                         id="application-name"
+                        disabled={pending}
                         autoComplete="name"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
@@ -249,6 +250,7 @@ export function ApplicationStatus({ initial }: { initial: ApplicationResult }) {
                       </label>
                       <Input
                         id="application-number"
+                        disabled={pending}
                         value={number}
                         onChange={(e) => setNumber(e.target.value)}
                         aria-invalid={!!fields.number}

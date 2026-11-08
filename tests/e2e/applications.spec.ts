@@ -36,7 +36,7 @@ test.describe('application status and authorized review', () => {
   test('Faculty decision dialog requests correction with keyboard cancel and focus return', async ({
     page,
   }) => {
-    const f = await fixtures.createFixture();
+    const f = await verifiedApplicant(page);
     const reviewer = await fixtures.createFixture('faculty');
     await fixtures.harness('state', { account_id: reviewer.id, status: 'approved' });
     await page.goto('/auth/sign-in');
@@ -110,8 +110,81 @@ test.describe('application status and authorized review', () => {
     });
     await page.goto('/auth/email?challenge=' + proof.data.challenge);
     await page.getByRole('button', { name: 'Confirm email', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Email verified', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Email verified', exact: true })).toBeFocused();
+    await expect(page).toHaveURL(/\/auth\/email$/);
+    await page.getByRole('link', { name: 'Sign in to view application', exact: true }).click();
+    await expect(page).toHaveURL(/\/auth\/sign-in$/);
+    await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
     return f;
+  }
+  for (const width of [1280, 320]) {
+    test(`unverified applications cannot be reviewed through queue or direct URL at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      const f = await fixtures.createFixture('student', false);
+      const reviewer = await fixtures.createFixture('faculty');
+      await fixtures.harness('state', { account_id: reviewer.id, status: 'approved' });
+      await login(page, reviewer.email, 'faculty');
+      await page.goto('/faculty/applications');
+      await expect(page.locator(`a[href*="application=${f.id}"]`)).toHaveCount(0);
+      await page.goto('/faculty/applications?application=' + f.id);
+      await expect(page.getByText(/Verify the current email before reviewing/)).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Review decision', exact: true })).toHaveCount(
+        0
+      );
+      await expect(page.getByRole('radio')).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(
+        false
+      );
+      await page.screenshot({
+        path: `.playwright-cli/fbr-unverified-${width}.png`,
+        fullPage: true,
+      });
+    });
+    test(`identity inputs cannot accept edits during pending save at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      const f = await verifiedApplicant(page);
+      await login(page, f.email);
+      await page.getByRole('button', { name: 'Edit application', exact: true }).click();
+      const name = page.getByLabel('Full name (required)');
+      const number = page.getByLabel('Student number (required)');
+      await name.fill('Submitted synthetic name');
+      let release!: () => void;
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      await page.route('**/auth/status', async (route) => {
+        if (route.request().method() === 'POST') await held;
+        await route.continue();
+      });
+      try {
+        await page.getByRole('button', { name: 'Save changes', exact: true }).focus();
+        await page.keyboard.press('Enter');
+        await expect(name).toBeDisabled();
+        await expect(number).toBeDisabled();
+        await page.keyboard.press('Tab');
+        await expect(name).not.toBeFocused();
+        await expect(number).not.toBeFocused();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(
+          false
+        );
+        await page.screenshot({
+          path: `.playwright-cli/fbr-pending-save-${width}.png`,
+          fullPage: true,
+        });
+      } finally {
+        release();
+      }
+      await expect(page.getByRole('status')).toContainText('Changes saved');
+      await page.unroute('**/auth/status');
+      await page.getByRole('button', { name: 'Edit application', exact: true }).click();
+      await expect(name).toHaveValue('Submitted synthetic name');
+      await expect(name).toBeEnabled();
+      await expect(number).toBeEnabled();
+    });
   }
   test('Student correction, resubmission and verified Faculty approval retain one application', async ({
     page,
@@ -168,7 +241,7 @@ test.describe('application status and authorized review', () => {
   });
   test('Administrator rejects and reopens Faculty with long reasons at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
-    const f = await fixtures.createFixture('faculty');
+    const f = await verifiedApplicant(page, 'faculty');
     const applicant = (await fixtures.signIn(f)).client;
     expect(
       (
@@ -225,7 +298,7 @@ test.describe('application status and authorized review', () => {
   test('a stale reviewer preserves the reason and cannot decide again before reloading', async ({
     page,
   }) => {
-    const f = await fixtures.createFixture();
+    const f = await verifiedApplicant(page);
     const reviewer = await fixtures.createFixture('faculty');
     await fixtures.harness('state', { account_id: reviewer.id, status: 'approved' });
     await login(page, reviewer.email, 'faculty');
@@ -259,7 +332,7 @@ test.describe('application status and authorized review', () => {
     ).toBeVisible();
   });
   test('a lost decision response retries the same saved decision once', async ({ page }) => {
-    const f = await fixtures.createFixture();
+    const f = await verifiedApplicant(page);
     const reviewer = await fixtures.createFixture('faculty');
     await fixtures.harness('state', { account_id: reviewer.id, status: 'approved' });
     await login(page, reviewer.email, 'faculty');
@@ -299,7 +372,7 @@ test.describe('application status and authorized review', () => {
   test('revoking a reviewer while the dialog is open removes protected details', async ({
     page,
   }) => {
-    const f = await fixtures.createFixture();
+    const f = await verifiedApplicant(page);
     const reviewer = await fixtures.createFixture('faculty');
     await fixtures.harness('state', { account_id: reviewer.id, status: 'approved' });
     await login(page, reviewer.email, 'faculty');
@@ -352,7 +425,7 @@ test.describe('application status and authorized review', () => {
   test('replacement email actions preserve the unsaved identity draft and current version', async ({
     page,
   }) => {
-    const f = await fixtures.createFixture();
+    const f = await verifiedApplicant(page);
     const client = (await fixtures.signIn(f)).client;
     await login(page, f.email);
     await page.getByRole('button', { name: 'Edit application', exact: true }).click();
@@ -385,7 +458,7 @@ test.describe('application status and authorized review', () => {
     });
   });
   test('wordmark navigation asks before abandoning unsaved identity edits', async ({ page }) => {
-    const f = await fixtures.createFixture();
+    const f = await verifiedApplicant(page);
     await login(page, f.email);
     await page.getByRole('button', { name: 'Edit application', exact: true }).click();
     await page.getByLabel('Full name (required)').fill('Synthetic draft to retain');
@@ -411,7 +484,7 @@ test.describe('application status and authorized review', () => {
     expect(prompts).toHaveLength(2);
   });
   test('application actions and reviewer menu reflow at 320px with 200% text', async ({ page }) => {
-    const applicant = await fixtures.createFixture();
+    const applicant = await verifiedApplicant(page);
     const reviewer = await fixtures.createFixture('faculty');
     await fixtures.harness('state', { account_id: applicant.id, status: 'needs_correction' });
     await fixtures.harness('state', { account_id: reviewer.id, status: 'approved' });
@@ -483,7 +556,7 @@ test.describe('application status and authorized review', () => {
   });
   for (const width of [1280, 320])
     test(`pending applicant edits same application at ${width}px`, async ({ page }) => {
-      const f = await fixtures.createFixture();
+      const f = await verifiedApplicant(page);
       await page.setViewportSize({ width, height: 800 });
       await page.goto('/auth/sign-in');
       await page.getByLabel('Email').fill(f.email);

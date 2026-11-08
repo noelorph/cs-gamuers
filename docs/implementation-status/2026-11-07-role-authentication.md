@@ -1,10 +1,22 @@
 # Role authentication implementation and acceptance
 
-**Current checkpoint: resumed on 2026-11-08; full acceptance remains open.** This Task 5 source/documentation snapshot includes the implementation and checks described below. Independent Task 5 and whole-branch reviews remain pending. Tasks 1–4 were already committed and reviewed through `27e70a0`; they were not reimplemented.
+**Current checkpoint: 2026-11-08 corrective verification; full acceptance remains open.** Tasks 1–4 and Task 5 source are committed and reviewed. Whole-branch review found three issues; the current corrective worktree addresses them with focused tests. The owner requested solo Sol work for the remaining steps, so no further subagent review will be dispatched. Historical pause and resumed results remain below.
 
 The [implementation plan](../superpowers/plans/2026-11-06-role-authentication.md) remains the checklist. [PRD](../../PRD.md), [TRD](../../TRD.md), [ARCHITECTURE](../../ARCHITECTURE.md) and the [authentication UI reference](../design/authentication/role-authentication.md) remain authoritative. No recorded blocker waives a requirement.
 
+## Whole-branch review correction (2026-11-08)
+
+The whole-branch review found two Important issues and one Minor issue: an unverified applicant could receive a decision that stranded email proof; identity inputs accepted edits while Save was pending and then discarded them; and a valid session on the wrong review route went to the requested role's login. A forward migration on isolated TEST requires current-email proof for new decisions while retaining Administrator reopening for legacy recovery. The Pending queue hides unverified applications; direct detail explains the requirement and withholds decisions. Correction inputs lock during Save. Wrong-role sessions return to their own approved home or restricted status.
+
+The correction has focused evidence on current source: **27/27** real application integration tests, **15/15** component tests, **8/8** review-flow browser tests at 1280 and 320 CSS pixels, and **16/16** role-route browser tests across Chromium and Firefox. The desktop and 320-pixel screenshots were inspected; no horizontal overflow was observed. Typecheck, lint, formatting and production build passed. The final full `npm test` run with the TEST mail-hook attestation passed **343 tests with two opt-in skips** (41 files passed, one skipped, 296.45 seconds). The hosted migration version `20261108035007` was also confirmed present by read-only inspection.
+
+Failed runs remain part of the record. An earlier full attempt after the correction had **340 passes, two native-invitation failures and two opt-in skips**; both failures passed an unchanged focused rerun. Two nearby provider `429` responses were observed, without proof of exact attribution. A later `npm test` invocation lacked the process-only mail-hook attestation: one guard failure and one blocked suite left **314 passes and 30 skips**. The next attested run passed **342**, with one existing hosted faculty-boundary case timing out after five seconds; the case passed unchanged in a 2.9-second focused rerun and in the final full run. No timeout, provider quota, or application source was changed to obtain that result. The earlier 104-pass full browser attempt below predates this correction. The current three-engine full browser check, actual inbox/device/stable-browser matrix and DEMO rollout remain open.
+
+A broader current-source application browser run passed all **16 Chromium** cases and the first **7 Firefox** cases, then stopped at the stale-reviewer case because Firefox reported an uncaught `TypeError: Error in input stream` from `/faculty`. The case's visible assertions reached their expected outcome; its page-error audit correctly failed. Eight later Firefox cases did not run. An unchanged focused retry failed earlier while reserving a synthetic TEST fixture; the fixture RPC returned no error code. A read-only check found 53 recent localhost authentication admissions, below the limit of 100. The input-stream cause and retry failure remain unproven. Earlier focused correction cases passed in both engines; this broader attempt is not a full browser pass. Test fixtures and the local HTTPS proxy were cleaned after the attempt.
+
 ## Resumed verification (2026-11-08)
+
+This section records the earlier resumed checkpoint before whole-branch review and correction. Its pending-review statements describe that checkpoint; the current status is above.
 
 The owner resumed after the November 7 pause. On unchanged application/test source, the exact full command used trusted local HTTPS, isolated TEST, one worker and all three configured projects:
 

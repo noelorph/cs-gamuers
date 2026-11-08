@@ -1,4 +1,4 @@
-import { act } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { hydrateRoot, type Root } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -18,7 +18,10 @@ vi.mock('@/app/admin/applications/actions', () => ({
 }));
 import { ApplicationStatus } from '@/app/auth/status/status';
 import { ApplicationReview } from '@/components/application-review';
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 const application: Application = {
   id: 'hydration-fixture',
   full_name: 'Synthetic applicant',
@@ -85,3 +88,15 @@ it.each(['applicant', 'reviewer'])(
     }
   }
 );
+
+it('withholds decisions for an unverified Pending application opened directly', () => {
+  render(
+    <ApplicationReview
+      initial={{ ...application, status: 'pending', email_verified: false }}
+      administrator
+      queueHref="/admin/applications"
+    />
+  );
+  expect(screen.queryByRole('button', { name: 'Review decision' })).toBeNull();
+  expect(screen.getByText(/Verify the current email before reviewing/)).toBeTruthy();
+});

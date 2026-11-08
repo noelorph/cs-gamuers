@@ -177,7 +177,8 @@ export function ApplicationReview({
     /^application_(approved|needs_correction|rejected|reopened)$/.test(event.event)
   );
   const editable =
-    application.status === 'pending' || (administrator && application.status === 'rejected');
+    (application.status === 'pending' && application.email_verified) ||
+    (administrator && application.status === 'rejected');
   return (
     <Card>
       <CardContent className="space-y-6 [overflow-wrap:anywhere]">
@@ -221,6 +222,12 @@ export function ApplicationReview({
             </div>
           ))}
         </dl>
+        {!application.email_verified && application.status === 'pending' && (
+          <p className="rounded-md bg-warning-surface p-4 text-warning">
+            Verify the current email before reviewing this application. Ask the applicant to
+            complete email verification.
+          </p>
+        )}
         {application.replacement && (
           <p className="rounded-md bg-warning-surface p-4 text-warning">
             Replacement email awaiting verification. Approval and resubmission are unavailable.
