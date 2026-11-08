@@ -285,6 +285,8 @@ The installed CLI created each migration file. The connector applied the exact S
 
 Fresh read-only inspection confirmed the Task 4 migrations and that the account guard role has neither Auth-schema usage nor direct `auth.users` SELECT permission. Historical application dates were backfilled once from native account creation dates; runtime grants were not widened. DEMO remains unchanged and requires its own explicit migration and rollout verification before this extension is demonstrated there.
 
+A November 8 read-only DEMO migration inventory recorded only the 23 earlier account/course migrations through `course_draft_request_size_boundary`; none of the 15 role-authentication application migrations above is recorded there. This inventory makes the rollout gap explicit and does not apply any migration.
+
 ### Unfinished acceptance
 
 | Requirement | Current blocker or missing evidence |

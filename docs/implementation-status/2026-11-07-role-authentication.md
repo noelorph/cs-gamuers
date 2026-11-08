@@ -14,6 +14,8 @@ Failed runs remain part of the record. An earlier full attempt after the correct
 
 A broader current-source application browser run passed all **16 Chromium** cases and the first **7 Firefox** cases, then stopped at the stale-reviewer case because Firefox reported an uncaught `TypeError: Error in input stream` from `/faculty`. The case's visible assertions reached their expected outcome; its page-error audit correctly failed. Eight later Firefox cases did not run. An unchanged focused retry failed earlier while reserving a synthetic TEST fixture; the fixture RPC returned no error code. A read-only check found 53 recent localhost authentication admissions, below the limit of 100. A second unchanged focused retry then **passed 1/1** with the page-error audit enabled. The input-stream cause and fixture retry failure remain unproven. Earlier focused correction cases passed in both engines; this broader attempt is not a full browser pass. Test fixtures and the local HTTPS proxy were cleaned after the attempt.
 
+A read-only DEMO migration inventory on November 8 showed only the 23 earlier account/course migrations through `course_draft_request_size_boundary`. None of the 15 role-authentication application migrations in the plan's TEST mapping is recorded there. No DEMO migration, fixture harness, account, or provider setting was changed during this work.
+
 ## Resumed verification (2026-11-08)
 
 This section records the earlier resumed checkpoint before whole-branch review and correction. Its pending-review statements describe that checkpoint; the current status is above.
