@@ -530,7 +530,33 @@ network only when holders are ready. Exact address remains ignored local config.
 
 Holder reported that the new HTTPS sign-in page opens on another hotspot device without a certificate warning. This establishes reported reachability/trust for that device only; remaining device matrix and confirmation delivery remain separate.
 
-
 Faculty setup diagnostic — 2026-11-04: first attempt failed local password validation; subsequent valid holder entry created faculty_1 unconfirmed, then native resend was denied with over_email_send_rate_limit (429). Read-only state confirms one bound/consumed Faculty reservation, one unconfirmed native Faculty user with password present and no native confirmation issuance; faculty_2 remains unprepared. Auth logs contain two email-limit denials. Do not recreate faculty_1 or claim a retry changes its password. A password disclosed in conversation was not repeated, stored or used by the agent; holder-controlled rotation remains needed.
 
 Official hosted Auth guidance supports raising the email rate limit with a Send Email Hook. A desired 20/hour local CLI preview returned zero declared differences: the installed CLI does not expose this field in hosted config diff. No limit push was performed; the trial local section was removed. Dashboard automation remains unavailable. Owner instructed to change only the DEMO email send limit to 20/hour; actual setting/readback and resumed delivery remain pending. Email confirmation, native hook, expiry, per-recipient throttles and account guards remain intact. Ignored Faculty helper now reports sanitized stage/slot/code and correct password rules; pure local checks pass, with no extra provider mutation.
+
+### Current LAN HTTPS command — 2026-11-08
+
+The current Wi-Fi address is `192.168.100.125`. The ignored `.env.local` now has
+`APP_ORIGIN=https://192.168.100.125`. The tracked Caddyfile sends traffic to
+Next on `127.0.0.1:3100`, leaving the unrelated service on port 3000 alone.
+Run this from the project root:
+
+```sh
+npm run demo:https
+```
+
+The command checks that `APP_ORIGIN` matches this Mac's `en0` Wi-Fi address,
+builds with Next's webpack option, starts production Next on loopback port
+3100, and starts Caddy on HTTPS port 443 with the retained local CA. Keep that
+Terminal open; press Ctrl+C to stop both processes. Open
+`https://192.168.100.125/auth/sign-up/student` on a device that trusts the
+retained Caddy CA. When the Wi-Fi address changes, update `APP_ORIGIN` in the
+ignored `.env.local` and the DEMO Supabase Auth Site URL and exact
+`/auth/email` redirect allowlist, then rerun the command. Do not copy the CA
+private key to a device.
+
+The 15 role-authentication migrations were applied to DEMO on 2026-11-08.
+Hosted Auth URL alignment is still pending: the local Supabase CLI has no
+access token, and the connected Supabase tool cannot edit Auth configuration.
+The local HTTPS page loads, but email confirmation links may still use the old
+Site URL until the hosted setting is updated and read back.

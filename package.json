@@ -15,6 +15,7 @@
     "browser": "playwright cli",
     "test:e2e": "npm run build && playwright test",
     "demo:prepare": "node scripts/prepare-demo.mjs",
+    "demo:https": "node scripts/run-demo-https.mjs",
     "maintenance": "node scripts/maintenance.mjs"
   },
   "dependencies": {

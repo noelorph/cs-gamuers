@@ -283,9 +283,9 @@ The installed CLI created each migration file. The connector applied the exact S
 | `20261107052043_ordered_application_mail.sql` | `20261107052049` |
 | `20261108034903_require_verified_application_review.sql` | `20261108035007` |
 
-Fresh read-only inspection confirmed the Task 4 migrations and that the account guard role has neither Auth-schema usage nor direct `auth.users` SELECT permission. Historical application dates were backfilled once from native account creation dates; runtime grants were not widened. DEMO remains unchanged and requires its own explicit migration and rollout verification before this extension is demonstrated there.
+Fresh read-only inspection confirmed the Task 4 migrations and that the account guard role has neither Auth-schema usage nor direct `auth.users` SELECT permission. Historical application dates were backfilled once from native account creation dates; runtime grants were not widened.
 
-A November 8 read-only DEMO migration inventory recorded only the 23 earlier account/course migrations through `course_draft_request_size_boundary`; none of the 15 role-authentication application migrations above is recorded there. This inventory makes the rollout gap explicit and does not apply any migration.
+The November 8 DEMO inventory showed 22 earlier account/course migrations through `course_draft_request_size_boundary`. With the owner's explicit authorization, all 15 role-authentication migrations were applied in the table's source order. DEMO now has 37 migration records. The hosted versions for those 15 range from `20261108144537` to `20261108144632` in source order; readback found registration, verification and review functions. Existing account and Auth user counts remained seven. LAN HTTPS served the Student page with a verified certificate. DEMO's hosted Auth Site URL and email redirect still need alignment with the new Wi-Fi address; confirmation delivery and the remaining browser/device acceptance gates below remain open.
 
 ### Unfinished acceptance
 

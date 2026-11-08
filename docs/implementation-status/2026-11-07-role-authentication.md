@@ -131,6 +131,32 @@ The preserved older run has seven ownership/reservation rows, six application/na
 - Private logs/screenshots remain ignored. CA files and the reversible Turbopack cache quarantine are preserved. Do not run `git clean -fdx`, delete the CA, reset TEST, or discard the uncommitted Task 5 files.
 - No public deployment, push or merge occurred. No new dependency, paid service, native quota change or real outbound mail worker was introduced.
 
+## DEMO migration and LAN HTTPS update — 2026-11-08
+
+DEMO migration history had 22 older entries and lacked the registration
+functions. Applied all 15 tracked role-authentication migrations in source
+order, from `20261107032601_public_registration.sql` through
+`20261108034903_require_verified_application_review.sql`. The hosted history
+now has 37 entries; the new versions run from `20261108144537` through
+`20261108144632` in the same order. Readback found the registration,
+verification, and review functions and the private verification table.
+Seven existing accounts and seven Auth users were present before and after.
+No holder account was reset or recreated.
+
+The current Wi-Fi address and ignored `APP_ORIGIN` are both
+`192.168.100.125` / `https://192.168.100.125`. The one-command production
+launcher uses Next on loopback port 3100 and Caddy on 443. Next's default
+Turbopack build failed here while creating its CSS worker port; the supported
+webpack build passed. A CA-verified HTTPS GET of Student sign-up returned 200.
+Chromium loaded the page, showed required-field errors on empty submit, and
+had no browser console errors. At 320 CSS pixels, document width was 320.
+No real registration was submitted.
+
+Hosted DEMO Site URL and exact email redirect still need the new origin. The
+Supabase CLI cannot pull configuration without an access token, and the
+connected Supabase tool has no Auth configuration update action. Do not treat
+email confirmation as verified on this address until hosted readback passes.
+
 ## Evidence locations
 
 This document and the tracked plan preserve the measured conclusions. Detailed local artifacts supplement them; they are ignored or temporary and are not portable acceptance records by themselves. Do not commit credentials, proof-bearing logs, storage snapshots or private screenshots.
