@@ -203,3 +203,29 @@ test.each(['returned', 'thrown'])(
     expect(mocks.signOut).not.toHaveBeenCalled();
   }
 );
+
+test.each(['admin', 'standard', '/admin/sign-in', 'https://attacker.invalid', null])(
+  'missing canonical actor uses only allowlisted return portal %s',
+  async (portal) => {
+    mocks.getSession.mockResolvedValue({
+      data: { session: { access_token: 'captured' } },
+      error: null,
+    });
+    mocks.signOut.mockResolvedValue({ error: null });
+    expect(await signOut(portal)).toBe(portal === 'admin' ? '/admin/sign-in' : '/auth/sign-in');
+    expect(mocks.adminOut).toHaveBeenCalledWith('captured', 'local');
+    expect(mocks.signOut).toHaveBeenCalledWith({ scope: 'local' });
+  }
+);
+test.each([
+  ['faculty', 'admin', '/auth/sign-in'],
+  ['administrator', 'standard', '/admin/sign-in'],
+])('canonical %s role overrides return hint %s', async (role, portal, destination) => {
+  mocks.getSession.mockResolvedValue({
+    data: { session: { access_token: 'captured' } },
+    error: null,
+  });
+  mocks.rpc.mockResolvedValue({ data: [{ role }], error: null });
+  mocks.signOut.mockResolvedValue({ error: null });
+  expect(await signOut(portal)).toBe(destination);
+});

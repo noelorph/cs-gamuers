@@ -34,6 +34,14 @@ for (const width of [1280, 320]) {
       await expect(page.getByText('Enter your email address.')).toBeVisible();
       await expect(page.getByText('Enter your password.')).toBeVisible();
       await expect(page.getByLabel('Email')).toBeFocused();
+      if (width === 320) {
+        await page.evaluate(() => {
+          document.documentElement.style.fontSize = '200%';
+        });
+        expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(
+          false
+        );
+      }
     });
 }
 test('cross-origin sign-out is rejected and GET cannot sign out', async ({ request }) => {
@@ -192,6 +200,29 @@ test.describe('explicit synthetic HTTPS rehearsal', () => {
       await expect(page.getByText('Your session ended. Sign in again.')).toBeVisible();
       await expect(page.getByText('You are signed in.')).toHaveCount(0);
     });
+  for (const [state, home] of [
+    ['revoked', '/admin'],
+    ['deactivated', '/admin/applications'],
+  ])
+    test(`still-open Administrator ${state} sign-out returns to Admin portal`, async ({ page }) => {
+      const account = await fixtures.createFixture('administrator');
+      await fixtures.harness('state', { account_id: account.id, status: 'approved' });
+      await page.goto('/admin/sign-in');
+      await page.getByLabel('Email').fill(account.email);
+      await page.getByLabel('Password (required)', { exact: true }).fill(fixtures.fixturePassword);
+      await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+      await expect(page).toHaveURL(/\/admin$/);
+      await page.goto(home);
+      await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
+      if (state === 'revoked') await fixtures.harness('cutoff', { account_id: account.id });
+      else await fixtures.harness('state', { account_id: account.id, active: false });
+      await page.getByRole('button', { name: 'Sign out' }).focus();
+      await page.keyboard.press('Enter');
+      await expect(page).toHaveURL(/\/admin\/sign-in$/);
+      await page.goBack();
+      await expect(page).toHaveURL(/\/admin\/sign-in/);
+      await expect(page.getByText('You are signed in.')).toHaveCount(0);
+    });
   test('pending applicants see status and no staff destination', async ({ page }) => {
     const account = await fixtures.createFixture('faculty');
     await page.goto('/auth/sign-in');
@@ -199,6 +230,7 @@ test.describe('explicit synthetic HTTPS rehearsal', () => {
     await page.getByLabel('Password (required)', { exact: true }).fill(fixtures.fixturePassword);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page).toHaveURL(/\/auth\/status$/);
-    await expect(page.getByRole('heading', { name: 'Pending review' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Your application' })).toBeVisible();
+    await expect(page.getByText('Pending review', { exact: true })).toBeVisible();
   });
 });

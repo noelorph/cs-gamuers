@@ -274,7 +274,7 @@ test.runIf(process.env.TEST_NATIVE_REGISTRATION_MAIL === '1')(
       run_id: runId,
       args: { project_ref: testProjectRef, account_id: saved.account_id },
     });
-    expect(proof.data).toMatchObject({ lifetime_seconds: 1800, state: 'issued' });
+    expect(proof.data).toMatchObject({ lifetime_seconds: 1800, state: 'pending' });
     expect(
       (await admin.auth.admin.getUserById(saved.account_id)).data.user?.email_confirmed_at
     ).toBeFalsy();

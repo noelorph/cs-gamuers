@@ -86,8 +86,8 @@ export function VerifyEmailForm({
         on the demonstration network.
       </p>
       <p className="text-sm text-muted-foreground">
-        Links expire 30 minutes after issuance. A new link replaces the previous one. Email
-        verification still requires application approval.
+        Links expire 30 minutes after issuance. A new link replaces the previous one. Your
+        application still needs approval after you verify your email.
       </p>
       <form onSubmit={submit} noValidate className="grid gap-4">
         <div

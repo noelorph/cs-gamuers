@@ -1,7 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, expect, it } from 'vitest';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, expect, it, vi } from 'vitest';
 import { SignUpForm } from '@/components/sign-up-form';
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 const unavailable = async () => ({ ok: false as const, code: 'unavailable' as const });
 const resend = async () => ({ ok: true as const, code: 'acknowledged' as const });
 function fill(role = 'student') {
@@ -70,8 +73,12 @@ it('invalid signup focuses linked summary, retains text and clears password with
   expect(screen.getByLabelText('Student number (required)')).toHaveProperty('value', '00123-A');
   expect(screen.getByLabelText('Password (required)')).toHaveProperty('value', '');
   expect(submitted).toBe(false);
+  screen.getByLabelText('School email (required)').focus();
+  fireEvent.submit(screen.getByRole('button', { name: 'Submit application' }).closest('form')!);
+  await waitFor(() => expect(document.activeElement).toBe(summary));
 });
-it('transport errors retain nonsecret values and clear a visible submitted password', async () => {
+it('transport errors focus committed guidance without waiting for an animation frame, retain text and clear password', async () => {
+  vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(1);
   render(
     <SignUpForm
       role="student"
@@ -84,10 +91,9 @@ it('transport errors retain nonsecret values and clear a visible submitted passw
   fill();
   fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
   fireEvent.submit(screen.getByRole('button', { name: 'Submit application' }).closest('form')!);
-  expect(await screen.findByRole('alert')).toHaveProperty(
-    'textContent',
-    expect.stringContaining('confirm the result')
-  );
+  const feedback = await screen.findByRole('alert');
+  expect(feedback.textContent).toContain('confirm the result');
+  await waitFor(() => expect(document.activeElement).toBe(feedback));
   expect(screen.getByLabelText('Full name (required)')).toHaveProperty(
     'value',
     'Synthetic applicant'
@@ -120,3 +126,21 @@ it.each(['queued', 'undisclosed'] as const)(
     }
   }
 );
+
+it('pending submission disables repeats, then focuses mounted feedback without stealing later typing focus', async () => {
+  const response = Promise.withResolvers<Awaited<ReturnType<typeof unavailable>>>();
+  render(<SignUpForm role="faculty" submit={() => response.promise} resend={resend} />);
+  fill('faculty');
+  const submit = screen.getByRole('button', { name: 'Submit application' });
+  fireEvent.submit(submit.closest('form')!);
+  expect(submit).toHaveProperty('disabled', true);
+  expect(screen.queryByRole('alert')).toBeNull();
+  await act(async () => response.resolve(await unavailable()));
+  const feedback = await screen.findByRole('alert');
+  await waitFor(() => expect(document.activeElement).toBe(feedback));
+  expect(submit).toHaveProperty('disabled', false);
+  const name = screen.getByLabelText('Full name (required)');
+  name.focus();
+  fireEvent.change(name, { target: { value: 'Synthetic edited after failure' } });
+  expect(document.activeElement).toBe(name);
+});

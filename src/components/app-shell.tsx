@@ -39,10 +39,12 @@ const navByRole: Partial<Record<Role, NavItem[]>> = {
 export function AppShell({
   title,
   nav = [],
+  signOutPortal = 'standard',
   children,
 }: {
   title: string;
   nav?: NavItem[];
+  signOutPortal?: 'standard' | 'admin';
   children: ReactNode;
 }) {
   return (
@@ -58,7 +60,10 @@ export function AppShell({
           <AppNav items={nav} />
         </SidebarContent>
         <SidebarFooter className="p-4">
-          <form action={paths.signOut} method="post">
+          <form
+            action={paths.signOut + (signOutPortal === 'admin' ? '?portal=admin' : '')}
+            method="post"
+          >
             <Button type="submit" variant="outline" className="w-full">
               Sign out
             </Button>
@@ -97,7 +102,11 @@ async function Destination({ role }: { role: Role }) {
   }
   if (destination) redirect(destination);
   return (
-    <AppShell title={roleLabels[role]} nav={navByRole[role]}>
+    <AppShell
+      title={roleLabels[role]}
+      nav={navByRole[role]}
+      signOutPortal={role === 'administrator' ? 'admin' : 'standard'}
+    >
       <p>You are signed in.</p>
       {role === 'faculty' && <Link href={paths.courses}>Course drafts</Link>}
     </AppShell>

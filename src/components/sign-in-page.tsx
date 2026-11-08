@@ -36,7 +36,7 @@ export function SignInPage({
         </Link>
       </header>
       <main id="main" className="px-4 py-8 md:px-6 md:py-12">
-        <Card className="mx-auto w-full max-w-[480px] box-border">
+        <Card className="mx-auto w-full max-w-[480px] box-border [overflow-wrap:anywhere]">
           <CardHeader className="gap-4">
             <h1 className="m-0 text-2xl font-semibold leading-tight">
               {admin ? 'Administrator sign in' : 'Sign in'}

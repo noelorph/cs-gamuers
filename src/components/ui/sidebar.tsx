@@ -156,6 +156,7 @@ function Sidebar({
   collapsible?: 'offcanvas' | 'icon' | 'none';
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const mobileOpener = React.useRef<HTMLElement | null>(null);
 
   if (collapsible === 'none') {
     return (
@@ -179,13 +180,22 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+          className="w-(--sidebar-width) max-w-[calc(100vw-2rem)] bg-sidebar p-0 text-sidebar-foreground [overflow-wrap:anywhere] [&>button]:hidden"
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
             } as React.CSSProperties
           }
           side={side}
+          onOpenAutoFocus={() => {
+            mobileOpener.current =
+              document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          }}
+          onCloseAutoFocus={(event) => {
+            // The controlled sheet has no Radix Trigger to restore focus to.
+            event.preventDefault();
+            mobileOpener.current?.focus();
+          }}
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Sidebar</SheetTitle>
@@ -254,9 +264,13 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
-      className={cn(className)}
+      className={cn(
+        'focus:outline-solid focus:outline-3 focus:outline-ring focus:outline-offset-2',
+        className
+      )}
       onClick={(event) => {
         onClick?.(event);
+        event.currentTarget.focus();
         toggleSidebar();
       }}
       {...props}

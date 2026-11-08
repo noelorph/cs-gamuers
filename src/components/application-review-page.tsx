@@ -54,6 +54,7 @@ async function Review({
     <AppShell
       title={role === 'faculty' ? 'Student applications' : 'Applications'}
       nav={role === 'faculty' ? facultyNav : adminNav}
+      signOutPortal={role === 'administrator' ? 'admin' : 'standard'}
     >
       <p className="text-muted-foreground">
         {role === 'faculty'
@@ -120,7 +121,11 @@ async function Review({
                     {role === 'administrator'
                       ? `${a.role === 'student' ? 'Student' : 'Faculty'} · `
                       : ''}
-                    Submitted {new Date(a.applied_at).toLocaleDateString()}
+                    Submitted{' '}
+                    {new Date(a.applied_at).toLocaleDateString('en-PH', {
+                      timeZone: 'Asia/Manila',
+                      timeZoneName: 'shortOffset',
+                    })}
                   </p>
                   <Link href={`${base}?${filters}&application=${a.id}#application-detail`}>
                     Review {a.full_name}

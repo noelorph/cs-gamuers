@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     return new Response('Request too large.', { status: 413 });
   }
   try {
-    const destination = await signOut();
+    const destination = await signOut(new URL(request.url).searchParams.get('portal'));
     return NextResponse.redirect(new URL(destination, getAppEnv().appOrigin), 303);
   } catch {
     return new Response(

@@ -109,6 +109,10 @@ test.describe('isolated protected email lifecycle', () => {
       await page.goto(role === 'administrator' ? '/admin' : '/program-head');
       await expect(page).toHaveURL(/sign-in/);
       await page.goBack();
+      await expect(page).toHaveURL(/\/auth\/email$/);
+      await expect(
+        page.getByRole('heading', { name: 'Confirm your email', exact: true })
+      ).toBeVisible();
       // A consumed address bar intentionally cannot carry the proof across navigation.
       await page.goto('/auth/email?challenge=' + f.proof.challenge);
       await page.getByRole('button', { name: 'Confirm email' }).click();

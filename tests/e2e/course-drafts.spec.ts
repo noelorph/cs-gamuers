@@ -32,7 +32,7 @@ test.describe('isolated TEST Faculty drafts', () => {
       await expect(page).toHaveURL(/\/faculty$/);
     }
     await signIn();
-    await page.getByRole('link', { name: 'Course drafts' }).click();
+    await page.getByRole('main').getByRole('link', { name: 'Course drafts' }).click();
     await expect(page.getByText('No course drafts yet.')).toBeVisible();
     await page.setViewportSize({ width: 320, height: 800 });
     await page.getByRole('link', { name: 'New draft' }).click();
@@ -94,8 +94,10 @@ test.describe('isolated TEST Faculty drafts', () => {
     await expect(page.getByRole('main').getByRole('alert')).toContainText('could not be confirmed');
     await expect(page.getByLabel('Title')).toHaveValue('Current');
     await page.unrouteAll();
+    await page.getByRole('button', { name: 'Toggle Sidebar', exact: true }).click();
     page.once('dialog', (dialog) => dialog.accept());
     await page.getByRole('button', { name: 'Sign out' }).click();
+    await expect(page).toHaveURL(/\/auth\/sign-in$/);
     await signIn();
     await page.goto(url);
     await expect(page.getByLabel('Title')).toHaveValue('Current');
@@ -130,7 +132,7 @@ test.describe('isolated TEST Faculty drafts', () => {
       await expect(target).toHaveURL(/\/faculty$/);
     }
     await signIn(page, owner.email);
-    await page.getByRole('link', { name: 'Course drafts' }).click();
+    await page.getByRole('main').getByRole('link', { name: 'Course drafts' }).click();
     await page.getByRole('link', { name: 'New draft' }).click();
     await page.getByLabel('Title').fill('Owner-only saved draft');
     await page.getByRole('button', { name: 'Save draft' }).click();
@@ -185,7 +187,7 @@ test.describe('isolated TEST Faculty drafts', () => {
     await page.getByLabel('Password (required)', { exact: true }).fill(fixtures.fixturePassword);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page).toHaveURL(/\/faculty$/);
-    await page.getByRole('link', { name: 'Course drafts' }).click();
+    await page.getByRole('main').getByRole('link', { name: 'Course drafts' }).click();
     await page.getByRole('link', { name: 'New draft' }).click();
     await expect(page.getByLabel('Title')).toHaveValue('');
     let lostResponse = false;

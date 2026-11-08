@@ -304,7 +304,10 @@ describe('hosted account boundaries', () => {
       token_hash: link.data.properties!.hashed_token,
       type: 'recovery',
     });
-    expect(Boolean(result.error)).toBe(false);
+    expect(
+      Boolean(result.error),
+      `Native recovery verification failed (${result.error?.code ?? 'no-code'}:${result.error?.status ?? 'no-status'})`
+    ).toBe(false);
     expect(await actor(client)).toEqual([]);
   });
 

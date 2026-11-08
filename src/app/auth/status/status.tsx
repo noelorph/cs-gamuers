@@ -170,7 +170,10 @@ export function ApplicationStatus({ initial }: { initial: ApplicationResult }) {
                     </p>
                     <p className="whitespace-pre-wrap">{latestDecision.reason}</p>
                     <time dateTime={latestDecision.created_at}>
-                      {new Date(latestDecision.created_at).toLocaleString()}
+                      {new Date(latestDecision.created_at).toLocaleString('en-PH', {
+                        timeZone: 'Asia/Manila',
+                        timeZoneName: 'shortOffset',
+                      })}
                     </time>
                   </div>
                 )}

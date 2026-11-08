@@ -231,7 +231,10 @@ export function ApplicationReview({
             <h3 className="text-base">Latest update</h3>
             <p className="whitespace-pre-wrap">{latestDecision.reason}</p>
             <time className="text-sm text-muted-foreground" dateTime={latestDecision.created_at}>
-              {new Date(latestDecision.created_at).toLocaleString()}
+              {new Date(latestDecision.created_at).toLocaleString('en-PH', {
+                timeZone: 'Asia/Manila',
+                timeZoneName: 'shortOffset',
+              })}
             </time>
           </div>
         )}

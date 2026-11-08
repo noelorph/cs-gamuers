@@ -1,14 +1,92 @@
 # Local demonstration readiness
 
 Account/proof/sign-in and persistent Faculty course-draft implementations are present.
-Local acceptance is in progress; this milestone is not fully accepted. The owner
+Local acceptance resumed on 2026-11-08 after the owner's November 7 pause; this milestone is not fully accepted. The [implementation handoff](../implementation-status/2026-11-07-role-authentication.md) preserves the pause and resumed evidence, unfinished checks and next steps. The owner
 confirmed that intended phones and account holders are currently unavailable.
 Real inbox receipt, holder-selected passwords, seven ready accounts, final-network
 rehearsal and physical-device acceptance remain unverified.
 
-The [implementation plan](../superpowers/plans/2026-11-03-authentication-and-course-drafts.md)
-records current verification evidence and open gates. Historical checkpoints below
+The [role authentication plan](../superpowers/plans/2026-11-06-role-authentication.md)
+records the current extension, verification evidence and open gates. The
+[earlier implementation plan](../superpowers/plans/2026-11-03-authentication-and-course-drafts.md)
+retains the original account/course-draft milestone evidence. Historical checkpoints below
 are dated observations; the current-state corrections take precedence.
+
+## Role authentication checkpoint (2026-11-07)
+
+The authorized extension is implemented in source and isolated TEST. Students and
+Faculty can apply through separate forms, verify email with an explicit confirmation,
+and sign in to restricted application status. Approved Faculty review Students;
+Administrators review Students and Faculty, request correction, reject, and reopen a
+rejection after recording a verified error. Saving a correction and resubmitting it
+are separate actions. Existing invitation and Faculty course-draft flows remain part
+of acceptance.
+
+Administrators use `/admin/sign-in` and reach `/admin`. Student, Faculty and Program
+Head accounts use `/auth/sign-in`. Wrong-portal credentials do not establish the
+attempted session or replace an unrelated session. Sign-out returns to the canonical
+role's portal. A still-open Administrator page includes an allowlisted return-only
+hint for sign-out after revocation/deactivation; it grants no role or page access.
+Email verification precedes manual approval.
+
+Decision timestamps display Philippine time with a visible GMT+8 offset. The locale
+and timezone are explicit on the server and browser; a server-rendered decision
+reload was checked without the earlier recoverable hydration text mismatch.
+
+Previous student numbers remain reserved after self-correction. Only the scoped
+Administrator correction can release a disputed claim after school-record verification
+and a recorded reason; replacing a current number is atomic. Pre-approval email
+replacement requires its own single-use 30-minute possession proof. The old email
+remains canonical until the fenced Auth update commits; incomplete replacement
+blocks approval/resubmission. Completion revokes old sessions and queues the old-address
+notice. These are same-account operations, with retained history and no new role grant.
+
+The role-authentication migrations and TEST-only fixture harness updates were applied
+only to the exact isolated TEST target after checking target identity. Local migration
+filenames and connector-assigned hosted versions differ; the plan records their
+mapping. Task 5 adds no migration or provider setting. DEMO has not received this
+extension's migrations or rollout verification. Review its existing migration history,
+select DEMO explicitly, apply only the missing application migrations in order, and
+verify real account/proof/role flows before demonstrating this source against DEMO.
+Never install TEST fixture harnesses on DEMO, reset either project, or treat TEST
+synthetic approvals as school-record evidence.
+
+Task 3 recorded actual native Student and Faculty browser signup, configured-hook
+capture, explicit email confirmation, and password sign-in to Pending status on
+Chromium 156.0.8078.4 at 04:13–04:14 UTC. This proves queued native hook work, not
+inbox receipt. Repeatable generated-proof transport is separate evidence. Native
+provider quotas remain unchanged; their reset policy and capacity were not measured.
+No real outbound mail worker was started for these checks.
+
+A separate real-clock Student probe captured two native password sessions, closed
+both browsers for their full 3,600-second lifetime, and restored the unchanged cookies
+after actual expiry. The valid session refreshed and retained approved Student
+access; the natively revoked session returned to sign-in with session-ended guidance.
+The exact probe run and credential snapshots were cleaned. This does not establish
+Administrator/other-role or other-engine expiry behavior.
+
+The full unit/integration run recorded 326 passed, two failed and two opt-in skips.
+One failure is the preserved bootstrap blocker; the other native recovery verification
+failed in that run and passed its focused diagnostic rerun. A nearby native verification
+rate-limit response is consistent with that failure, but the original test captured no
+request ID/code for exact attribution. Both explicit native gateway and native-hook
+probes passed separately. Preserve the failure history and native quotas.
+
+The November 7 pause interrupted the earlier run after 48 Chromium passes. After
+resumption on November 8, the exact full browser command ran on unchanged source:
+104 passed (52 Chromium and 52 Firefox), four native-mail opt-ins skipped, one WebKit
+setup failure and 53 not run, in 7.8 minutes. WebKit failed in `browserContext.newPage`
+with `Page.overrideSetting: Unknown setting: PushAPIEnabled`, before app navigation.
+Separate actual native probes remain distinct from the four skipped browser cases.
+The failed full command does not establish complete three-engine acceptance. Open acceptance
+includes real school/personal inbox receipt, the latest two stable desktop browser
+versions, actual Android Chrome/iPhone Safari and final-network trust/rehearsal.
+The bundled macOS 14.5 WebKit 2251 host remains blocked before application navigation.
+The historical bootstrap conflict remains recorded. Owner-authorized exact older-run
+recovery completed on November 8 at 03:28:20 UTC, with all 18 unrelated-table
+count/digest pairs unchanged and the TEST marker intact. Root's fresh full
+unit/integration result is pending in this snapshot. Missing coverage remains
+unfinished acceptance work.
 
 ## Project roles and evidence
 
@@ -151,9 +229,9 @@ unverified; runtime HTTPS on the host is measured only for the current Wi-Fi.
 `npm test -- tests/unit/env.test.ts` covers configuration and test-target refusal
 without loading local credentials or contacting providers. Run `npm test`,
 `npm run typecheck`, `npm run lint`, and `npm run format:check` for local checks.
-Earlier isolated native account/proof checks passed; the current filtered suite
-passes with exactly one mail-capable native signup case excluded. Full browser/device
-acceptance and participant SMTP delivery remain pending; no test skip is evidence
+Earlier isolated native account/proof checks passed. The dated role-authentication
+checkpoint and plan distinguish current native checks from default opt-in skips.
+Full browser/device acceptance and participant SMTP delivery remain pending; no test skip is evidence
 that an unavailable provider prerequisite passed. Each plan task retains its
 documented acceptance gates.
 

@@ -63,8 +63,8 @@ These checks concern the design artifact. Its forms use native required/email fe
 
 Not checked: the running Next.js application's flows, Firefox/WebKit, physical Android/iPhone, screen-reader output, 400% browser zoom, or backend/provider permissions and email delivery. Application lint/build/integration/e2e suites were not run because application source and configuration are unchanged. These limits do not waive the implementation plan's acceptance gates. The temporary browser session and reference server were closed after verification.
 
-## Implementation handoff
+## Implementation handoff (historical design checkpoint)
 
-The specification maps each screen to the plan's existing file/task boundaries. It resolves layouts, mobile behavior, exact field rules, state copy, permitted actions, dialog behavior and focus, and the required failure cases. Tasks 1–5 remain unchecked because no product implementation was performed.
+The specification maps each screen to the plan's existing file/task boundaries. It resolves layouts, mobile behavior, exact field rules, state copy, permitted actions, dialog behavior and focus, and the required failure cases. At that design checkpoint no product implementation had been performed. Tasks 1–4 were subsequently implemented in source and isolated TEST; the [role authentication plan](../../superpowers/plans/2026-11-06-role-authentication.md) records current verification and remaining acceptance.
 
 The existing invitation form's optional employee-number and portal-destination gaps are called out in section 6. Backend approval/session enforcement, actual mail delivery, isolated integration tests, browser/device acceptance, and screen-reader checks must be verified during implementation.

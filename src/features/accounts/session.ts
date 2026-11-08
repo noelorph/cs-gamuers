@@ -81,11 +81,14 @@ export async function signIn(
   return result;
 }
 
-export async function signOut(): Promise<'/auth/sign-in' | '/admin/sign-in'> {
+export async function signOut(returnPortal?: unknown): Promise<'/auth/sign-in' | '/admin/sign-in'> {
   const auth = await createRequestAuth();
   const { data, error } = await auth.getSession();
   if (error) throw new Error('Sign out unavailable');
-  let destination: '/auth/sign-in' | '/admin/sign-in' = paths.login('student');
+  // This allowlisted hint only chooses the return page when canonical access has ended.
+  let destination: '/auth/sign-in' | '/admin/sign-in' = paths.login(
+    returnPortal === 'admin' ? 'administrator' : 'student'
+  );
   if (data.session) {
     const actor = await createUserClient(data.session.access_token).rpc('current_actor');
     if (!actor.error && actor.data?.[0]) destination = paths.login(actor.data[0].role);

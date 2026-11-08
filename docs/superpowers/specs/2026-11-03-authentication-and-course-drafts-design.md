@@ -2,6 +2,8 @@
 
 Status: approved by the product owner on 2026-11-03, including the milestone flowchart. The owner selected prepared synthetic demonstration accounts that group members can use to act as the four roles. Approval authorizes the scope documentation and preparation of the implementation plan; application implementation, account creation, provisioning, and deployment have not been authorized.
 
+Current extension (2026-11-07): the owner later approved and authorized implementation of the [role authentication plan](../plans/2026-11-06-role-authentication.md). Student/Faculty application, email verification, manual review and same-account correction are now implemented in source and isolated TEST. Administrators use `/admin/sign-in`; Student, Faculty and Program Head use `/auth/sign-in`. The shared-login and deferred-onboarding descriptions below retain the original milestone boundary. Current acceptance and remaining DEMO rollout are recorded in that plan and [demonstration readiness](../../demo/README.md). Password recovery, general account administration, new invitation-management screens and deployment remain outside the extension.
+
 ## Purpose and authority
 
 Demonstrate how CRUD supports CS-GAMUERS through Faculty course-draft management, with real sign-in and enforced permissions. This is an implementation milestone within the full product. It does not reduce the overall product requirements.
@@ -34,7 +36,7 @@ This work includes the required Auth email hook, delivery worker, opaque applica
 
 ### 2. Sign in and sign out
 
-All four roles use the same email/password sign-in page. Successful sign-in leads to the account's role destination. Sign-out ends access to protected pages and operations. Handle incorrect credentials, unavailable service, expired sessions, and inactive/unapproved accounts without exposing account existence or raw provider errors.
+The original 2026-11-03 milestone used one email/password sign-in page. The implemented 2026-11-06 extension now requires `/admin/sign-in` for Administrators and `/auth/sign-in` for Student, Faculty and Program Head accounts. Successful sign-in leads to the account's role destination. Sign-out ends access to protected pages and operations. Handle incorrect credentials, unavailable service, expired sessions, and inactive/unapproved accounts without exposing account existence or raw provider errors.
 
 Include simple role landing pages with account role and sign-out. Faculty also have a clear route to their drafts. Other roles receive an honest milestone landing page, without pretend reports, learning records, or enabled links to unimplemented features.
 

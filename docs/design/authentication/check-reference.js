@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions -- Playwright CLI executes this function expression.
 async (page) => {
   const assert = (condition, message) => { if (!condition) throw new Error(message); };
   const errors = [];

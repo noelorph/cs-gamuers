@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { VerifyEmailForm } from '@/components/verify-email-form';
@@ -29,6 +29,9 @@ export function SignUpForm({
   const [errors, setErrors] = useState<Partial<Record<keyof AccountInput, string>>>({});
   const [message, setMessage] = useState('');
   const feedback = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (message) feedback.current?.focus();
+  }, [message, errors]);
   async function send(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
@@ -41,7 +44,6 @@ export function SignUpForm({
     if ('errors' in checked) {
       setErrors(checked.errors);
       setMessage('Check the highlighted fields before submitting.');
-      requestAnimationFrame(() => feedback.current?.focus());
       return;
     }
     setPending(true);
@@ -65,7 +67,6 @@ export function SignUpForm({
       setMessage('We could not confirm the result. Try again to check this request.');
     } finally {
       setPending(false);
-      requestAnimationFrame(() => feedback.current?.focus());
     }
   }
   if (queued) return <VerifyEmailForm initialEmail={values.email} queued resend={resend} />;

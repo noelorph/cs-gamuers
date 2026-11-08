@@ -1,8 +1,8 @@
 # Role authentication UI reference
 
-Date: 2026-11-07 · Status: ready for implementation planning and screen implementation.
+Date: 2026-11-07 · Status: reference implemented in application source; final acceptance remains in progress.
 
-This reference completes the visual-design prerequisite for [the role authentication plan](../../superpowers/plans/2026-11-06-role-authentication.md). It specifies the screens and states for Tasks 1–4 and the UI checks for Task 5. Application implementation and acceptance tests remain pending; no implementation checkbox is completed by this design work.
+This reference completes the visual-design prerequisite for [the role authentication plan](../../superpowers/plans/2026-11-06-role-authentication.md). It specifies the screens and states for Tasks 1–4 and the UI checks for Task 5. Tasks 1–4 now have implementation evidence in the plan; Task 5 records final verification and remaining acceptance blockers. The design artifact alone does not prove application behavior.
 
 [PRD](../../../PRD.md) sections 3–4 and 17 govern behavior. [TRD](../../../TRD.md) section 6 governs limits and verification. [ARCHITECTURE](../../../ARCHITECTURE.md) governs enforcement. [DESIGN_SYSTEM](../../../DESIGN_SYSTEM.md) version 1.0.0 supplies the visual tokens and shared interactions. The plan's explicitly approved separate Administrator entry supersedes the older shared-login description; it does not change authentication or permissions.
 

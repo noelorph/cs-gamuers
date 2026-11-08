@@ -8,6 +8,11 @@ test.describe('application status and authorized review', () => {
   test.setTimeout(60000);
   test.beforeEach(async ({ page }) => {
     const errors: string[] = [];
+    const hydrationErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error' && /hydration|Minified React error #418/i.test(message.text()))
+        hydrationErrors.push(message.text());
+    });
     page.on('pageerror', (error) =>
       errors.push(new URL(page.url()).pathname + ': ' + (error.stack ?? error.message))
     );
@@ -16,9 +21,11 @@ test.describe('application status and authorized review', () => {
       description: 'Explicit generated proof TEST mail transport; no inbox claim.',
     });
     (page as Page & { task4Errors?: string[] }).task4Errors = errors;
+    (page as Page & { hydrationErrors?: string[] }).hydrationErrors = hydrationErrors;
   });
   test.afterEach(async ({ page }) => {
     expect((page as Page & { task4Errors?: string[] }).task4Errors).toEqual([]);
+    expect((page as Page & { hydrationErrors?: string[] }).hydrationErrors).toEqual([]);
   });
   test.beforeAll(async () => {
     fixtures = await import('../integration/helpers/fixtures');
@@ -61,6 +68,11 @@ test.describe('application status and authorized review', () => {
     await expect(page.getByRole('button', { name: 'Reopen application', exact: true })).toHaveCount(
       0
     );
+    await page.reload();
+    await expect(
+      page.getByText('Synthetic correction: match the enrollment name.', { exact: true })
+    ).toBeVisible();
+    await expect(page.locator('time')).toContainText('GMT+8');
   });
 
   async function login(page: Page, email: string, role = 'student') {
@@ -397,6 +409,77 @@ test.describe('application status and authorized review', () => {
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL('https://127.0.0.1:3443/');
     expect(prompts).toHaveLength(2);
+  });
+  test('application actions and reviewer menu reflow at 320px with 200% text', async ({ page }) => {
+    const applicant = await fixtures.createFixture();
+    const reviewer = await fixtures.createFixture('faculty');
+    await fixtures.harness('state', { account_id: applicant.id, status: 'needs_correction' });
+    await fixtures.harness('state', { account_id: reviewer.id, status: 'approved' });
+    await page.setViewportSize({ width: 320, height: 800 });
+    await login(page, applicant.email);
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '200%';
+    });
+    await expect(
+      page.getByRole('button', { name: 'Resubmit for review', exact: true })
+    ).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true
+    );
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '';
+    });
+    await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+    await expect(page).toHaveURL(/\/auth\/sign-in$/);
+    await login(page, reviewer.email, 'faculty');
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '200%';
+    });
+    const trigger = page.getByRole('button', { name: 'Toggle Sidebar', exact: true });
+    for (const activation of ['pointer', 'keyboard']) {
+      if (activation === 'pointer') await trigger.click();
+      else {
+        await trigger.focus();
+        await page.keyboard.press('Enter');
+      }
+      const menu = page.getByRole('dialog');
+      await expect(menu).toBeVisible();
+      await expect
+        .poll(() =>
+          menu.evaluate((node) => {
+            const rect = node.getBoundingClientRect();
+            return rect.left >= 0 && rect.right <= innerWidth;
+          })
+        )
+        .toBe(true);
+      expect(
+        await menu
+          .locator('a:visible,button:visible')
+          .evaluateAll((nodes) =>
+            nodes.every(
+              (node) =>
+                node.getBoundingClientRect().left >= 0 &&
+                node.getBoundingClientRect().right <= innerWidth
+            )
+          )
+      ).toBe(true);
+      expect(
+        await menu
+          .getByText('CS-GAMUERS', { exact: true })
+          .evaluate((node) => node.scrollWidth <= node.clientWidth)
+      ).toBe(true);
+      await page.keyboard.press('Escape');
+      await expect(menu).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+      await expect
+        .poll(() =>
+          trigger.evaluate((node) => {
+            const style = getComputedStyle(node);
+            return style.outlineStyle !== 'none' || style.boxShadow !== 'none';
+          })
+        )
+        .toBe(true);
+    }
   });
   for (const width of [1280, 320])
     test(`pending applicant edits same application at ${width}px`, async ({ page }) => {
