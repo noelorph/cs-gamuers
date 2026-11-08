@@ -546,7 +546,7 @@ npm run demo:https
 ```
 
 The command checks that `APP_ORIGIN` matches this Mac's `en0` Wi-Fi address,
-builds with Next's webpack option, starts production Next on loopback port
+builds with Next's webpack option and Tailwind PostCSS plugin, starts production Next on loopback port
 3100, and starts Caddy on HTTPS port 443 with the retained local CA. Keep that
 Terminal open; press Ctrl+C to stop both processes. Open
 `https://192.168.100.125/auth/sign-up/student` on a device that trusts the

@@ -133,6 +133,19 @@ The preserved older run has seven ownership/reservation rows, six application/na
 
 ## DEMO migration and LAN HTTPS update — 2026-11-08
 
+The first webpack HTTPS launch served the Student form without its design:
+the CSS asset loaded but contained no Tailwind utilities. The repository had
+configured Tailwind only for Turbopack. Added the installed-guide PostCSS
+plugin for webpack and made the shared production build use webpack. The
+rebuilt Student page now has the approved card, spacing, controls and primary
+button. Four focused registration checks passed in Chromium and four in
+Firefox at 1280 and 320 CSS pixels; eight shared sign-in layout checks also
+passed across those browsers and widths. Full mobile and desktop screenshots were
+inspected; neither width overflowed. The live LAN HTTPS process was restarted
+and its Student page showed 16px main padding and the primary button color
+with zero console errors. The old process had kept the unstyled build in
+memory, so a restart was required.
+
 DEMO migration history had 22 older entries and lacked the registration
 functions. Applied all 15 tracked role-authentication migrations in source
 order, from `20261107032601_public_registration.sql` through

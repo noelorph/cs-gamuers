@@ -11,6 +11,14 @@ for (const width of [1280, 320])
           name: `Apply as ${role === 'student' ? 'a Student' : 'Faculty'}`,
         })
       ).toBeVisible();
+      await expect(page.getByRole('main')).toHaveCSS(
+        'padding-left',
+        width === 320 ? '16px' : '24px'
+      );
+      await expect(page.getByRole('button', { name: 'Submit application' })).toHaveCSS(
+        'background-color',
+        'rgb(79, 70, 229)'
+      );
       await expect(page.getByLabel('Full name (required)')).toHaveAttribute('autocomplete', 'name');
       await expect(
         page.getByLabel(role === 'student' ? 'School email (required)' : 'Email (required)')

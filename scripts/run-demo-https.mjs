@@ -21,9 +21,7 @@ if (process.argv.includes('--check')) {
   process.exit(0);
 }
 
-const build = spawnSync(resolve('node_modules/.bin/next'), ['build', '--webpack'], {
-  stdio: 'inherit',
-});
+const build = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
 if (build.status !== 0) process.exit(build.status || 1);
 
 const app = spawn(
