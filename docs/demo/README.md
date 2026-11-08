@@ -65,7 +65,7 @@ access; the natively revoked session returned to sign-in with session-ended guid
 The exact probe run and credential snapshots were cleaned. This does not establish
 Administrator/other-role or other-engine expiry behavior.
 
-The full unit/integration run recorded 326 passed, two failed and two opt-in skips.
+The earlier full unit/integration run recorded 326 passed, two failed and two opt-in skips.
 One failure is the preserved bootstrap blocker; the other native recovery verification
 failed in that run and passed its focused diagnostic rerun. A nearby native verification
 rate-limit response is consistent with that failure, but the original test captured no
@@ -84,8 +84,9 @@ versions, actual Android Chrome/iPhone Safari and final-network trust/rehearsal.
 The bundled macOS 14.5 WebKit 2251 host remains blocked before application navigation.
 The historical bootstrap conflict remains recorded. Owner-authorized exact older-run
 recovery completed on November 8 at 03:28:20 UTC, with all 18 unrelated-table
-count/digest pairs unchanged and the TEST marker intact. Root's fresh full
-unit/integration result is pending in this snapshot. Missing coverage remains
+count/digest pairs unchanged and the TEST marker intact. The subsequent full
+unit/integration run passed 330 tests with two opt-in skips and no failures,
+including the previously blocked bootstrap test. Missing coverage remains
 unfinished acceptance work.
 
 ## Project roles and evidence
