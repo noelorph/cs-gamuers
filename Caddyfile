@@ -1,0 +1,24 @@
+{
+	log default {
+		format filter {
+			wrap json
+			fields {
+				request>uri delete
+				request>headers>Referer delete
+			}
+		}
+	}
+}
+
+# Placeholder: set APP_ORIGIN to the approved LAN HTTPS origin before use.
+# Certificate trust and phone/Wi-Fi reachability must be verified separately.
+{$APP_ORIGIN} {
+	tls internal
+	request_body {
+		max_size 1048576
+	}
+	reverse_proxy 127.0.0.1:3100 {
+		header_up X-CS-Proxy {$LOCAL_PROXY_SECRET}
+		header_up X-CS-IP {remote_host}
+	}
+}

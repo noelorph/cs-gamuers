@@ -1,0 +1,1442 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" href="data:," />
+    <title>Role authentication reference | CS-GAMUERS</title>
+    <link rel="stylesheet" href="reference.css" />
+    <script src="reference.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#sign-in-main" id="skip">Skip to screen</a>
+    <header class="reference-bar">
+      <div>
+        <strong>Role authentication / Design reference</strong>
+        <p>Fictional sample data. Use fictional values only. No account or email is created.</p>
+        <p><a href="role-authentication.md">Implementation specification</a></p>
+      </div>
+      <div class="reference-choice">
+        <label for="screen-picker">Preview a screen or state</label
+        ><select id="screen-picker">
+          <option value="sign-in">01 · Sign in</option>
+          <option value="admin-sign-in">02 · Administrator sign in</option>
+          <option value="student-signup">03 · Apply as a Student</option>
+          <option value="faculty-signup">04 · Apply as Faculty</option>
+          <option value="verify-email">05 · Check your email</option>
+          <option value="confirm-email">06 · Confirm your email</option>
+          <option value="email-verified">07 · Email verified</option>
+          <option value="link-unavailable">08 · This link is no longer available</option>
+          <option value="invitation">09 · Accept your invitation</option>
+          <option value="pending">10 · Your application</option>
+          <option value="pending-edit">11 · Edit your application</option>
+          <option value="correction">12 · Correct your application</option>
+          <option value="replacement-email">13 · Verify your replacement email</option>
+          <option value="rejected">14 · Your application</option>
+          <option value="approved">15 · Your application</option>
+          <option value="review">16 · Applications — Administrator</option>
+          <option value="faculty-review">17 · Student applications — Faculty</option>
+          <option value="faculty-application">18 · Applications — Faculty applicant</option>
+          <option value="reopen">19 · Reopen application</option>
+          <option value="review-stale">20 · Application updated</option>
+          <option value="review-saved">21 · Decision saved</option>
+          <option value="states">22 · Feedback specimens</option>
+        </select>
+      </div>
+    </header>
+    <section class="screen" id="sign-in" data-title="Sign in" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span
+        ><a class="header-link" href="#student-signup">Apply as a Student</a>
+      </header>
+      <main id="sign-in-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Sign in</h1>
+            <p class="secondary">For Students, Faculty, and Program Heads.</p>
+          </header>
+          <form class="stack" data-next="pending">
+            <div class="field">
+              <label for="sign-in-login-email">Email (required)</label
+              ><input
+                id="sign-in-login-email"
+                type="email"
+                value=""
+                autocomplete="username"
+                aria-describedby="sign-in-login-email-help"
+                required
+              />
+              <p class="help" id="sign-in-login-email-help">
+                Use the email registered to your account.
+              </p>
+            </div>
+            <div class="field">
+              <label for="sign-in-login-password">Password (required)</label>
+              <div class="password">
+                <input
+                  id="sign-in-login-password"
+                  type="password"
+                  value=""
+                  autocomplete="current-password"
+                  aria-describedby="sign-in-login-password-help"
+                  required
+                /><button
+                  type="button"
+                  data-password="sign-in-login-password"
+                  aria-pressed="false"
+                  aria-label="Show password"
+                >
+                  Show
+                </button>
+              </div>
+              <p class="help" id="sign-in-login-password-help">Use your CS-GAMUERS password.</p>
+            </div>
+            <button class="primary full" type="submit">Sign in</button>
+          </form>
+          <div class="divider stack">
+            <p class="small secondary">New to CS-GAMUERS?</p>
+            <a class="button" href="#student-signup">Apply as a Student</a
+            ><a class="button" href="#faculty-signup">Apply as Faculty</a>
+          </div>
+          <p class="small"><a href="#admin-sign-in">Administrator sign in</a></p>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="admin-sign-in" data-title="Administrator sign in" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span
+        ><a class="header-link" href="#sign-in">Standard sign in</a>
+      </header>
+      <main id="admin-sign-in-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Administrator sign in</h1>
+            <p class="secondary">Use your invited Administrator account.</p>
+          </header>
+          <form class="stack" data-next="review">
+            <div class="field">
+              <label for="admin-sign-in-login-email">Email (required)</label
+              ><input
+                id="admin-sign-in-login-email"
+                type="email"
+                value=""
+                autocomplete="username"
+                aria-describedby="admin-sign-in-login-email-help"
+                required
+              />
+              <p class="help" id="admin-sign-in-login-email-help">
+                Use the email registered to your account.
+              </p>
+            </div>
+            <div class="field">
+              <label for="admin-sign-in-login-password">Password (required)</label>
+              <div class="password">
+                <input
+                  id="admin-sign-in-login-password"
+                  type="password"
+                  value=""
+                  autocomplete="current-password"
+                  aria-describedby="admin-sign-in-login-password-help"
+                  required
+                /><button
+                  type="button"
+                  data-password="admin-sign-in-login-password"
+                  aria-pressed="false"
+                  aria-label="Show password"
+                >
+                  Show
+                </button>
+              </div>
+              <p class="help" id="admin-sign-in-login-password-help">
+                Use your CS-GAMUERS password.
+              </p>
+            </div>
+            <button class="primary full" type="submit">Sign in</button>
+          </form>
+          <p class="small secondary">Administrator accounts are created by invitation.</p>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="student-signup" data-title="Apply as a Student" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign in</a>
+      </header>
+      <main id="student-signup-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Apply as a Student</h1>
+            <p class="secondary">
+              Faculty or an Administrator will check your application against the enrollment list.
+            </p>
+          </header>
+          <form class="stack" data-next="verify-email">
+            <div class="field">
+              <label for="student-signup-name">Full name (required)</label
+              ><input
+                id="student-signup-name"
+                type="text"
+                value=""
+                autocomplete="name"
+                aria-describedby="student-signup-name-help"
+                required
+              />
+              <p class="help" id="student-signup-name-help">
+                Use your full name as it appears on school records.
+              </p>
+            </div>
+            <div class="field">
+              <label for="student-signup-number">Student number (required)</label
+              ><input
+                id="student-signup-number"
+                type="text"
+                value=""
+                autocomplete="off"
+                aria-describedby="student-signup-number-help"
+                required
+              />
+              <p class="help" id="student-signup-number-help">
+                Enter your complete student number, including any leading zeros.
+              </p>
+            </div>
+            <div class="field">
+              <label for="student-signup-email">School email (required)</label
+              ><input
+                id="student-signup-email"
+                type="email"
+                value=""
+                autocomplete="email"
+                aria-describedby="student-signup-email-help"
+                required
+              />
+              <p class="help" id="student-signup-email-help">
+                Use your existing @caloocan.sti.edu.ph address.
+              </p>
+            </div>
+            <div class="field">
+              <label for="student-signup-password">Password (required)</label>
+              <div class="password">
+                <input
+                  id="student-signup-password"
+                  type="password"
+                  value=""
+                  autocomplete="new-password"
+                  aria-describedby="student-signup-password-help"
+                  required
+                /><button
+                  type="button"
+                  data-password="student-signup-password"
+                  aria-pressed="false"
+                  aria-label="Show password"
+                >
+                  Show
+                </button>
+              </div>
+              <p class="help" id="student-signup-password-help">
+                Use at least 12 characters. Spaces and passphrases are welcome. Maximum 72 UTF-8
+                bytes; some characters use more than one byte.
+              </p>
+            </div>
+            <p class="help">You will verify your email, then wait for application approval.</p>
+            <button type="submit" class="primary full">Submit application</button>
+          </form>
+          <div class="divider stack">
+            <p class="small">Already applied? <a href="#sign-in">Sign in</a></p>
+            <p class="small"><a href="#faculty-signup">Apply as Faculty instead</a></p>
+          </div>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="faculty-signup" data-title="Apply as Faculty" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign in</a>
+      </header>
+      <main id="faculty-signup-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Apply as Faculty</h1>
+            <p class="secondary">
+              An Administrator will check your authorization and school-issued employee ID in
+              person.
+            </p>
+          </header>
+          <form class="stack" data-next="verify-email">
+            <div class="field">
+              <label for="faculty-signup-name">Full name (required)</label
+              ><input
+                id="faculty-signup-name"
+                type="text"
+                value=""
+                autocomplete="name"
+                aria-describedby="faculty-signup-name-help"
+                required
+              />
+              <p class="help" id="faculty-signup-name-help">
+                Use your full name as it appears on school records.
+              </p>
+            </div>
+            <div class="field">
+              <label for="faculty-signup-email">Email (required)</label
+              ><input
+                id="faculty-signup-email"
+                type="email"
+                value=""
+                autocomplete="email"
+                aria-describedby="faculty-signup-email-help"
+                required
+              />
+              <p class="help" id="faculty-signup-email-help">
+                A personal email address is allowed.
+              </p>
+            </div>
+            <div class="field">
+              <label for="faculty-signup-employee">Employee number (optional)</label
+              ><input
+                id="faculty-signup-employee"
+                type="text"
+                value=""
+                autocomplete="off"
+                aria-describedby="faculty-signup-employee-help"
+              />
+              <p class="help" id="faculty-signup-employee-help">
+                Leave blank if you do not have it available.
+              </p>
+            </div>
+            <div class="field">
+              <label for="faculty-signup-password">Password (required)</label>
+              <div class="password">
+                <input
+                  id="faculty-signup-password"
+                  type="password"
+                  value=""
+                  autocomplete="new-password"
+                  aria-describedby="faculty-signup-password-help"
+                  required
+                /><button
+                  type="button"
+                  data-password="faculty-signup-password"
+                  aria-pressed="false"
+                  aria-label="Show password"
+                >
+                  Show
+                </button>
+              </div>
+              <p class="help" id="faculty-signup-password-help">
+                Use at least 12 characters. Spaces and passphrases are welcome. Maximum 72 UTF-8
+                bytes; some characters use more than one byte.
+              </p>
+            </div>
+            <p class="help">You will verify your email, then wait for application approval.</p>
+            <button type="submit" class="primary full">Submit application</button>
+          </form>
+          <div class="divider stack">
+            <p class="small">Already applied? <a href="#sign-in">Sign in</a></p>
+            <p class="small"><a href="#student-signup">Apply as a Student instead</a></p>
+          </div>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="verify-email" data-title="Check your email" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign in</a>
+      </header>
+      <main id="verify-email-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Check your email</h1>
+            <p class="secondary">Verify your email before your application can be approved.</p>
+          </header>
+          <div class="notice">
+            <p><strong>Verification email queued</strong></p>
+            <p>Delivery may take a moment. Open the latest email on the demonstration network.</p>
+          </div>
+          <p>
+            The link expires 30 minutes after it is issued. Check your spam folder if it has not
+            arrived.
+          </p>
+          <form class="stack" data-resend>
+            <div class="field">
+              <label for="resend-email">Email (required)</label
+              ><input
+                id="resend-email"
+                type="email"
+                value=""
+                autocomplete="email"
+                aria-describedby="resend-email-help"
+                required
+              />
+              <p class="help" id="resend-email-help">Use the address from your application.</p>
+            </div>
+            <button type="submit" class="full">Request a new link</button>
+            <p role="status" class="help" data-resend-result>
+              Requests must be at least 60 seconds apart, with at most 5 issued links in a rolling
+              hour.
+            </p>
+          </form>
+          <p class="small"><a href="#sign-in">Return to sign in</a></p>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="confirm-email" data-title="Confirm your email" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign in</a>
+      </header>
+      <main id="confirm-email-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Confirm your email</h1>
+            <p class="secondary">
+              Confirm this email to continue. Opening this page alone does not verify it.
+            </p>
+          </header>
+          <p>
+            Email verification confirms that you control this address. Application approval is a
+            separate step.
+          </p>
+          <a class="button primary" href="#email-verified">Confirm email</a>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="email-verified" data-title="Email verified" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign in</a>
+      </header>
+      <main id="email-verified-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Email verified</h1>
+            <p class="secondary">Your application still needs approval.</p>
+          </header>
+          <div class="notice success">
+            <p><strong>You can now check your application</strong></p>
+            <p>Sign in with your CS-GAMUERS password to see its status.</p>
+          </div>
+          <a class="button primary" href="#sign-in">Sign in to view application</a>
+        </div>
+      </main>
+    </section>
+    <section
+      class="screen"
+      id="link-unavailable"
+      data-title="This link is no longer available"
+      hidden
+    >
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign in</a>
+      </header>
+      <main id="link-unavailable-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">This link is no longer available</h1>
+            <p class="secondary">It may have expired or been replaced.</p>
+          </header>
+          <p>Verification links last 30 minutes. Request a new link and open the latest email.</p>
+          <a class="button primary" href="#verify-email">Request a new link</a>
+          <p class="small secondary">
+            Accepting a staff invitation? Ask your inviting Administrator for a new invitation.
+          </p>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="invitation" data-title="Accept your invitation" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign in</a>
+      </header>
+      <main id="invitation-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Accept your invitation</h1>
+            <p class="secondary">Your email is confirmed. Complete your invited account.</p>
+          </header>
+          <dl>
+            <div>
+              <dt>Invited role</dt>
+              <dd>Program Head</dd>
+            </div>
+            <div>
+              <dt>Intended email</dt>
+              <dd>invited.head@example.org</dd>
+            </div>
+          </dl>
+          <form class="stack" data-next="sign-in">
+            <div class="field">
+              <label for="invite-name">Full name (required)</label
+              ><input
+                id="invite-name"
+                type="text"
+                value=""
+                autocomplete="name"
+                aria-describedby="invite-name-help"
+                required
+              />
+              <p class="help" id="invite-name-help">Use your full name.</p>
+            </div>
+            <div class="field">
+              <label for="invite-employee">Employee number (optional)</label
+              ><input
+                id="invite-employee"
+                type="text"
+                value=""
+                autocomplete="off"
+                aria-describedby="invite-employee-help"
+              />
+              <p class="help" id="invite-employee-help">Optional.</p>
+            </div>
+            <div class="field">
+              <label for="invite-password">New password (required)</label>
+              <div class="password">
+                <input
+                  id="invite-password"
+                  type="password"
+                  value=""
+                  autocomplete="new-password"
+                  aria-describedby="invite-password-help"
+                  required
+                /><button
+                  type="button"
+                  data-password="invite-password"
+                  aria-pressed="false"
+                  aria-label="Show password"
+                >
+                  Show
+                </button>
+              </div>
+              <p class="help" id="invite-password-help">
+                Use at least 12 characters. Spaces and passphrases are welcome. Maximum 72 UTF-8
+                bytes; some characters use more than one byte.
+              </p>
+            </div>
+            <button type="submit" class="primary full">Accept invitation</button>
+          </form>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="pending" data-title="Your application" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign out</a>
+      </header>
+      <main id="pending-main" class="status-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Your application</h1>
+            <p class="secondary">Student application</p>
+          </header>
+          <div class="badge-row">
+            <span class="badge warning">Pending review</span
+            ><span class="badge success">Email verified</span>
+          </div>
+          <p>
+            A reviewer will check your application against school records. You can update your
+            details while you wait.
+          </p>
+          <dl class="identity">
+            <div>
+              <dt>Full name</dt>
+              <dd>Alex Rivera</dd>
+            </div>
+            <div>
+              <dt>Student number</dt>
+              <dd>001234567</dd>
+            </div>
+            <div>
+              <dt>School email</dt>
+              <dd>alex.rivera@caloocan.sti.edu.ph</dd>
+            </div>
+            <div>
+              <dt>Application role</dt>
+              <dd>Student</dd>
+            </div>
+          </dl>
+          <div class="actions divider">
+            <a class="button primary" href="#pending-edit">Edit application</a
+            ><a class="button" href="#pending">Refresh status</a>
+          </div>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="pending-edit" data-title="Edit your application" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign out</a>
+      </header>
+      <main id="pending-edit-main" class="status-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Edit your application</h1>
+            <p class="secondary">
+              Update this application using the details in your school records.
+            </p>
+          </header>
+          <div class="badge-row">
+            <span class="badge warning">Pending review</span
+            ><span class="badge success">Email verified</span>
+          </div>
+          <form class="stack" data-next="pending">
+            <div class="field">
+              <label for="pending-edit-name">Full name (required)</label
+              ><input
+                id="pending-edit-name"
+                type="text"
+                value="Alex Rivera"
+                autocomplete="name"
+                aria-describedby="pending-edit-name-help"
+                required
+              />
+              <p class="help" id="pending-edit-name-help">Match the enrollment list.</p>
+            </div>
+            <div class="field">
+              <label for="pending-edit-number">Student number (required)</label
+              ><input
+                id="pending-edit-number"
+                type="text"
+                value="001234567"
+                autocomplete="off"
+                aria-describedby="pending-edit-number-help"
+                required
+              />
+              <p class="help" id="pending-edit-number-help">
+                Keep the complete number, including leading zeros.
+              </p>
+            </div>
+            <div class="field">
+              <span class="small secondary">Current verified school email</span>
+              <p style="overflow-wrap: anywhere">alex.rivera@caloocan.sti.edu.ph</p>
+              <a href="#replacement-email">Change email address</a>
+            </div>
+            <button type="submit" class="primary full">Save changes</button>
+            <p class="help">Your application will remain Pending review.</p>
+          </form>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="correction" data-title="Correct your application" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign out</a>
+      </header>
+      <main id="correction-main" class="status-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Correct your application</h1>
+            <p class="secondary">
+              Update this application using the details in your school records.
+            </p>
+          </header>
+          <div class="badge-row">
+            <span class="badge warning">Needs correction</span
+            ><span class="badge success">Email verified</span>
+          </div>
+          <div class="notice warning">
+            <p><strong>Reviewer’s reason</strong></p>
+            <p>
+              Please check your full name against the enrollment list and enter every part of your
+              name. Keep your complete student number, including its leading zeros.
+            </p>
+          </div>
+          <form class="stack" data-next="pending">
+            <div class="field">
+              <label for="correction-name">Full name (required)</label
+              ><input
+                id="correction-name"
+                type="text"
+                value="Alex Rivera"
+                autocomplete="name"
+                aria-describedby="correction-name-help"
+                required
+              />
+              <p class="help" id="correction-name-help">Match the enrollment list.</p>
+            </div>
+            <div class="field">
+              <label for="correction-number">Student number (required)</label
+              ><input
+                id="correction-number"
+                type="text"
+                value="001234567"
+                autocomplete="off"
+                aria-describedby="correction-number-help"
+                required
+              />
+              <p class="help" id="correction-number-help">
+                Keep the complete number, including leading zeros.
+              </p>
+            </div>
+            <div class="field">
+              <span class="small secondary">Current verified school email</span>
+              <p style="overflow-wrap: anywhere">alex.rivera@caloocan.sti.edu.ph</p>
+              <a href="#replacement-email">Change email address</a>
+            </div>
+            <div class="actions">
+              <button type="submit" class="primary">Resubmit for review</button
+              ><button type="button" data-save>Save changes</button>
+            </div>
+            <p role="status" class="help" data-save-result>
+              Saving changes keeps the Needs correction status until you resubmit.
+            </p>
+          </form>
+        </div>
+      </main>
+    </section>
+    <section
+      class="screen"
+      id="replacement-email"
+      data-title="Verify your replacement email"
+      hidden
+    >
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign out</a>
+      </header>
+      <main id="replacement-email-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Verify your replacement email</h1>
+            <p class="secondary">
+              Your current verified address remains in use until the replacement is verified and
+              saved.
+            </p>
+          </header>
+          <dl>
+            <div>
+              <dt>Current school email</dt>
+              <dd>alex.rivera@caloocan.sti.edu.ph</dd>
+            </div>
+          </dl>
+          <form class="stack" data-resend>
+            <div class="field">
+              <label for="replacement-address">Replacement school email (required)</label
+              ><input
+                id="replacement-address"
+                type="email"
+                value=""
+                autocomplete="email"
+                aria-describedby="replacement-address-help"
+                required
+              />
+              <p class="help" id="replacement-address-help">
+                Use an existing @caloocan.sti.edu.ph address.
+              </p>
+            </div>
+            <button class="primary full" type="submit">Verify replacement email</button>
+            <p class="help" role="status" data-resend-result>
+              Confirm the new address before resubmitting your application.
+            </p>
+          </form>
+          <a class="button" href="#correction">Back to application</a>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="rejected" data-title="Your application" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign out</a>
+      </header>
+      <main id="rejected-main" class="status-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Your application</h1>
+            <p class="secondary">Student application</p>
+          </header>
+          <div class="badge-row">
+            <span class="badge error">Application rejected</span
+            ><span class="badge success">Email verified</span>
+          </div>
+          <div class="notice error">
+            <p><strong>Reviewer’s reason</strong></p>
+            <p>
+              We could not verify current Computer Science enrollment against the school records.
+            </p>
+          </div>
+          <p>
+            If you believe this is an error, contact an Administrator. Only an Administrator can
+            reopen this application.
+          </p>
+          <dl class="identity">
+            <div>
+              <dt>Full name</dt>
+              <dd>Alex Rivera</dd>
+            </div>
+            <div>
+              <dt>Student number</dt>
+              <dd>001234567</dd>
+            </div>
+            <div>
+              <dt>School email</dt>
+              <dd>alex.rivera@caloocan.sti.edu.ph</dd>
+            </div>
+            <div>
+              <dt>Application role</dt>
+              <dd>Student</dd>
+            </div>
+          </dl>
+          <a class="button" href="#rejected">Refresh status</a>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="approved" data-title="Your application" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign out</a>
+      </header>
+      <main id="approved-main" class="status-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Your application</h1>
+            <p class="secondary">Student application</p>
+          </header>
+          <div class="notice success">
+            <p><strong>Application approved</strong></p>
+            <p>Your active Student account can now access its learning workspace.</p>
+          </div>
+          <dl class="identity">
+            <div>
+              <dt>Full name</dt>
+              <dd>Alex Rivera</dd>
+            </div>
+            <div>
+              <dt>Student number</dt>
+              <dd>001234567</dd>
+            </div>
+            <div>
+              <dt>School email</dt>
+              <dd>alex.rivera@caloocan.sti.edu.ph</dd>
+            </div>
+            <div>
+              <dt>Application role</dt>
+              <dd>Student</dd>
+            </div>
+          </dl>
+          <button type="button" class="primary full" data-home>Continue to your account</button>
+          <p class="help" role="status" data-home-result></p>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="review" data-title="Applications — Administrator" hidden>
+      <div class="workspace">
+        <aside class="sidebar">
+          <span class="wordmark">CS-GAMUERS</span>
+          <nav aria-label="Workspace navigation">
+            <span class="nav-item">Home</span
+            ><a class="nav-item" aria-current="page" href="#review">Applications</a>
+          </nav>
+          <p class="small secondary">Administrator</p>
+          <a class="button" href="#admin-sign-in">Sign out</a>
+        </aside>
+        <div>
+          <header class="product-header mobile-workspace-header">
+            <span class="wordmark">CS-GAMUERS</span
+            ><button type="button" data-menu="review">Menu</button>
+          </header>
+          <main class="workspace-main" id="review-main">
+            <header>
+              <h1 tabindex="-1">Applications</h1>
+              <p class="secondary">Review Student and Faculty applications.</p>
+            </header>
+            <div class="review-grid">
+              <section class="stack" aria-label="Application queue">
+                <div class="card filters">
+                  <div class="field">
+                    <label for="review-status">Status</label
+                    ><select id="review-status" data-filter>
+                      <option>Pending review</option>
+                      <option>Needs correction</option>
+                      <option>Rejected</option>
+                      <option>Approved</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="review-role">Applicant role</label
+                    ><select id="review-role" data-filter>
+                      <option>All applicants</option>
+                      <option>Student</option>
+                      <option>Faculty</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="stack" data-queue>
+                  <a class="applicant" href="#review" aria-current="true"
+                    ><strong>Alex Rivera</strong>
+                    <p><span class="badge warning">Pending review</span></p>
+                    <p><small>Student · Submitted 7 Nov 2026</small></p>
+                    <p class="small">Review Alex Rivera</p></a
+                  ><a class="applicant" href="#faculty-application"
+                    ><strong>Mika Santos</strong>
+                    <p><span class="badge warning">Pending review</span></p>
+                    <p><small>Faculty · Submitted 7 Nov 2026</small></p>
+                    <p class="small">Review Mika Santos</p></a
+                  >
+                </div>
+                <p class="notice" data-filter-message hidden>
+                  No applications match these filters.
+                  <button class="inline-link" data-reset-filter>Reset filters</button>
+                </p>
+              </section>
+              <section class="card stack-lg" aria-labelledby="review-applicant">
+                <header class="stack">
+                  <h2 id="review-applicant" tabindex="-1">Alex Rivera</h2>
+                  <div class="badge-row">
+                    <span class="badge warning">Pending review</span
+                    ><span class="badge success">Email verified</span>
+                  </div>
+                </header>
+                <dl class="identity">
+                  <div>
+                    <dt>Full name</dt>
+                    <dd>Alex Rivera</dd>
+                  </div>
+                  <div>
+                    <dt>Student number</dt>
+                    <dd>001234567</dd>
+                  </div>
+                  <div>
+                    <dt>School email</dt>
+                    <dd>alex.rivera@caloocan.sti.edu.ph</dd>
+                  </div>
+                  <div>
+                    <dt>Application role</dt>
+                    <dd>Student</dd>
+                  </div>
+                </dl>
+                <form
+                  class="stack-lg divider"
+                  data-review
+                  data-applicant="Alex Rivera"
+                  data-role="Student"
+                >
+                  <fieldset class="stack">
+                    <legend>Verify against school records</legend>
+                    <label class="choice"
+                      ><input type="checkbox" data-check /><span
+                        >I compared the name and student number with the enrollment list.</span
+                      ></label
+                    >
+                    <p class="help">
+                      Complete these checks before approving. No document upload is needed.
+                    </p>
+                  </fieldset>
+                  <fieldset class="stack">
+                    <legend>Decision</legend>
+                    <label class="choice"
+                      ><input type="radio" name="review-decision" value="approve" required /><span
+                        >Approve application</span
+                      ></label
+                    ><label class="choice"
+                      ><input
+                        type="radio"
+                        name="review-decision"
+                        value="correction"
+                        required
+                      /><span>Request correction</span></label
+                    ><label class="choice"
+                      ><input type="radio" name="review-decision" value="reject" required /><span
+                        >Reject application</span
+                      ></label
+                    >
+                  </fieldset>
+                  <div class="field" data-reason-field hidden>
+                    <label for="review-reason">Reason (required)</label
+                    ><textarea
+                      id="review-reason"
+                      data-reason
+                      aria-describedby="review-reason-help"
+                    ></textarea>
+                    <p class="help" id="review-reason-help">
+                      Explain what needs correcting or why the application cannot be approved.
+                      Maximum 2,000 characters.
+                    </p>
+                  </div>
+                  <p role="alert" tabindex="-1" data-review-error class="error-text" hidden></p>
+                  <button type="submit" class="primary full">Review decision</button>
+                </form>
+              </section>
+            </div>
+            <aside class="reference-note">
+              Reference scenarios: <a href="#review-stale">Application updated during review</a> ·
+              <a href="#review-saved">Saved decision with email failure</a> ·
+              <a href="#reopen">Reopen a rejection</a>
+            </aside>
+          </main>
+        </div>
+      </div>
+    </section>
+    <section class="screen" id="faculty-review" data-title="Student applications — Faculty" hidden>
+      <div class="workspace">
+        <aside class="sidebar">
+          <span class="wordmark">CS-GAMUERS</span>
+          <nav aria-label="Workspace navigation">
+            <span class="nav-item">Home</span><span class="nav-item">Course drafts</span
+            ><a class="nav-item" aria-current="page" href="#faculty-review">Student applications</a>
+          </nav>
+          <p class="small secondary">Faculty</p>
+          <a class="button" href="#sign-in">Sign out</a>
+        </aside>
+        <div>
+          <header class="product-header mobile-workspace-header">
+            <span class="wordmark">CS-GAMUERS</span
+            ><button type="button" data-menu="faculty-review">Menu</button>
+          </header>
+          <main class="workspace-main" id="faculty-review-main">
+            <header>
+              <h1 tabindex="-1">Student applications</h1>
+              <p class="secondary">Review Student applications against enrollment records.</p>
+            </header>
+            <div class="review-grid">
+              <section class="stack" aria-label="Application queue">
+                <div class="card filters">
+                  <div class="field">
+                    <label for="faculty-review-status">Status</label
+                    ><select id="faculty-review-status" data-filter>
+                      <option>Pending review</option>
+                      <option>Needs correction</option>
+                      <option>Rejected</option>
+                      <option>Approved</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="stack" data-queue>
+                  <a class="applicant" href="#faculty-review" aria-current="true"
+                    ><strong>Alex Rivera</strong>
+                    <p><span class="badge warning">Pending review</span></p>
+                    <p><small>Student · Submitted 7 Nov 2026</small></p>
+                    <p class="small">Review Alex Rivera</p></a
+                  >
+                </div>
+                <p class="notice" data-filter-message hidden>
+                  No applications match these filters.
+                  <button class="inline-link" data-reset-filter>Reset filters</button>
+                </p>
+              </section>
+              <section class="card stack-lg" aria-labelledby="faculty-review-applicant">
+                <header class="stack">
+                  <h2 id="faculty-review-applicant" tabindex="-1">Alex Rivera</h2>
+                  <div class="badge-row">
+                    <span class="badge warning">Pending review</span
+                    ><span class="badge success">Email verified</span>
+                  </div>
+                </header>
+                <dl class="identity">
+                  <div>
+                    <dt>Full name</dt>
+                    <dd>Alex Rivera</dd>
+                  </div>
+                  <div>
+                    <dt>Student number</dt>
+                    <dd>001234567</dd>
+                  </div>
+                  <div>
+                    <dt>School email</dt>
+                    <dd>alex.rivera@caloocan.sti.edu.ph</dd>
+                  </div>
+                  <div>
+                    <dt>Application role</dt>
+                    <dd>Student</dd>
+                  </div>
+                </dl>
+                <form
+                  class="stack-lg divider"
+                  data-review
+                  data-applicant="Alex Rivera"
+                  data-role="Student"
+                >
+                  <fieldset class="stack">
+                    <legend>Verify against school records</legend>
+                    <label class="choice"
+                      ><input type="checkbox" data-check /><span
+                        >I compared the name and student number with the enrollment list.</span
+                      ></label
+                    >
+                    <p class="help">
+                      Complete these checks before approving. No document upload is needed.
+                    </p>
+                  </fieldset>
+                  <fieldset class="stack">
+                    <legend>Decision</legend>
+                    <label class="choice"
+                      ><input
+                        type="radio"
+                        name="faculty-review-decision"
+                        value="approve"
+                        required
+                      /><span>Approve application</span></label
+                    ><label class="choice"
+                      ><input
+                        type="radio"
+                        name="faculty-review-decision"
+                        value="correction"
+                        required
+                      /><span>Request correction</span></label
+                    ><label class="choice"
+                      ><input
+                        type="radio"
+                        name="faculty-review-decision"
+                        value="reject"
+                        required
+                      /><span>Reject application</span></label
+                    >
+                  </fieldset>
+                  <div class="field" data-reason-field hidden>
+                    <label for="faculty-review-reason">Reason (required)</label
+                    ><textarea
+                      id="faculty-review-reason"
+                      data-reason
+                      aria-describedby="faculty-review-reason-help"
+                    ></textarea>
+                    <p class="help" id="faculty-review-reason-help">
+                      Explain what needs correcting or why the application cannot be approved.
+                      Maximum 2,000 characters.
+                    </p>
+                  </div>
+                  <p role="alert" tabindex="-1" data-review-error class="error-text" hidden></p>
+                  <button type="submit" class="primary full">Review decision</button>
+                </form>
+              </section>
+            </div>
+            <aside class="reference-note">
+              Reference scenarios: <a href="#review-stale">Application updated during review</a> ·
+              <a href="#review-saved">Saved decision with email failure</a>
+            </aside>
+          </main>
+        </div>
+      </div>
+    </section>
+    <section
+      class="screen"
+      id="faculty-application"
+      data-title="Applications — Faculty applicant"
+      hidden
+    >
+      <div class="workspace">
+        <aside class="sidebar">
+          <span class="wordmark">CS-GAMUERS</span>
+          <nav aria-label="Workspace navigation">
+            <span class="nav-item">Home</span
+            ><a class="nav-item" aria-current="page" href="#faculty-application">Applications</a>
+          </nav>
+          <p class="small secondary">Administrator</p>
+          <a class="button" href="#admin-sign-in">Sign out</a>
+        </aside>
+        <div>
+          <header class="product-header mobile-workspace-header">
+            <span class="wordmark">CS-GAMUERS</span
+            ><button type="button" data-menu="faculty-application">Menu</button>
+          </header>
+          <main class="workspace-main" id="faculty-application-main">
+            <header>
+              <h1 tabindex="-1">Applications</h1>
+              <p class="secondary">Review Student and Faculty applications.</p>
+            </header>
+            <div class="review-grid">
+              <section class="stack" aria-label="Application queue">
+                <div class="card filters">
+                  <div class="field">
+                    <label for="faculty-application-status">Status</label
+                    ><select id="faculty-application-status" data-filter>
+                      <option>Pending review</option>
+                      <option>Needs correction</option>
+                      <option>Rejected</option>
+                      <option>Approved</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="faculty-application-role">Applicant role</label
+                    ><select id="faculty-application-role" data-filter>
+                      <option>All applicants</option>
+                      <option>Student</option>
+                      <option>Faculty</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="stack" data-queue>
+                  <a class="applicant" href="#review"
+                    ><strong>Alex Rivera</strong>
+                    <p><span class="badge warning">Pending review</span></p>
+                    <p><small>Student · Submitted 7 Nov 2026</small></p>
+                    <p class="small">Review Alex Rivera</p></a
+                  ><a class="applicant" href="#faculty-application" aria-current="true"
+                    ><strong>Mika Santos</strong>
+                    <p><span class="badge warning">Pending review</span></p>
+                    <p><small>Faculty · Submitted 7 Nov 2026</small></p>
+                    <p class="small">Review Mika Santos</p></a
+                  >
+                </div>
+                <p class="notice" data-filter-message hidden>
+                  No applications match these filters.
+                  <button class="inline-link" data-reset-filter>Reset filters</button>
+                </p>
+              </section>
+              <section class="card stack-lg" aria-labelledby="faculty-application-applicant">
+                <header class="stack">
+                  <h2 id="faculty-application-applicant" tabindex="-1">Mika Santos</h2>
+                  <div class="badge-row">
+                    <span class="badge warning">Pending review</span
+                    ><span class="badge success">Email verified</span>
+                  </div>
+                </header>
+                <dl class="identity">
+                  <div>
+                    <dt>Full name</dt>
+                    <dd>Mika Santos</dd>
+                  </div>
+                  <div>
+                    <dt>Employee number</dt>
+                    <dd>Not provided</dd>
+                  </div>
+                  <div>
+                    <dt>Email</dt>
+                    <dd>mika.santos@example.org</dd>
+                  </div>
+                  <div>
+                    <dt>Application role</dt>
+                    <dd>Faculty</dd>
+                  </div>
+                </dl>
+                <form
+                  class="stack-lg divider"
+                  data-review
+                  data-applicant="Mika Santos"
+                  data-role="Faculty"
+                >
+                  <fieldset class="stack">
+                    <legend>Verify against school records</legend>
+                    <label class="choice"
+                      ><input type="checkbox" data-check /><span
+                        >I checked authorization against school records.</span
+                      ></label
+                    ><label class="choice"
+                      ><input type="checkbox" data-check /><span
+                        >I checked a school-issued employee ID in person.</span
+                      ></label
+                    ><label class="choice"
+                      ><input type="checkbox" data-check /><span
+                        >I confirmed the verified email belongs to the applicant.</span
+                      ></label
+                    >
+                    <p class="help">
+                      Complete these checks before approving. No document upload is needed.
+                    </p>
+                  </fieldset>
+                  <fieldset class="stack">
+                    <legend>Decision</legend>
+                    <label class="choice"
+                      ><input
+                        type="radio"
+                        name="faculty-application-decision"
+                        value="approve"
+                        required
+                      /><span>Approve application</span></label
+                    ><label class="choice"
+                      ><input
+                        type="radio"
+                        name="faculty-application-decision"
+                        value="correction"
+                        required
+                      /><span>Request correction</span></label
+                    ><label class="choice"
+                      ><input
+                        type="radio"
+                        name="faculty-application-decision"
+                        value="reject"
+                        required
+                      /><span>Reject application</span></label
+                    >
+                  </fieldset>
+                  <div class="field" data-reason-field hidden>
+                    <label for="faculty-application-reason">Reason (required)</label
+                    ><textarea
+                      id="faculty-application-reason"
+                      data-reason
+                      aria-describedby="faculty-application-reason-help"
+                    ></textarea>
+                    <p class="help" id="faculty-application-reason-help">
+                      Explain what needs correcting or why the application cannot be approved.
+                      Maximum 2,000 characters.
+                    </p>
+                  </div>
+                  <p role="alert" tabindex="-1" data-review-error class="error-text" hidden></p>
+                  <button type="submit" class="primary full">Review decision</button>
+                </form>
+              </section>
+            </div>
+            <aside class="reference-note">
+              Reference scenarios: <a href="#review-stale">Application updated during review</a> ·
+              <a href="#review-saved">Saved decision with email failure</a> ·
+              <a href="#reopen">Reopen a rejection</a>
+            </aside>
+          </main>
+        </div>
+      </div>
+    </section>
+    <section class="screen" id="reopen" data-title="Reopen application" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span
+        ><a class="header-link" href="#review">Back to applications</a>
+      </header>
+      <main id="reopen-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Reopen application</h1>
+            <p class="secondary">Administrator · Alex Rivera · Student</p>
+          </header>
+          <span class="badge error">Application rejected</span>
+          <p>
+            Verify the error and record why this application should be reviewed again. Reopening
+            does not approve or reactivate the account.
+          </p>
+          <form class="stack" data-reopen data-applicant="Alex Rivera" data-role="Student">
+            <label class="choice"
+              ><input type="checkbox" required /><span
+                >I verified the error in this rejection.</span
+              ></label
+            >
+            <div class="field">
+              <label for="reopen-reason">Reason for reopening (required)</label
+              ><textarea
+                id="reopen-reason"
+                data-reason
+                required
+                aria-describedby="reopen-help"
+              ></textarea>
+              <p id="reopen-help" class="help">
+                Maximum 2,000 characters. This reason will be recorded.
+              </p>
+            </div>
+            <p role="alert" tabindex="-1" data-review-error class="error-text" hidden></p>
+            <button type="submit" class="primary full">Review reopening</button>
+          </form>
+          <a class="button" href="#review">Cancel</a>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="review-stale" data-title="Application updated" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span
+        ><a class="header-link" href="#review">Back to applications</a>
+      </header>
+      <main id="review-stale-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Application updated</h1>
+            <p class="secondary">Alex Rivera · Student</p>
+          </header>
+          <div class="notice warning">
+            <p><strong>Reload before deciding</strong></p>
+            <p>
+              This application changed after you opened it. Review the current details before saving
+              a decision.
+            </p>
+          </div>
+          <p>Your typed reason is kept here for you to check against the current application.</p>
+          <div class="reason">Please check your full name against the enrollment list.</div>
+          <a class="button primary" href="#review">Reload current application</a
+          ><button type="button" disabled>Review decision</button>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="review-saved" data-title="Decision saved" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span
+        ><a class="header-link" href="#review">Back to applications</a>
+      </header>
+      <main id="review-saved-main" class="auth-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Decision saved</h1>
+            <p class="secondary">Alex Rivera · Student</p>
+          </header>
+          <div id="saved-outcome" class="notice success">
+            <p><strong>Application approved</strong></p>
+            <p>The saved application status is Approved.</p>
+          </div>
+          <p id="saved-reason" class="reason" hidden></p>
+          <div id="saved-delivery" class="notice warning">
+            <p><strong>Email delivery failed</strong></p>
+            <p>
+              The decision is still saved. Delivery is retried separately. Do not approve the
+              application again.
+            </p>
+          </div>
+          <p class="small secondary">Administrator delivery information</p>
+          <a class="button primary" href="#review">Back to applications</a>
+        </div>
+      </main>
+    </section>
+    <section class="screen" id="states" data-title="Feedback specimens" hidden>
+      <header class="product-header">
+        <span class="wordmark">CS-GAMUERS</span><a class="header-link" href="#sign-in">Sign in</a>
+      </header>
+      <main id="states-main" class="status-main">
+        <div class="card stack-lg">
+          <header class="stack">
+            <h1 tabindex="-1">Feedback specimens</h1>
+            <p class="secondary">
+              Reference only: these messages appear beside the affected task, never together as a
+              product page.
+            </p>
+          </header>
+          <div class="state-grid">
+            <div class="notice error">
+              <p><strong>Email or password is incorrect</strong></p>
+              <p>Try again.</p>
+            </div>
+            <div class="notice">
+              <p><strong>Use Administrator sign in for this account</strong></p>
+              <p>Continue on the Administrator sign-in page.</p>
+            </div>
+            <div class="notice warning">
+              <p><strong>Too many sign-in attempts</strong></p>
+              <p>Try again later.</p>
+            </div>
+            <div class="notice error">
+              <p><strong>We could not use these details</strong></p>
+              <p>Check them, sign in if you already applied, or ask an Administrator for help.</p>
+            </div>
+            <div class="notice">
+              <p><strong>We are checking your application request</strong></p>
+              <p>Wait while we confirm the result before submitting again.</p>
+            </div>
+            <div class="notice warning">
+              <p><strong>This account is deactivated</strong></p>
+              <p>Contact an Administrator about reactivation. Your saved records are retained.</p>
+            </div>
+            <div class="notice error" tabindex="-1">
+              <h2>Check your application</h2>
+              <p><a href="#invalid-school-email">Use your school email address.</a></p>
+            </div>
+            <div class="field">
+              <label for="invalid-school-email">School email (required)</label
+              ><input
+                id="invalid-school-email"
+                type="email"
+                value="alex@example.org"
+                aria-invalid="true"
+                aria-describedby="invalid-email-help"
+              />
+              <p id="invalid-email-help" class="help error-text">
+                Use your existing @caloocan.sti.edu.ph address.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </section>
+    <dialog id="decision-dialog" aria-labelledby="decision-title">
+      <div class="stack-lg">
+        <h2 id="decision-title">Confirm decision</h2>
+        <p id="decision-copy" class="dialog-name"></p>
+        <p id="decision-reason" class="reason" hidden></p>
+        <div class="actions">
+          <button type="button" data-close autofocus>Cancel</button
+          ><button type="button" id="decision-confirm" class="primary">Confirm</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="menu-dialog" aria-labelledby="menu-title">
+      <div class="stack-lg">
+        <h2 id="menu-title">Workspace menu</h2>
+        <nav class="stack" id="menu-links"></nav>
+        <button type="button" data-close>Close menu</button>
+      </div>
+    </dialog>
+    <noscript
+      ><p class="card">
+        Enable JavaScript to navigate the reference, or read
+        <a href="role-authentication.md">the full design specification</a>.
+      </p></noscript
+    >
+  </body>
+</html>

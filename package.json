@@ -4,15 +4,19 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "format": "prettier --write src tests \"*.{js,mjs,ts,mts,json}\" .prettierrc.json",
-    "format:check": "prettier --check src tests \"*.{js,mjs,ts,mts,json}\" .prettierrc.json",
+    "format": "prettier --write src scripts tests \"*.{js,mjs,ts,mts,json}\" .prettierrc.json",
+    "format:check": "prettier --check src scripts tests \"*.{js,mjs,ts,mts,json}\" .prettierrc.json",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "npm run build && playwright test"
+    "browser": "playwright cli",
+    "test:e2e": "npm run build && playwright test",
+    "demo:prepare": "node scripts/prepare-demo.mjs",
+    "demo:https": "node scripts/run-demo-https.mjs",
+    "maintenance": "node scripts/maintenance.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
@@ -21,6 +25,7 @@
     "cn": "0.5.1",
     "lucide-react": "1.66.0",
     "next": "16.4.2",
+    "nodemailer": "10.3.1",
     "radix-ui": "1.8.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -28,6 +33,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
+    "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/turbopack": "^4",
     "@testing-library/dom": "10.4.2",
     "@testing-library/react": "16.3.3",
