@@ -41,3 +41,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Playwright CLI output (may contain credentials)
+.playwright-cli/
+/supabase/.temp/
+
+# Safe template only; local demo identities and fixture manifests stay private
+!.env.example
+/docs/demo/*.local.*
+/tests/integration/.artifacts/

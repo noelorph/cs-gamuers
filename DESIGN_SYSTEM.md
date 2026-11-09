@@ -2,11 +2,11 @@
 
 Version: 1.0.0 · Approved: 2026-11-02
 
-Status: approved by the product owner after review of the representative previews and requested refinements. This is the shared design baseline. Initial Chromium preview checks passed; complete product screen coverage and application verification remain future work.
+Status: approved by the product owner after review of the representative previews and requested refinements. This is the shared design baseline. The original preview checks are historical evidence; complete product screen coverage and application verification remain future work.
 
 This document defines visual foundations and reusable interaction rules for the browser-based supplemental learning application. [PRD.md](PRD.md) governs behavior and permissions; [TRD.md](TRD.md) governs technology and technical guarantees; [ARCHITECTURE.md](ARCHITECTURE.md) governs implementation structure. A design example never grants a permission or changes a product rule.
 
-The [direction proposal](docs/superpowers/specs/2026-11-02-cs-gamuers-design-direction-design.md) records the agreed direction. The [documentation plan](docs/superpowers/plans/2026-11-02-cs-gamuers-design-system-plan.md) records completion and evidence. [Representative screen previews and evidence](docs/design/README.md) live in `docs/design/`. This approval covers the design system, not application implementation, dependency installation, commits, or deployment.
+The [direction proposal](docs/superpowers/specs/2026-11-02-cs-gamuers-design-direction-design.md) records the agreed direction. The [documentation plan](docs/superpowers/plans/2026-11-02-cs-gamuers-design-system-plan.md) records completion and historical evidence. Current scoped screen work is indexed in [the design references](docs/design/authentication/README.md). This approval covers the design system, not application implementation, dependency installation, commits, or deployment.
 
 ## 1. Principles and scope
 
@@ -395,4 +395,4 @@ The repository's ui-ux-pro-max skill supplies supporting design guidance; the ap
 - [W3C target-size guidance](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum): minimum target criterion and exceptions.
 - [WAI modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/): focus, keyboard interaction, and dismissal.
 
-Representative screens and initial Chromium checks are recorded in [the design review](docs/design/README.md). The owner approved this shared design system after the preview refinements. The nine previews are examples, not the complete application screen inventory. Remaining screens, exact navigation grouping, font/icon integration, screen-reader checks, and real-device/browser verification must be addressed in later scoped work. These local previews do not establish application behavior or full accessibility conformance. Dark mode, a custom logo, bottom navigation, and additional font families require a later explicit design decision.
+The owner approved this shared design system after the original preview refinements. That preview set was retired on 2026-11-07; its verification record remains historical in the documentation plan. The current [role authentication reference](docs/design/authentication/role-authentication.md) covers the account screens in its implementation plan and has its own scoped evidence. Remaining product screens, exact navigation grouping, font/icon integration, screen-reader checks, and real-device/browser verification must be addressed in their owning work. Design references do not establish application behavior or full accessibility conformance. Dark mode, a custom logo, bottom navigation, and additional font families require a later explicit design decision.

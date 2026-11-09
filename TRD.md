@@ -21,6 +21,7 @@ Detailed system boundaries, schemas, authentication flows, and permission enforc
 | ESLint and Prettier | Code checks and formatting | Selected by product owner |
 | Vitest | Unit and integration tests | Selected by product owner |
 | Playwright | Browser acceptance tests | Selected by product owner |
+| Playwright CLI | Interactive agent browser exploration and UI debugging, using the existing Playwright development dependency | Installation authorized by product owner on 2026-11-03; complements acceptance tests |
 | npm | Package installation and scripts | Selected by product owner |
 
 Installed tooling baseline (2026-10-28): Node.js `24.22.1`, npm `11.19.1`, Next.js `16.4.2`, React/React DOM `19.3.0`, TypeScript `5.9.3`, Tailwind CSS/loader `4.3.3`, ESLint `9.39.5`, Prettier `3.9.10`, Vitest `5.0.5`, Playwright `1.64.1`, Supabase JS `2.118.0`, and Supabase SSR `0.12.7`. `package.json` declares exact versions for new packages; `package-lock.json` records the full dependency tree. Node types use `24.19.2` to match the selected runtime and Vitest peer requirements. These versions describe this installation, not a policy to track latest releases. ESLint 9's npm deprecation notice is retained as a follow-up; the approved existing major was not upgraded incidentally.
@@ -76,8 +77,8 @@ The additional bounds and operational timings below are engineering defaults inc
 | Auth email expiry | 1,800 seconds for signup verification, invitations, and password resets; a link is invalid at its expiry instant. Assisted replacement-email proof also lasts 30 minutes. |
 | Resend | At least 60 seconds between issued messages for the same address/purpose; at most 5 in a rolling hour. Recovery acknowledgment stays generic. |
 | Sign-in throttling | At most 10 failed attempts per normalized account identifier per rolling 15 minutes; temporary throttling, not permanent lockout. |
-| Shared network limit | At most 100 authentication submissions per source IP per rolling 15 minutes, in addition to per-account limits; all seven users can share one IP. Trust forwarding headers only from the local proxy. |
-| Provider limits | Retain native Auth limits; configure suitable free-plan limits during setup and verify direct Auth calls cannot bypass essential validation. App counters are database-backed, not process memory. |
+| Shared network limit | At most 100 application-mediated authentication submissions per source IP per rolling 15 minutes, in addition to per-account limits; all seven users can share one IP. Trust forwarding headers only from the local proxy. Direct keyless native email verification uses provider-native limits outside this application counter, as approved on 2026-11-04. |
+| Provider limits | Retain native Auth limits. Key-protected password/token endpoints require a verified server-only API-key boundary: revoke publishable keys and deactivate legacy API keys after caller migration and isolated proof. Backend secret keys remain private; ordinary data access always carries an explicit user JWT and refuses missing-session/service-role fallback. Keyless verification remains subject to native limits. App counters are database-backed, not process memory. |
 | Initial Administrator | Controlled invitation bootstrap; no public endpoint, preset password, or automatic email verification. ARCHITECTURE section 4 defines safeguards and interruption handling. |
 | Revocation/recovery | Database account/session guard and restricted recovery operations; mandatory tests of native tokens, direct API access, and Auth trigger behavior. ARCHITECTURE sections 4–5 own the mechanism. |
 

@@ -10,7 +10,7 @@ Scope: design documentation and representative screen designs. No application co
 - [x] Prepare a concrete design-direction proposal with recommendations and tradeoffs.
 - [x] Agree on visual direction, theme scope, typography/icons, navigation, and accessibility target.
 - [x] Draft root [DESIGN_SYSTEM.md](../../../DESIGN_SYSTEM.md) with semantic tokens, component states, and stable requirement IDs.
-- [x] Prepare representative screen designs in `docs/design/` covering student learning, quizzes, authoring/review, and reports.
+- [x] Prepare representative screen designs covering student learning, quizzes, authoring/review, and reports (historical artifacts, retired on 2026-11-07).
 - [x] Verify contrast, token references, responsive sizing, documented role coverage, and critical product states at the design-artifact level; runtime checks remain separate.
 - [x] Record user review and finalize design documentation as version 1.0.0.
 - [x] Apply owner feedback: stationary desktop sidebar, independently scrolling navigation when needed, and page headings aligned with the sidebar brand.
@@ -25,6 +25,6 @@ Approval record: the owner explicitly approved defining the design system after 
 
 Draft verification (2026-11-02): 26 text/action/control color pairs passed their applicable contrast thresholds; the lowest checked normal-text pair was 5.21:1. Requirement IDs/ranges and local links in the draft resolve. YAML parsing and token-reference checks passed. The 320px and sidebar/grid width examples were checked arithmetically; rendered responsive behavior, screen designs, and runtime accessibility remain pending.
 
-Preview verification (2026-11-02): the later [screen review](../../design/README.md) adds nine HTML fixtures and 18 screenshots. `node docs/design/check-preview.mjs` passed for 320/768/1024/1440px, 200% text, field labels, modal background-focus prevention/Escape/focus return, radio interaction, preview retry, and privacy/outcome fixtures. This supersedes the earlier pending screen/layout status, not the pending runtime accessibility checks. The review records system-font/icon limitations and untested devices/browser engines. No application code, dependency, service, or deployment changed.
+Historical preview verification (2026-11-02): nine HTML fixtures and 18 screenshots were checked at 320/768/1024/1440px, 200% text, field labels, modal background-focus prevention/Escape/focus return, radio interaction, preview retry, and privacy/outcome states. These results superseded the earlier pending screen/layout status, not the pending runtime accessibility checks. System-font/icon limitations and untested devices/browser engines remained. The owner requested removal of that artifact set on 2026-11-07; its files and checker are no longer current deliverables. No application code, dependency, service, or deployment changed in the original review.
 
 Owner clarification (2026-11-02): desktop gutters are 24px. The canonical `gutter-large` token and the 1024px grid example now agree with the already-approved preview spacing. The application UI alignment is tracked in [the shared UI setup plan](2026-11-02-shadcn-setup-plan.md).

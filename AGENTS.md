@@ -10,6 +10,22 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Agent skills
 
+### Browser development tooling
+
+Use [.agents/skills/playwright-cli/SKILL.md](.agents/skills/playwright-cli/SKILL.md) for interactive browser exploration, screenshots, and UI debugging. Run the project-local CLI with `npm run browser -- <command>` (or `npx --no-install playwright cli <command>`). It is included in the pinned Playwright development dependency. Keep repeatable acceptance checks in `tests/e2e/` and run `npm run test:e2e`. Use synthetic test accounts; keep browser storage state, traces, and screenshots containing private data in ignored `.playwright-cli/`.
+
+#### Browser verification
+
+Before marking a change that affects UI or browser behavior complete, verify the affected flow in the running local application with Playwright CLI:
+
+- Exercise the changed interactions and relevant error states; assert the expected visible outcome.
+- For layout changes, inspect desktop and 320 CSS pixel widths, including overflow and long content. Save and inspect screenshots when appearance matters.
+- For changed controls, check keyboard operation, visible focus, labels, and dialog focus behavior where applicable.
+- Inspect browser console errors and relevant failed network requests; resolve regressions introduced by the change.
+- Add or update repeatable Playwright tests for meaningful behavior changes and run the affected tests. Run `npm run test:e2e` when the change affects shared browser flows or test configuration.
+
+Report which flows, viewport sizes, and browser engines were actually checked, with any blockers or unverified coverage. Chromium exploration does not establish Firefox/WebKit, physical-device, backend permission, or full accessibility coverage; follow TRD section 6 for the required browser/device scope. Close browser sessions and servers started for verification. Documentation-only changes do not require browser checks.
+
 ### Supabase
 
 Use [.agents/skills/supabase/SKILL.md](.agents/skills/supabase/SKILL.md) for Supabase products, Auth, Storage, and Next.js integration. Also use [.agents/skills/supabase-postgres-best-practices/SKILL.md](.agents/skills/supabase-postgres-best-practices/SKILL.md) for schema, SQL, RLS, and query performance work. Their official sources are tracked in `skills-lock.json`; the Supabase plugin is managed separately. Read current guidance before implementation and preserve the PRD's access and retention requirements.
@@ -37,3 +53,24 @@ Specs live in `docs/superpowers/specs/` and plans in `docs/superpowers/plans/`. 
 ### Domain docs
 
 Use PRD section 2 for current domain terms. Optional future `GLOSSARY.md` and `docs/adr/` supplement canonical documents when present; they are not prerequisites or competing specifications. See [domain guidance](docs/agents/domain.md).
+
+<!-- BEGIN:nextjs-agent-feedback -->
+
+## Report Next.js feedback
+
+The project owner enabled `experimental.agentFeedback`, authorizing this feedback pass. When enabled, `next dev` writes this block and restores it if removed. Commit `AGENTS.md` with your work to keep the tree clean.
+
+During the current user request, retain anonymized facts as feedback candidates for meaningful or recurring Next.js issues:
+
+- Crashes, hangs, OOMs, or unexpected slowness
+- Incorrect behavior, output, errors, or diagnostics
+- Missing, unclear, or conflicting documentation
+- Unexpected CLI, codemod, Skill, or upgrade behavior and non-obvious workarounds
+
+Continue the current user request without reporting immediately. Routine debugging is not feedback. Verify changes before retaining them as feedback candidates. Never retain code, logs, paths, URLs, secrets, personal information, or project-specific data.
+
+Retain qualifying friction even if it is later fixed or worked around; record the final outcome during the reporting pass.
+
+Before the final response, run one reporting pass. If candidates remain, from this file's directory run `npx --no-install next internal agent-feedback-instructions` once without piping or truncating its output. Follow its output or error guidance. If a network sandbox blocks it, retry with network access; if it still returns no output, continue normally.
+
+<!-- END:nextjs-agent-feedback -->

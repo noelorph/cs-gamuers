@@ -82,7 +82,7 @@ These are review artifacts, not application features. Include 320px, intermediat
 ## Documentation boundaries and acceptance
 
 - Root `DESIGN_SYSTEM.md`: approved principles, semantic tokens, reusable component states, accessibility rules, and requirement-ID traceability.
-- `docs/design/`: representative screens and detailed role/workflow layouts, referencing the shared system.
+- Feature design references: scoped role/workflow layouts applying the shared system; the current [role authentication reference](../../design/authentication/role-authentication.md) owns that plan's screens.
 - Local plan: scope, open decisions, and verification progress.
 
 Before accepting the design document, resolve the direction decisions above, check all selected foreground/background pairs, remove duplicated token definitions, and review critical states against the current PRD/TRD. Do not claim compatibility with an external design-file schema without validating its actual structure.
@@ -91,4 +91,4 @@ Before accepting the design document, resolve the direction decisions above, che
 
 Used the repository's `ui-ux-pro-max` skill and its focused accessibility guidance from the preceding review. Design-system searches for `education learning platform minimal accessible` and `LMS education` did not produce a verified whole-product match: results included marketing layouts, an AI-first style, and children's typography. Those generated systems were not adopted or persisted. This proposal uses project-specific judgment with applicable general guidance instead.
 
-The owner first agreed to this direction, then approved [DESIGN_SYSTEM.md](../../../DESIGN_SYSTEM.md) after review and refinement of the representative previews. This proposal is historical rationale; the root design system contains the final shared rules, including the compact review-selector exception. Preview rendering and Chromium checks are documented in [the screen review](../../design/README.md). User testing, final font/icon integration, and application accessibility verification remain future work.
+The owner first agreed to this direction, then approved [DESIGN_SYSTEM.md](../../../DESIGN_SYSTEM.md) after review and refinement of the representative previews. This proposal is historical rationale; the root design system contains the final shared rules, including the compact review-selector exception. The original previews were retired on 2026-11-07; historical verification is retained in [the documentation plan](../plans/2026-11-02-cs-gamuers-design-system-plan.md). User testing, final font/icon integration, and application accessibility verification remain future work.

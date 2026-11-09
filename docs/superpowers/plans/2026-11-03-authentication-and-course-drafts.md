@@ -1,0 +1,348 @@
+# Authentication and Course Drafts Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Demonstrate real sign-in for four fixed roles and persistent Faculty course-draft CRUD using isolated synthetic accounts.
+
+**Architecture:** Retain one Next.js application with server-only Supabase access. Account/session predicates and transaction functions enforce the same permissions in feature operations and PostgreSQL. Prepare demonstration accounts through controlled operator commands; the existing shared UI supplies the sign-in, role landing pages, and course-details editor.
+
+**Tech Stack:** Existing Next.js 16.4.2, React 19.3.0, TypeScript, Supabase JS 2.118.0/SSR 0.12.7, Tailwind, shadcn/Radix, Vitest, and Playwright; Caddy/local HTTPS and Gmail SMTP as selected in the architecture.
+
+**Spec:** [Approved authentication and course drafts scope](../specs/2026-11-03-authentication-and-course-drafts-design.md), approved 2026-11-03.
+
+**Plan status:** The specification/plan approval on 2026-11-03 initially included “Do not start the implementation.” That is historical: the owner subsequently authorized execution, and Tasks 1–6 now have scoped source implementation checkpoints; Task 7 local verification is in progress. That later authority permits the recorded isolated TEST work and checkpoint commits; it does not imply participant-mail timing, demo readiness, deployment, or waiver of pending provider/browser/device gates. Keep completed implementation evidence separate from those acceptance gates. Dated checkpoints retain their original observations; the reconciled evidence and current Task 7 record supersede stale pending assertions.
+
+## Global Constraints
+
+- “This is an implementation milestone within the full product. It does not reduce the overall product requirements.”
+- “Prepare the architecture's one Administrator, three Students, two Faculty, and one Program Head.”
+- “Email ownership proof and normal sign-in/permission enforcement still apply.”
+- “Never reset the shared demonstration database.”
+- “No permission editor, custom roles, or role switcher is included.”
+- “Faculty may save incomplete drafts.”
+- “Published content has no hard-delete path.”
+- “This milestone creates no published courses and offers no Submit or Publish control.”
+- “Implementation remains a separate authorization.”
+- PRD, TRD, ARCHITECTURE, and DESIGN_SYSTEM remain authoritative. Retain all their applicable field, session, email, privacy, and accessibility rules; scope omissions do not permit native API bypasses.
+- Free-only services, MacBook hosting, local HTTPS, no public tunnel/deployment. Preserve installed versions and Cache Components; no framework/configuration downgrade to avoid integration failures.
+
+## Review Focus
+
+1. Interrupted setup, changed project configuration, or a second bootstrap must not create extra privileged accounts or send credentials to the wrong environment. Tests: Tasks 1–3.
+2. A valid-looking JWT, refreshed revoked token, proof-only session, or forged role metadata must not authorize draft access. Tests: Tasks 2, 4, and 5.
+3. Reused email links, GET requests from mail scanners, expired invitations, and late password writes must not grant access or repeat decisions. Tests: Task 3.
+4. Two tabs, double clicks, and a connection loss during a write must not overwrite newer work, duplicate drafts, or falsely report deletion. Tests: Tasks 5–6.
+5. Unicode limits, blank incomplete fields, zero/nonfinite hours, narrow layouts, and keyboard confirmation must retain readable feedback and entered data. Tests: Tasks 5–7.
+
+## Delivery boundary and dependencies
+
+Tasks 1–4 deliver prepared accounts and sign-in; Tasks 5–6 add draft CRUD; Task 7 verifies/rehearses the complete milestone. Work sequentially: account readiness is a prerequisite, not an optional polish step. Publication, student learning, AI, reports, and full onboarding/account-management screens remain excluded.
+
+No deadline estimate is established. First inspect provider readiness and record the blockers below. If email, native Auth hooks/triggers, school inboxes, free isolated testing, or local HTTPS cannot satisfy the approved guarantees, stop the dependent task and return the specific conflict for a scope/design decision. Continue independent documentation/test preparation where useful. Do not silently substitute mocked authentication or bypass email verification.
+
+## File map
+
+Create files only in their owning task; do not scaffold future features.
+
+| Files | Responsibility |
+|---|---|
+| `src/config/env.ts`, `src/config/paths.ts` | Lazy server service configuration; shared relative routes |
+| `src/lib/supabase/server.ts`, `src/lib/supabase/admin.ts`, `src/lib/supabase/database.types.ts`, `src/lib/access.ts`, `src/lib/request-security.ts` | Request-scoped user client, narrow privileged client, generated database types, access checks, origin/redirect/request-size checks |
+| `src/proxy.ts` | Server session refresh, private response headers, sanitized forwarding; no business authorization shortcut |
+| `src/features/accounts/types.ts`, `validation.ts`, `session.ts`, `operations.ts`, `email-links.ts` | Fixed account contracts, pure validation, authentication, controlled account operations, opaque proof/password flows |
+| `src/features/content/types.ts`, `validation.ts`, `courses.ts` | Draft contracts, pure validation, authorized draft queries/mutations |
+| `src/app/auth/sign-in/{page.tsx,sign-in-form.tsx,actions.ts}`, `src/app/auth/status/page.tsx`, `src/app/auth/email/{page.tsx,email-form.tsx,actions.ts}`, `src/app/auth/sign-out/route.ts` | Thin sign-in/status, email confirmation/password setup, POST-only sign-out entry points |
+| `src/app/{student,faculty,program-head,admin}/page.tsx`, `src/components/app-shell.tsx` | Minimal role destinations, shared accessible shell/sign-out |
+| `src/app/faculty/courses/page.tsx`, `new/page.tsx`, `[courseId]/page.tsx`, `draft-form.tsx`, `delete-draft-dialog.tsx`, `actions.ts`, `error.tsx`, `loading.tsx` | Owned list, create/detail/editor, deletion/error/loading experience |
+| `supabase/config.toml`, `supabase/migrations/` | Provider configuration and migrations named by the CLI in their tasks; no invented timestamp filenames |
+| `scripts/prepare-demo.mjs`, `scripts/maintenance.mjs` | Controlled setup and durable mail/account-operation maintenance; use installed Supabase JS and Node standard libraries |
+| `tests/integration/helpers/environment.ts`, `fixtures.ts`, `accounts.test.ts`, `email-links.test.ts`, `course-drafts.test.ts` | Target isolation, per-run fixtures, real Auth/RLS/transaction checks |
+| `tests/unit/{account-validation,env,request-security,course-draft-validation,draft-form,email-form}.test.*`, `tests/e2e/{auth,course-drafts}.spec.ts` | Deterministic boundary checks, UI state checks, repeatable browser flows |
+| `Caddyfile`, `.env.example`, `docs/demo/README.md` | Placeholder local HTTPS configuration, variable names only, setup/run/rehearsal instructions and evidence |
+| Existing `package.json`, `package-lock.json`, `.gitignore`, `playwright.config.ts`, `vitest.config.mts`, `src/app/page.tsx`, `src/app/layout.tsx`, `src/styles/globals.css`, `next.config.ts` | Only the scripts/ignores/test projects/entry links/font/headers/body limit needed by this milestone; preserve existing behavior and tests |
+
+Paths in braces above enumerate files; they are not literal directory names. `new/page.tsx` and `[courseId]/page.tsx` are under `src/app/faculty/courses/`. Use `tests/unit/*.test.ts` for pure tests and `.test.tsx` for components.
+
+## Shared contracts and storage decisions
+
+Define these once in the owning task; later tasks import them.
+
+- Account `Role = 'student' | 'faculty' | 'program_head' | 'administrator'`; `ApplicationStatus = 'pending' | 'needs_correction' | 'approved' | 'rejected'`. `Actor = { id: string; role: Role }` is returned only after database session/approval/activation validation, never constructed from browser-supplied role values.
+- `DraftDetails = { title: string; description: string; primaryTopic: Topic | null; difficulty: 'Beginner' | 'Intermediate' | 'Advanced' | null; outcomes: string[]; priorKnowledge: string; estimatedHours: number | null }`. `Topic` contains exactly PRD PROFILE-02's ten topics. Array position preserves outcome order; incomplete blank outcomes may remain in drafts.
+- `CourseDraft = { id: string; revisionId: string; ownerId: string; version: number; details: DraftDetails; updatedAt: string }`. Empty title stays empty in storage and displays as “Untitled draft”.
+- Content `DraftResult<T> = { ok: true; value: T } | { ok: false; code: 'validation' | 'conflict' | 'unavailable' | 'unauthenticated' | 'forbidden'; fields?: Record<string, string> }`. Do not serialize raw database/provider errors. Missing or inaccessible course IDs share an unavailable response.
+- Routes: `/auth/sign-in`, `/auth/status`, `/auth/email`, `/auth/sign-out`, `/student`, `/faculty`, `/program-head`, `/admin`, `/faculty/courses`, `/faculty/courses/new`, `/faculty/courses/[courseId]`. `paths.roleHome(role)` and `paths.courseDraft(id)` build routes; optional redirect destinations must match the allowlist and current permissions.
+- Accounts: `public.accounts` references `auth.users` one-to-one; role, identity, approval, active state, and `revoked_before` are canonical. Case-insensitive unique email; unique nullable Student number stored as text. Invitation reservations, operation proof/secrets, limits, demo environment marker/reservations, mail work and audit metadata live under `private` with restricted grants/RLS. Only the minimum named invoker RPC wrappers are exposed.
+- Drafts: `public.courses` holds stable ID, owner and publication/archive guards; `public.course_revisions` holds revision number, draft state/version and typed detail columns including ordered `text[]` outcomes. One initial revision numbered 1 per new course. No learning tables, generic workflow schema, or publish RPC. Enforce restrictive foreign keys and a deletion predicate; future retained dependencies must not gain cascade-delete paths.
+- All ordinary database operations use authenticated user sessions. Sensitive functions lock the actor account before checking/committing; content writes then lock course/revision in a consistent order. Own draft changes require the expected revision version. Only an approved active Faculty owner mutates drafts. Program Head read oversight follows ARCHITECTURE section 5 even though its UI is deferred; no Administrator draft read grant is added.
+
+### Task 1: Establish isolated targets and configuration
+
+**Files:** Create `src/config/env.ts`, `src/config/paths.ts`, `tests/integration/helpers/environment.ts`, `tests/unit/env.test.ts`, `.env.example`, `Caddyfile`, `docs/demo/README.md`; modify `.gitignore` and `package.json` only as needed for these checks.
+
+**Interfaces:** Produce `getAppEnv(): { appOrigin: URL; supabaseUrl: string; publishableKey: string }`, `getAdminEnv(): { secretKey: string; demoProjectRef: string }`, and `getMailEnv(): { host: string; port: number; user: string; password: string; from: string }`. Keep configuration server-only and lazy. Produce `assertIsolatedTestTarget(): void` in the test helper; integration tests refuse absent/matching demo/test project IDs.
+
+- [x] **Step 1:** Inspect existing hosted accounts/application records and allocation read-only without printing identities or secrets. Designate the existing project demo-only only if it contains no real school records; otherwise arrange a separate free project. Record redacted readiness and the chosen project roles in `docs/demo/README.md`. Obtain the separate test target before global/bootstrap tests; never reset the demo project.
+- [x] **Step 2:** Add failing assertions: missing Supabase configuration fails only its consumer; missing SMTP/AI configuration does not stop unrelated config; non-HTTPS `APP_ORIGIN` fails; same demo/test target fails; absent test target fails closed. Run `npm test -- tests/unit/env.test.ts` and confirm the intended missing-module/behavior failure.
+- [x] **Step 3:** Implement the configuration and route builders. Add placeholder variables for APP_ORIGIN, Supabase URL/publishable/secret keys, SMTP settings, demo project ref, and separate TEST_SUPABASE_URL/keys/project ref. Allowlist `.env.example` in `.gitignore`; ignore local demo manifests and fixture/browser artifacts. No secrets, emails, student numbers, tokens, or passwords enter committed examples.
+- [ ] **Step 4:** Prepare the Caddy configuration using the approved LAN HTTPS origin and loopback Next server. Verify free Gmail/app-password eligibility and school inbox availability, trusted certificates on intended phones, redirect allowlists and Wi-Fi reachability. Installation/configuration remains an execution action requiring the later implementation instruction; no public tunnel, TLS bypass, or paid project/branch.
+- [x] **Step 5:** Run the unit command again and confirm PASS. Commit this task's reviewed files during authorized execution; leave provider evidence explicitly pending until measured.
+
+**Execution evidence (2026-11-03):** Later explicit implementation authorization is recorded in the local SDD ledger; the original approval/no-start history above remains historical. RED: focused unit command failed because `@/config/env` was absent. GREEN: 28 focused assertions and all 31 unit tests passed; typecheck, lint, formatting and diff-whitespace checks passed. Reviewed Task 1 files committed during authorized execution. Configuration, shared routes, the fail-closed URL/ref isolation guard, safe example and Caddy placeholder are implemented. After explicit owner approval of the quoted $0/month action, root created the separate free test target: ACTIVE_HEALTHY, distinct from demo, with read-only counts of zero Auth users/storage objects/application tables. Test keys are not configured locally and connection through the application/Auth integration remain unverified. Steps 1 and 4 remain open: local test credentials/connection, SMTP eligibility/inboxes/receipt, approved LAN origin, Caddy validation, physical certificate trust, redirect allowlists and Wi-Fi proof are pending. The owner reports Gmail, three school inboxes and LAN origin are not ready; docs/demo/README.md records practical preparation steps. No provider mutation or local env change was performed by this task worker. Task 1 is not accepted complete while that evidence is missing.
+
+**Readiness update (2026-11-04):** Local demo URL/publishable names and demo ref are configured; all required demo/test service keys, URLs and refs are now configured, while APP_ORIGIN is deliberately unset for the future school hotspot. Root measured isolation-guard PASS before read-only test checks: Auth settings returned HTTP 200 with the publishable key, and auth.admin.listUsers({page:1,perPage:1}) returned HTTP 200 with an empty first page using the test secret key; no writes or identities printed, and no sign-in/application integration proof. SMTP TLS/authentication passed; Gmail accepted one plain sender-only diagnostic through TLS/465 and the owner confirmed inbox receipt. It contained no credentials/application links and was not sent to participants. Six manifest emails are supplied, including two school-domain Students; third Student and participant inbox ownership/receipt remain pending. Portable official Caddy v2.11.7 is installed in ignored `.playwright-cli/tools/caddy`, archive SHA-256 verified, version/help checked, and loopback-only Caddyfile adaptation passed. No module validation/provisioning, certificate/trust change, server start or listener/firewall configuration occurred. The owner plans a group-member hotspot at school rather than the current network; final origin, Wi-Fi reachability, phone trust and redirect settings are deferred until that hotspot is available. The owner intends school-hotspot setup on 2026-11-05 (Asia/Manila); this is unperformed, not verification evidence. Steps 1 and 4 remain open; no source/env/provider changes by this documentation/tool preparation worker.
+
+**Current Wi-Fi HTTPS update (2026-11-04):** Owner selected the existing Wi-Fi for HTTPS now, with school-hotspot origin changes later. Caddy ran using persistent ignored project-local XDG data/config directories and skip_install_trust (local CA install_trust=false); no global trust/firewall/provider changes. Next listened on 127.0.0.1:3000, Caddy admin on 127.0.0.1:2019, HTTP/HTTPS on 80/443. curl --cacert using the public root verified HTTPS 200/home heading and HTTP 308 redirect on the host. Public CA certificate is ignored docs/demo/caddy-root.local.crt; private material remains in persistent ignored CA storage and must be preserved across network changes. Current phone trust/reachability, participant receipt, third Student, provider redirects and school-hotspot origin/rehearsal remain pending; full Task 1 acceptance stays open.
+
+**Manifest update (2026-11-04):** The owner filled the final Student slot. Local validation confirms seven unique, populated email slots, the required one Administrator/three Students/two Faculty/one Program Head split, and three Student addresses under the exact school domain. No prior setup state exists. This verifies manifest structure only, not inbox ownership, account creation, invitation delivery or seven-holder readiness.
+
+### Task 2: Establish canonical accounts, session guards, and Auth boundaries
+
+**Files:** Create account `types.ts`/`validation.ts`, the Supabase client/type files, `src/lib/access.ts`, `tests/unit/account-validation.test.ts`, `tests/integration/helpers/fixtures.ts`, `tests/integration/accounts.test.ts`; generate migration `accounts_and_access` with the installed CLI. Discover CLI syntax using `--help`, review local changes/advisors, then record the final generated path here.
+
+**Interfaces:** Produce `createRequestClient(): Promise<SupabaseClient<Database>>`, `createAdminClient(): SupabaseClient<Database>` restricted to authorized account/maintenance operations, `requireActor(requiredRole?: Role): Promise<Actor>`, and pure `validateAccountInput(input: unknown)` returning normalized identity or field errors. Database `public.current_actor()` returns safe ID/role/status metadata through a narrow wrapper around the private session predicate; `private.can_access_application()` is shared by later policies/functions.
+
+- [x] **Step 1:** Add failing tests for exact Student domain, unique normalized email across all states, Student number `"000123"` preserved, maximum 50-character number, 200-character name, 254-character email, and 12-code-point/72-UTF-8-byte password boundaries without trimming. Run `npm test -- tests/unit/account-validation.test.ts` and confirm FAIL for missing validation.
+- [x] **Step 2:** Add real integration cases for a removed `auth.sessions` row, cutoff revocation plus token refresh, signed non-password authentication methods, deactivated/unapproved accounts, forged metadata roles, anonymous access, and direct approval/role/account updates. Run `npm test -- tests/integration/accounts.test.ts` against the isolated target; the intended permission/constraint assertions must fail before implementation. Missing test environment is a blocker, not a passing skip.
+- [x] **Step 3:** Implement account creation validation in the narrow Auth-user creation trigger, canonical tables and least-privilege grants. Elevated creation must match a reserved invitation; synthetic creation must match demo-only reservations. The demo environment marker is protected configuration, not a public request flag. No actor can approve themselves or change their own canonical role/status through native metadata or direct writes.
+- [x] **Step 4:** Implement request-scoped SSR `getAll`/`setAll` clients and database session predicates from ARCHITECTURE sections 4–5. Explicitly override the installed SSR defaults to Secure, HttpOnly, SameSite=Lax cookies; do not introduce a browser Supabase client. Guard unsupported native password/email changes with the architecture's verified-operation triggers; unsupported recovery/magic/anonymous/phone/OAuth paths fail closed. Native signup cannot bypass identity/role reservations. Generate database types after the schema is stable.
+- [ ] **Step 5:** Run the unit/integration commands and confirm PASS with ordinary-role sessions. Exercise Auth creation and guarded changes against the hosted test target, including native maintenance/hash updates. If the required Auth trigger/API behavior is incompatible, report it before proceeding; never relax the guard to make tests pass. Commit the verified task files and migration during authorized execution.
+
+**Execution evidence (2026-11-04):** Isolated TEST project only; no demonstration accounts, participant mail, resets, or demo mutations. Official portable Supabase CLI v3.0.0 was checksum-verified, and `--help`/`migration new --help` inspected. It generated `supabase/migrations/20261103163405_accounts_and_access.sql` and seven chronological follow-up migrations ending `20261103170657_canonical_revocation_field.sql`. They preserve the hosted refinement history; the separate service-only fixture harness remains under `tests/integration/helpers/`, never application migrations. Final database function-body hashes matched all nine local final definitions; owners/grants and active reservation indexes were inspected. Application types were regenerated from the final public schema excluding the fixture-only RPC.
+
+RED evidence: validation/access tests failed for the missing modules; three real native permission assertions failed before schema implementation (wrong-domain Student, unreserved elevated creation, unmarked password update). Later focused tests exposed native metadata ordering, invited temporary-password writes, Student replacement reservation collision, and stale-session revival after reactivation; the final guards preserve those regressions. Root pre-review added four focused RED assertions for the exact Actor contract: unapproved accounts must fail even without a required role, and an approved Actor returns only ID/role. The corrected helper and exact `revoked_before` storage name now match Shared contracts. Not every final integration assertion was independently mutation-tested before implementation. GREEN: 21 validation tests, six access/cookie tests, 25 real hosted integration cases, and the full 83-test suite passed. Typecheck, lint, formatting, and diff whitespace checks passed. The initial checkpoint production build passed; final exact-contract retries failed with Turbopack CSS-worker port-bind EPERM under both default and escalated execution. No framework/cache/configuration changes were made; final build recheck remains an environment verification item for root. All four ordinary roles, signed recovery/magic/invite sessions, removed sessions, cutoff+refresh, deactivation/reactivation, metadata forgery, direct writes, verified password/email operations, stale/expired/unverified/wrong-target operations, and fixture/bridge privileges were exercised. Fixtures were removed by exact recorded IDs.
+
+Step 5's provider-maintenance acceptance remains open: native sign-in of an imported synthetic bcrypt cost-4 fixture succeeded, but the stored hash was unchanged, so no actual rehash/encryption rewrite was proven. Hosted recovery confirmed an unconfirmed fixture without clearing its original password, unlike current upstream source; no unverified clearing exception or blanket hash-update exemption was added. The boundary fails closed if a future provider maintenance write requires additional authorization. Email-hook configuration, opaque proof lifecycle, real participant ownership, invitation final-password workflow, and concurrent operation-worker races belong to Task 3 and remain unverified. No browser/UI flow changed; no browser/device check was claimed. See `tests/integration/helpers/README.md` for the isolated harness procedure and the local SDD Task 2 report for detailed contracts and evidence. This is a verified implementation checkpoint with the stated maintenance acceptance concern, not acceptance of account preparation or the demonstration.
+
+**Review fix round 1 (2026-11-04):** Native invitation selection now filters `released_at IS NULL` before locking/validating the reservation, so retained historical invitations cannot obscure the active invitation after address reuse. New hosted regression reproduced the failure before the fix, then passed with a new pending Program Head at the released address. CLI-generated follow-up: `supabase/migrations/20261103171751_active_invitation_reservation_lookup.sql`; previous applied migrations remain unchanged. Covering integration: 26/26 passed; full suite: 84/84 passed. Typecheck, lint, format and diff whitespace checks passed. Hosted creation-function body matched the local migration and retained the restricted owner. Existing native invitation handoff/permission checks remain green. No build retry or unrelated fixture cleanup change; previously recorded build/provider-maintenance acceptance limits remain open.
+
+### Task 3: Deliver controlled account preparation and email proofs
+
+**Files:** Create `src/features/accounts/operations.ts`, `email-links.ts`, the `/auth/email/` files, `scripts/prepare-demo.mjs`, `scripts/maintenance.mjs`, `tests/unit/email-form.test.tsx`, `tests/integration/email-links.test.ts`; modify account validation/types, package scripts/lockfile, `.env.example`, and `docs/demo/README.md`. Generate migration `demo_accounts_and_auth_mail` and update database types.
+
+**Interfaces:** Produce `confirmEmailChallenge(challenge: string): Promise<{ operationId: string; purpose: 'verification' | 'invitation' }>`, and `completeInvitation(operationId: string, input: { fullName: string; password: string }): Promise<{ complete: true }>`; associate the operation with a restricted opaque capability cookie, not a caller-trusted UUID. Expose controlled account RPCs `reserve_demo_application`, `reserve_staff_invitation`, and `approve_demo_application`, with authorization in the database. The bootstrap-only RPC is restricted to the operator and an empty-Administrator invariant.
+
+- [x] **Step 1:** Add failing assertions for expiry exactly at 1,800 seconds; GET does not consume proof; POST consumes once; reissue invalidates older proofs; unsupported purposes reject; intended invitation recipient is enforced. Include duplicate bootstrap, interrupted/resumed setup, changed-project refusal, Student school-domain enforcement, and no self-approval. Run `npm test -- tests/integration/email-links.test.ts tests/unit/email-form.test.tsx` and confirm the intended failures.
+- [x] **Step 2:** Implement the Postgres Send Email Hook with Auth-only execute grants, a 256-bit opaque challenge, hashed verification material, restricted delivery/native proof records, 60-second resend minimum and maximum five issuances per rolling hour. Keep native verifiers/session credentials out of browser URLs, cookies, logs and public outbox metadata. Configure 1,800-second native Auth expiry. Hook success means queued, not delivered.
+- [x] **Step 3:** Implement the confirmation page and POST actions without third-party resources/token logging. Redeem native proofs only on the server. Invitation password setup uses the applying/auth_applied/complete operation fence and metadata correlation marker described in ARCHITECTURE section 4; preserve unrelated app metadata, clear secrets and require fresh password sign-in afterward. A proof/invitation session never becomes an ordinary application session.
+- [x] **Step 4:** Implement `node scripts/prepare-demo.mjs bootstrap|applications|invite-head|approve|status --manifest <ignored-local-file>`. The manifest contains exactly the seven named fixture identities and controlled emails, no passwords. Match the protected demo project marker/ref before every mutation. Bootstrap/resume one Administrator invitation, then use that approved Administrator's password-authenticated context for Program Head invitation and application decisions. For Student/Faculty preparation, each holder enters their own password through a hidden local prompt; invoke supported signup with reserved identity and complete actual email proof. Approval actors/reasons/audit/notices remain real records labeled as fixture decisions, without invented school evidence. Privileged reservations never become a general role-grant endpoint.
+- [x] **Step 5:** Implement the maintenance worker using `nodemailer@10.3.1` for SMTP rather than hand-writing an SMTP client; its official release/package metadata was checked during planning. Review compatibility/security and the exact package/lockfile change before installing during execution. Native Node/Supabase libraries cover the rest. Add `demo:prepare` and `maintenance` package scripts. The worker claims bounded due records, sends outside locks, uses stable Message-IDs, runs every 60 seconds and catches up after restart; notice retries occur after 1, 5, 15 and 60 minutes. Discard superseded/expired Auth links, reconcile interrupted operations, erase consumed/expired secrets, and never retry user passwords in the background.
+- [x] **Step 6:** Test lost Auth responses, cancellation racing a late password update, metadata/password transaction ordering, consumed/expired proof cleanup, failed mail after committed approval and delivery-only retries. Confirm no second approval/audit event is created, and duplicate SMTP delivery cannot repeat the decision. Run the Step 1 command plus `npm run typecheck` and `npm run lint`; require PASS.
+- [ ] **Step 7:** Prove real Gmail receipt and successful setup for all roles on the demo network. Verify a failed message is visibly queued/failed rather than reported delivered. Record redacted results and commit task files during authorized execution. Missing real delivery remains a blocker even when mocked delivery tests pass.
+
+**Task 3 implementation evidence (2026-11-04):** Controlled preparation, private opaque proof/capability lifecycle, Auth-only hook, bounded SMTP worker, and route-local confirmation/setup are implemented. Real isolated native Auth tests cover both invitation password operations, lost chosen-password responses, same-capability confirmation resume, cancellation racing a native write, old-verifier/new-marker rejection, strict expiry/resend/recipient rules, true singleton bootstrap, approved-Administrator decisions, and delivery-only retry. Global bootstrap tests run with Vitest file parallelism disabled; there is no per-run exemption in production. Run-owned fixture cleanup persists exact native IDs before deleting ownership records, with an explicit recovery command. The final check counts and known blockers are in the local SDD Task 3 report.
+
+**Native continuation refinement:** A verified native invitation cannot be reissued as `invite` (`email_exists` observed). The approved narrow continuation uses a server-generated native recovery verifier only for the same pending protected invitation, retains canonical invitation purpose, and keeps the Auth hook closed to general recovery. See ARCHITECTURE section 4.
+
+**Final Task 3 checks after review fixes:** 117/117 tests pass (46 real hosted cases), plus typecheck, lint, formatting and diff checks. Self-review added a failing then passing test for reservation release after a native password commit: completion now rejects and maintenance clears the cancelled proof. Review fixes revalidate and renew each matching live mail lease immediately before sending, skip superseded waiting proofs, and report approval-notice delivery separately. Atomic fixture journals, focused validation summaries and quiet direct CLI help commands have passing tests. All 35 hosted production function bodies match local migrations; native fixture cleanup is exact-run scoped. The new invitation validation feedback has component keyboard coverage; full trusted-browser invitation coverage remains blocked below.
+
+**Historical open gates (superseded in part below):** Step 2 is now supported by the later TEST native-hook queue capture and timed expiry evidence. Generated-proof tests alone did not establish it. Step 7 remains open: no participant mail or demo mutation was performed; all seven holder receipts/setups and intended-device rehearsal remain pending. The final Student manifest slot is filled; this is structure validation, not holder readiness. Chromium desktop/320-pixel confirmation/error checks ran over loopback; normal HTTPS navigation failed certificate trust, so browser password completion is unverified. That production E2E attempt was blocked by the Turbopack CSS-worker port-bind permission error; the later successful production build is recorded below. No framework/TLS bypass was used.
+
+### Task 4: Provide sign-in, sign-out, and role destinations
+
+**Files:** Create `src/features/accounts/session.ts`, `src/lib/request-security.ts`, `src/proxy.ts`, sign-in/status/sign-out files, four role pages, `src/components/app-shell.tsx`, `tests/unit/request-security.test.ts`, `tests/e2e/auth.spec.ts`; modify home/layout/styles, `next.config.ts`, Playwright config, account migration/types as needed. Add sign-in counter migration `authentication_limits`.
+
+**Interfaces:** Produce `signIn(input: { email: string; password: string }): Promise<{ ok: true; destination: string } | { ok: false; code: 'invalid_credentials' | 'throttled' | 'unavailable' }>`, `signOut(): Promise<void>`, `assertMutationOrigin(request: Request): void`, and `safeRedirectTarget(value: string | null, actor: Actor): string`. Route actions use these operations; `requireActor` governs each protected data operation independently of the shell.
+
+- [ ] **Step 1:** Write failing tests for role destinations, generic incorrect-credential feedback, no disclosure for missing emails, unavailable Auth, proof-only/pending/deactivated status, sign-out plus browser Back, expired session refresh, cross-origin POST and external/protocol-relative redirects. Run `npm test -- tests/unit/request-security.test.ts` and `npm run test:e2e -- tests/e2e/auth.spec.ts --project=chromium`; confirm the intended missing-flow failures.
+
+**Owner-approved adjustment (2026-11-04):** The owner approved the free-plan boundary decision and instructed implementation to continue. The exact shared counter applies to application-mediated authentication submissions; direct keyless email verification uses provider-native limits. Prove a private server-only API-key gate for password/token endpoints, migrate every caller before revoking publishable and legacy keys, and require explicit user JWTs for ordinary data with no service fallback. No email, role, approval, password, session, privacy or retention guarantee is waived. Hosted key/configuration proof remains required; approval alone is not evidence that the gate is deployed.
+
+- [x] **Step 2:** Implement database-backed limits: at most ten failed sign-ins per normalized identifier per rolling 15 minutes and 100 application-mediated Auth submissions per trusted source IP per rolling 15 minutes, plus native provider limits. Prove direct key-protected password/token calls cannot bypass the private backend gate; native keyless verification is outside the exact application counter under the approved adjustment. Migrate request clients, operator/worker callers and fixtures before disabling public/legacy API keys. Ordinary data clients require explicit verified user JWTs and fail closed on absent/expired/refreshed-away sessions; never fall back to service-role access. If the private password gate cannot be proved, return the concrete conflict without an application-only fallback. Trust forwarding headers only from the local Caddy proxy.
+- [x] **Step 3:** Implement server-only sign-in/out and refresh in `src/proxy.ts` with `getAll`/`setAll`. POST-only sign-out must make the previously captured session fail database access, not just clear cookies; use verified native session removal plus the database guard, and test the old token directly. Preserve the PRD account status distinction and safe narrow status projection. Do not render unimplemented role workflows.
+- [x] **Step 4:** Compose the shared shell, skip link, role pages and forms using existing primitives/tokens; provide visible labels, password-manager/paste support, focus/error handling and pending text. Add Inter through the project's Next font integration with build availability checked. Keep layout/gutters/no-Preflight rules. Add only a sign-in link to the current landing page, preserving its title/heading test.
+- [x] **Step 5:** Retain Cache Components: session/data reads occur inside request-time components behind Suspense/loading boundaries, with no shared/private browser cache used for authorization or draft data. Set protected responses `private, no-store`; do not add obsolete dynamic/revalidate flags to evade build checks. Enforce 1 MiB serialized application bodies and allowlisted same-origin mutation/redirect rules; token-bearing pages use no-referrer and do not log query strings.
+- [ ] **Step 6:** Make Playwright baseURL/webServer settings accept the trusted local HTTPS rehearsal target while retaining the existing isolated default smoke server. Add Firefox and WebKit projects. Keep storage state ignored and require an explicitly allowlisted synthetic test target before authenticated E2E mutations. Unit/default home smoke checks must still work without provider credentials. Repeat Step 1 commands and all account integration tests; confirm PASS, then commit the verified task during authorized execution.
+
+**Task 4 implementation checkpoint (2026-11-04):** Sign-in/out, narrow account status, four role destinations, request/session refresh boundaries, private-key caller migration and shared database admission are implemented in `754eadf`, with reviewed test-evidence improvements in `cfab3e8`. Independent source and scoped reviews found no remaining Critical/Important findings. The isolated suite passed 152 tests; the one explicitly disabled native-gateway probe remains unverified. Real-token status and captured-token sign-out checks passed. Provider-free development coverage passed 18 Chromium/Firefox checks; Chromium sign-in layout/error checks covered desktop and 320 CSS pixels. Production E2E is blocked by the existing native CSS-worker bind failure; WebKit failed before page setup. No authenticated HTTPS, physical-device or deployed private-gateway acceptance is claimed.
+
+**Native mail safety update (2026-11-04):** A negative native signup test could send confirmation before its deferred creation rejection. It now fails before that call unless TEST hook readiness has been established. After the owner saved the TEST hook, one supported native resend produced exactly one private proof and one pending mail item with a 1,800-second application lifetime; workers stayed stopped and exact-run cleanup removed the records. Matching Auth logs showed zero native sends, including during the subsequent full suite. This proves queue capture, not actual native OTP expiry, inbox receipt or browser completion. A fresh TEST settings read confirms email confirmation required and anonymous/phone/OAuth/SAML/passkeys disabled. Native password validation rejected 11 ASCII characters with `weak_password` and accepted 12 in two supported admin calls without mail; exact-run cleanup returned account/Auth/fixture/mail counts to zero. Native expiry, URL configuration and remaining acceptance retain separate measured evidence. Application authentication stays disabled until the private password gateway is proved; no public or legacy key has been retired by this checkpoint.
+
+### Task 5: Implement persistent course-draft operations
+
+**Files:** Create content `types.ts`, `validation.ts`, `courses.ts`, `tests/unit/course-draft-validation.test.ts`, `tests/integration/course-drafts.test.ts`; generate `course_drafts` migration and update database types. Extend isolated fixtures; no lessons/quizzes/learning schema.
+
+**Interfaces:** Produce `validateDraftDetails(input: unknown): { ok: true; value: DraftDetails } | { ok: false; fields: Record<string, string> }`, `listOwnCourseDrafts(): Promise<DraftResult<CourseDraft[]>>`, `getOwnCourseDraft(id: string): Promise<DraftResult<CourseDraft>>`, `createCourseDraft(id: string, details: DraftDetails): Promise<DraftResult<CourseDraft>>`, `updateCourseDraft(id: string, expectedVersion: number, details: DraftDetails): Promise<DraftResult<CourseDraft>>`, and `deleteCourseDraft(id: string, expectedVersion: number): Promise<DraftResult<null>>`. The caller chooses one stable UUID per new form to avoid duplicate creation on retry; no owner ID is accepted from the form.
+
+- [x] **Step 1:** Write boundary assertions, including `title: ''`, null topic/difficulty, empty outcomes and blank optional hours accepted; title 200 code points accepted/201 rejected; description/prior knowledge 2,000 accepted/2,001 rejected; outcome 500 accepted/501 rejected. Verify emoji counts as code points, unsupported topic/difficulty reject, and hours `0`, negative, `NaN` and infinity reject without coercing blank to zero. Run `npm test -- tests/unit/course-draft-validation.test.ts` and confirm FAIL before implementation.
+- [x] **Step 2:** Write integration assertions for CRUD persistence; create owner is the actor; Faculty B cannot read/mutate Faculty A; Student/Admin cannot read/mutate drafts; Program Head oversight may read but cannot author/mutate. Exercise direct API SELECT/INSERT/UPDATE/DELETE/RPC, forged ownership/role, deactivated sessions, published/non-draft deletion, and retained-dependency rejection. Run `npm test -- tests/integration/course-drafts.test.ts` and confirm the intended failures.
+- [x] **Step 3:** Implement minimal typed tables, constraints, indexes and safe read projections described above. Explicit RLS/grants deny anonymous access and direct invariant-bearing writes; fixed-search-path private functions with named invoker wrappers perform create/update/delete. Server feature operations call the same functions with user-scoped clients; privileged clients are not a fallback for failed permissions.
+- [x] **Step 4:** Implement actor-then-course/revision locking and expected-version checks. A successful edit increments version once; a stale edit/delete returns conflict without modifying current data. Retry of create with the same course UUID may return that owner's existing draft but never overwrite it or create another revision. An ID already owned by someone else remains unavailable. Deletion checks unpublished draft state and restrictive dependencies before deleting only authorized draft records.
+- [x] **Step 5:** Assert concurrent updates from version 1 yield one success and one conflict, final version 2; a concurrent stale deletion cannot remove the newer edit; duplicate creation leaves exactly one course/revision. For uncertain update/delete, fetch current permitted state before reporting success or inviting a repeat. Missing-after-delete is unavailable unless a confirmed result is known; do not invent a deletion success. Test account revocation racing a draft write under the shared lock ordering.
+- [x] **Step 6:** Run the two test commands and all account integration checks; require PASS with real role tokens. Commit the migration, feature operations and tests during authorized execution.
+
+**Task 5 reconciled evidence (2026-11-04):** Reviewed commits `9940ffc`, `c6adc51` and `3ab41f6` implement and verify all six source/backend steps. Final recorded hosted draft suite: 12/12 passed; combined validation/operation units: 20/20 passed. The subsequent full suite passed 184 tests with one explicitly opt-in native-gateway skip (not acceptance evidence). Actor-lock contention was observed before revocation; the blocked writer returned PT401. The sub-1MiB serialized payload regression, restrictive dependency rollback, ordinary real-token role/ownership denials, stale versions and exact-run zero residue passed. The TEST-only ownership fix rejects empty/NULL-only/unowned runs. The 1MiB boundary belongs to serialized application ingress/validator; SQL retains field/type/value limits without a spaced-JSON aggregate surrogate. No browser/holder or complete-milestone acceptance follows from these backend results.
+
+### Task 6: Build the Faculty draft workspace
+
+**Files:** Create the `src/app/faculty/courses/` routes/components/actions from the file map, `tests/unit/draft-form.test.tsx`, and `tests/e2e/course-drafts.spec.ts`; update Faculty home to link to drafts. Reuse existing Button/Card/Input/Textarea/Badge/Dialog; use labeled native select/fieldset controls where appropriate instead of installing another component library.
+
+**Interfaces:** `DraftForm({ draft, createId }: { draft?: CourseDraft; createId?: string })` calls route-local actions with parsed UUID/version and `DraftDetails`; returns `DraftResult<CourseDraft>`. `DeleteDraftDialog({ draft }: { draft: CourseDraft })` submits the stable ID and expected version, and only removes the visible record after a confirmed result. UI never supplies trusted actor/owner/role.
+
+- [ ] **Step 1:** Add failing browser assertions for empty list; creating “Untitled draft”; save/refresh/new-sign-in persistence; editing every supported field and outcome order; validation preserving values; deletion cancel/confirm; inaccessible guessed IDs; no Submit/Publish controls. Run `npm run test:e2e -- tests/e2e/course-drafts.spec.ts --project=chromium` and confirm the intended missing-workspace failures.
+- [x] **Step 2:** Add component assertions that a rejected save retains entered values, pending buttons prevent duplicate activation, a stale conflict does not silently reload, and delete cancellation restores focus without mutation. Run `npm test -- tests/unit/draft-form.test.tsx` and confirm FAIL before implementation.
+- [x] **Step 3:** Implement list/detail/create forms and thin Server Actions using Task 5 operations. Include dynamic text limits, optional/required explanations suitable for an incomplete draft, ordered outcome controls with keyboard alternatives, inline errors and explicit save/pending states. Render stored text safely as plain content; no Markdown renderer or PDF support is needed.
+- [x] **Step 4:** Implement the named destructive confirmation with safe initial focus, Escape/cancel, focus return, no incidental overlay deletion, and internal narrow-screen scrolling. Explain validation, service failures, stale versions and lost access persistently. Preserve unsaved edits until deliberate reload/discard; do not put passwords or private draft values into localStorage, logs, or public query strings.
+- [ ] **Step 5:** Exercise connection loss, double activation, stale tabs, stale deletion and session expiry during save with synthetic data. Reconcile uncertain writes through `getOwnCourseDraft`; do not automatically overwrite current data. Repeat Step 1–2 commands; require PASS and commit the verified task during authorized execution.
+
+**Task 6 reconciled source evidence (2026-11-04):** Workspace implementation and fixes through `42c9ffb` are present; final source re-review approved with zero Critical/Important findings. Component checks cover retained values, duplicate prevention, stale errors, ordered details, dialog behavior, history recovery/owner separation, SSR separation and pre-ready controls; the final correction component run passed 26/26. Actual trusted Chromium/Firefox runs reached create, full-field persistence, stale save/delete, validation, failed POST and Back/Forward retention. Their next-sign-in helper raced its cookie/navigation completion; Task 7 now awaits the Faculty destination before dependent navigation. Final browser outcomes are recorded below. Step 1 remains unchecked because the intended missing-workspace E2E RED was blocked at build; it is not retroactively claimed. Step 5 behavior coverage is now complete in the passing production Chromium/Firefox suites; its mixed literal-command checkpoint remains unchecked, with the exact required command and WebKit failure recorded below. The final correction preserves an untouched blank-create UUID across uncertain writes/history, retains entered differences when an idempotent retry returns earlier saved details, and guards late unmounted completion. Task 7 adds actual response-loss/history and save-time revocation browser cases against real isolated sessions. No production E2E pass is inferred from development-browser runs; final source built successfully in the required tool-run command as recorded below.
+
+### Task 7: Verify and rehearse the milestone
+
+**Files:** Update `docs/demo/README.md`, this plan's task/evidence checkboxes, affected acceptance tests and Playwright configuration only if verification exposes a real issue. Keep private artifacts under ignored `.playwright-cli/`.
+
+**Interfaces:** Consume all prior contracts. Produce a redacted evidence record of commands/results, exact browser versions, viewport sizes, physical devices, seven-user rehearsal, provider delivery, unverified checks, and reproducible demo steps. Do not claim a full release or publication support.
+
+**Current acceptance boundary:** Intended phones/account holders are unavailable, per owner. Steps 3–5 remain open for actual device/inbox/readiness/network/performance evidence. TEST modern publishable keys are retired and legacy keys disabled; the opt-in native probe passed 57 negatives, with a fresh 15-request supported-token matrix also denied. Native verification succeeded near 1,790 seconds and failed near 1,810 seconds, bracketing 1,800 seconds. These supersede older retirement/expiry-pending checkpoint text, without proving exact-instant expiry or DEMO readiness. The owner supplied a successful normal-Terminal production build. The final tool-run `npm run test:e2e` on `42c9ffb` also passed production compilation, TypeScript and all 14 generated pages, retaining Cache Components/partial prefetching with no downgrade or configuration workaround. This supersedes the historical CSS-worker IPC/port-bind blocker; browser-suite results remain a separate gate.
+
+- [ ] **Step 1:** Run `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm test`, and `npm run test:e2e`. Require successful exit from each; use isolated credentials for integration tests. The E2E command already builds, so do not add a redundant second build without a new reason. No missing-provider skip counts as acceptance evidence.
+- [ ] **Step 2:** Using the repository Playwright CLI, exercise all changed flows at desktop 1440×900, intermediate 1024×768, and 320×800 CSS pixels. Save/inspect screenshots for layout, long 200-character titles and field errors. Check overflow, keyboard/focus/dialog behavior, 200% text enlargement, 400% zoom/reflow, console errors and relevant failed requests. Record Chromium, Firefox and WebKit results; no certificate-error bypass.
+- [ ] **Step 3:** Rehearse actual Android Chrome and iPhone Safari on the demonstration LAN with trusted certificates. Verify working mail links and all four roles, then Faculty A CRUD and Faculty B access denial. Check expired/consumed invitation, invalid credentials, inactive/pending account status, stale edit and failed save outcomes. Record actual versions versus TRD's latest-two-stable target; disclose uncovered versions/devices.
+- [ ] **Step 4:** Rehearse seven simultaneous users on the actual network. Measure at least 100 non-AI core reads/writes against the TRD 95th-percentile two-second target, excluding mail delivery. Use synthetic draft records; the full 20-published-course learning/report dataset remains later work because publication/learning are absent. Report this coverage limit explicitly rather than claiming the full-system performance rehearsal passed.
+- [ ] **Step 5:** Record seven accounts ready, real inbox receipt, persisted CRUD, real-token negative access, unchanged record on canceled deletion, and all checked failure/viewport/browser cases. Close CLI browser sessions and servers/workers started for verification. Keep the account-preparation manifest and any credentials private; retain no real identity or proof material in evidence.
+- [x] **Step 6:** Recheck scope coverage below, resolve introduced regressions, and present the implementation evidence to the owner. Commit verified documentation/test changes during authorized execution. Publication stays excluded unless separately scoped and approved after core acceptance.
+
+**Task 7 final static/hosted evidence (2026-11-04, `42c9ffb`):** `npm run lint` passed with zero warnings; `npm run format:check` and `npm run typecheck` passed. The serial isolated regression passed 31 files / 222 tests, with exactly one native public-signup mail case excluded (223 total), exit 0, 155.32s, starting 02:33:19 UTC. Command: `RUN_NATIVE_GATE_PROBE=$TEST_SUPABASE_PROJECT_REF npm test -- --testNamePattern='^(?!.*rejects public signup even with a valid reservation ID in editable metadata).*'`. No hook-readiness flag or mail/maintenance worker was used. Automatic approval review rejected the unfiltered mail-capable command because external recipient authorization was absent; the exclusion is a remaining coverage limit, not a full-suite pass. Earlier concurrent runs encountered timeouts and were interrupted; the unchanged-limit serial rerun passed. No provider/DEMO changes were made in Task 7.
+
+**Task 7 required production command (2026-11-04, `42c9ffb`):** `npm run test:e2e` built successfully (14/14 generated pages; compilation 10s, TypeScript 22.4s), then exited 1 after the default 51 browser cases: 19 passed, 24 explicit authenticated-fixture guard skips, 8 failed. All eight failures occurred during WebKit page setup (`Page.overrideSetting: Unknown setting: PushAPIEnabled`), before app interaction. Eighteen passes are Chromium/Firefox smoke cases; the remaining WebKit-labeled pass is request-only Origin denial and establishes no WebKit browser coverage. No Chromium/Firefox smoke failed. Duration 3.0 minutes. Skipped authenticated tests are not acceptance evidence. Root reuses the same production build for guarded trusted-HTTPS TEST authentication/draft checks; their final outcomes follow separately. The all-browser command gate remains unchecked.
+
+**Task 7 authenticated production evidence (same successful `42c9ffb` build):** `npx --no-install playwright test --project=chromium --project=firefox --workers=1` passed **34/34**, zero skips/failures, **2.8 minutes**: Chromium 17/17 and Firefox 17/17. Trusted local HTTPS, isolated TEST markers and the existing public CA were used; no TLS bypass. Coverage includes four-role sign-in/out/Back, pending/inactive status and bad credentials; complete draft CRUD/refresh/new-sign-in persistence, ordered details, stale save/delete, validation/input/history retention, connection failure, safe deletion cancellation/confirmation, Faculty B denial of an actual owner ID, and real session cutoff at save. The untouched blank-create case lets the first POST commit then loses its response, restores history, retains changed input when a stable retry returns differing saved blank details, and requires an explicit subsequent Save; an ordinary-owner native read proves exactly one draft at version 2. Task 6 source and behavior are complete in this bounded production Chromium/Firefox evidence; historical intended-browser-RED and mixed exact-command boxes remain distinct from that result.
+
+**Measured browser/layout scope:** Actual CLI Chromium 156.0.8078.80 and Firefox 157.0; bundled production E2E Chromium 156.0.8078.4/revision 1248 and Firefox 157.0/revision 1555. WebKit advertises 27.2/revision 2370 but cannot set up a page; it is not a measured working browser. E2E project defaults were 1280×720; sign-in layout checks used 1280px and 320×800, and the cumulative CRUD scenario used 320×800. CLI screenshots inspected at 1440×900, 1024×768 and 320×800 with a 200-character title/450-character outcome; no document overflow observed. Actual 200% text enlargement passed without overflow. At 320px the long-title deletion dialog initially focused Cancel, Escape restored Delete focus, and neither dialog nor document overflowed. Actual 400% zoom remains unmeasured. Latest-two-stable desktop Chrome/Edge/Firefox/Safari and physical Android Chrome/iPhone Safari coverage is not established by these two bundled engines. Final production CLI/cleanup disposition is recorded below.
+
+**Final production CLI and cleanup (2026-11-04):** At 320×800, the inspected 201-character-title validation screenshot showed no overflow, retained entered text and focused alert. Protected responses were private/no-store; ordinary documents used same-origin referrer policy and email-proof documents no-referrer. Browser console errors and failed requests were both empty. Exact-run recovery completed; at 02:47:16 UTC read-only counts were zero for accounts, Auth users/sessions, courses/revisions, fixture reservations, TEST dependencies, mail work and email proofs. All owned CLI sessions closed; listeners 3000/443/2019 absent; exact-run artifacts empty; held browser state/journal pointers removed; persistent Caddy CA preserved. Auth logs for 02:33:00–02:47:15 UTC contained 706 events and zero `mail.send`. No DEMO mutation, mail worker or participant mail. Step 6 records this bounded local evidence/scope/commit handoff; Steps 1–5 remain open for the explicit command/WebKit/mail/device/holder/network/performance limits. This is not whole-milestone acceptance.
+
+## Coverage and self-review
+
+| Approved requirement | Owning tasks |
+|---|---|
+| Isolated synthetic environment, seven accounts, no real appointments asserted | 1–3 |
+| Actual verification/invitations, controlled bootstrap/approvals, no preset passwords | 2–3 |
+| Durable mail notices, retries, interrupted operations and proof cleanup | 3 |
+| Four-role sign-in/out, session revocation, minimal landing pages | 2, 4 |
+| Role/status/ownership checks at application and direct database boundaries | 2, 4–5 |
+| Incomplete course-details CRUD, field limits, retained input, version conflicts | 5–6 |
+| Confirmed unpublished-only deletion and persistence after refresh/sign-in | 5–6 |
+| Keyboard, focus, narrow/long layouts, cross-browser/device checks and rehearsal | 4, 6–7 |
+| No lessons, publication, learning, AI, reports or full onboarding screens | All task boundaries; negative UI assertions in 6 |
+
+Planning self-review (historical): all approved scope areas have an owning task and the five Review Focus cases have named checks. Execution evidence above supersedes the original unexecuted status. Shared role/draft/result names and routes remain consistent. Physical/device/holder/network and complete browser-suite gaps remain explicit acceptance gates.
+
+## Planning references and execution handoff
+
+Read the installed Next.js authentication, authentication-with-cache-components, data-security, forms, server-actions and proxy guides before implementation. Installed SSR source confirms `getAll`/`setAll` and per-request clients; its default HttpOnly setting must be overridden for this project's server-only pattern.
+
+Current primary references consulted for planning: [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client), [Send Email Hook](https://supabase.com/docs/guides/auth/auth-hooks/send-email-hook), [Supabase changelog](https://supabase.com/changelog), and [Nodemailer 10.3.1 package metadata](https://raw.githubusercontent.com/nodemailer/nodemailer/v10.3.1/package.json). Recheck compatibility/advisories at execution, not by changing pinned packages during planning.
+
+Historical handoff: the owner approved the spec/plan on 2026-11-03 with an initial no-start instruction, then separately authorized the recorded implementation. That original pause no longer prevents the scoped execution documented above. Choose native execution or subagent-driven execution only when authorizing implementation. Native execution is recommended for this sequential milestone because account/session/CRUD work shares the same database contracts; it avoids multiple implementers coordinating those changing boundaries. No implementation starts from this handoff alone.
+
+### DEMO database provisioning checkpoint — 2026-11-04
+
+Later owner authorization covers technical DEMO setup and setup emails. Root
+verified an empty DEMO before applying all 22 reviewed production migrations in
+order. Remote history matches their ordered names, with provider-assigned versions
+rather than local source timestamps; future CLI migration application must first
+reconcile that history. Protected singleton mode `demo` is initialized for the
+verified target. All 12 application tables have RLS; no TEST harness tables exist;
+guard login/inheritance/bypass are false. Auth users, accounts and mail remain zero.
+Nine intentional private-table RLS/no-policy INFO advisories, no WARN/ERROR, were
+reported. `assert_demo_project`, backend-key Auth settings access and SMTP TLS/login
+passed; no mail was sent. Current Wi-Fi matches APP_ORIGIN. Email confirmation is
+required and unsupported providers are disabled.
+
+Database provisioning is complete; Auth/mail readiness and Task 1/3 acceptance
+remain open. Actual DEMO hook registration, expiry 1800, minimum password length
+12 and hosted origin/redirect settings are unverified. One publishable key and
+legacy keys remain active; readiness flags are unset. Browser host unavailable;
+CLI unauthenticated with no access-token environment fallback. Owner Terminal CLI
+login is the next access prerequisite, followed by verified hosted settings and
+DEMO key retirement/gateway proof. Preserve the private backend key. No bootstrap,
+participant message, worker/server start, TEST mutation or seven-holder readiness
+claim was made. Administrator invitation acceptance, hidden passwords and all
+holder proofs remain external completion gates. See docs/demo/README.md for the
+current operator handoff. No source change or commit accompanied this checkpoint.
+
+Final checkpoint verification: all 51 DEMO production function-body hashes match
+TEST exactly, zero mismatches; zero public TEST RPCs or anonymous application RPC
+execute grants. Auth Admin hook execution is permitted, anonymous/authenticated
+execution denied; course_drafts is security-invoker. Existing backend credentials
+were made available to operator-local ignored mode-0600 configuration without
+new credential generation/output. Normal demo preparation status passed with 0/7
+ready, all not prepared and none queued; ignored local manifest binding state was
+created, with no provider user/mail mutation. Provider work pauses for owner CLI
+login and DEMO key retirement while preserving its private backend key. This
+checkpoint changes documentation only; no additional tests are required.
+
+
+### DEMO Auth and first invitation — 2026-11-04
+
+Owner completed CLI login and API key retirement. Verified no active publishable
+keys and legacy anon disabled; nine empty password/refresh/PKCE requests using
+missing, malformed or retired publishable keys returned recognized 401 gateway
+denials. Private backend settings access remains available. This bounded probe
+does not establish every alternate gateway path or a DEMO user-JWT-as-key matrix.
+
+Official CLI applied six reviewed declared Auth changes: exact local HTTPS Site
+URL and email redirect, 1,800-second expiry, minimum password length 12, and enabled
+PostgreSQL Send Email Hook at public.send_auth_email. Readback found zero declared
+differences and preserved all eight unrelated remote settings.
+
+To verify actual hook invocation before attestation, used the existing validated
+manifest binding and production bootstrap reservation, then native Administrator
+invitation with the reserved identity and exact redirect. No password was supplied.
+Read-only counts confirmed one native user, one pending Administrator, one bound
+reservation, one pending invitation proof with exactly 1,800-second lifetime, and
+one pending invitation mail item. No generateLink/queue-generated reissue followed.
+This is actual native-hook capture, distinct from generated-link operator queueing.
+Only after these checks were local DEMO-bound hook/password readiness recorded.
+
+The one-pass maintenance worker processed that single authorized invitation.
+Readback shows one invitation in sent state, one attempt; provider acceptance is
+not inbox receipt. Status remains 0/7 ready: Administrator pending with proof mail
+sent; other six not prepared. Holder email verification and holder-selected password
+are required before authenticated preparation of other roles. No holder password,
+email confirmation or approval was fabricated; TEST was untouched.
+
+Local production app and retained-CA HTTPS proxy remain running for this holder
+handoff. HTTPS sign-in returned 200 with private/no-store behavior. No new browser
+acceptance run or device trust/reachability verification was performed for this
+operational configuration pass. Stop these two owned services after holder setup;
+maintenance already exited. Preserve the CA. This checkpoint supersedes the prior
+CLI/key/configuration blockers and no-invitation statements, not holder readiness.
+
+
+Administrator holder checkpoint — 2026-11-04: after owner-reported email confirmation, normal DEMO status independently verified 1/7 accounts approved with completed proof. Administrator is approved; other six remain not prepared. No password was requested in chat or supplied by the agent. Subsequent preparation requires the real Administrator hidden Terminal password and, for Student/Faculty creation, each holder-selected hidden password.
+
+
+### Hotspot origin update — 2026-11-04
+
+Owner authorized the new-network setup and subsequent participant confirmation
+emails. Detected the active default-route Wi-Fi interface and private IPv4.
+Updated ignored APP_ORIGIN and the minimal DEMO hosted Site URL/exact email
+redirect. CLI preview asserted exactly those two declared changes; push passed;
+readback found zero declared differences and preserved unrelated remote settings.
+Restarted the owned loopback production app and HTTPS proxy with retained CA.
+The active persistent CA matches the previously distributed public certificate;
+no trust/firewall changes or TEST mutations occurred.
+
+Both HTTPS authentication pages returned 200 under explicit retained-CA validation;
+email page retains no-referrer and private/no-store. Chromium verified the normal
+invalid-credentials response, desktop width 1440 and email page width 320, no
+horizontal overflow and zero browser errors. No real password/proof was used.
+Physical-device hotspot reachability/trust remains holder verification, requested
+from another device. App/proxy remain running for the authorized holder workflow.
+
+Normal status still reports 2/7 ready (Administrator and student_2), with remaining
+five not prepared and no proof mail queued for them. No new participant email was
+sent by this network update. Remaining preparation needs real Administrator and
+Student/Faculty holder passwords through hidden Terminal prompts, followed by
+reviewed delivery; no identity, proof, password or approval was fabricated. Old
+email URLs retain the old network address; coordinate fresh issuance on the new
+network only when holders are ready. Exact address remains ignored local config.
+
+Holder reported that the new HTTPS sign-in page opens on another hotspot device without a certificate warning. This establishes reported reachability/trust for that device only; remaining device matrix and confirmation delivery remain separate.
+
+
+Faculty setup diagnostic — 2026-11-04: first attempt failed local password validation; subsequent valid holder entry created faculty_1 unconfirmed, then native resend was denied with over_email_send_rate_limit (429). Read-only state confirms one bound/consumed Faculty reservation, one unconfirmed native Faculty user with password present and no native confirmation issuance; faculty_2 remains unprepared. Auth logs contain two email-limit denials. Do not recreate faculty_1 or claim a retry changes its password. A password disclosed in conversation was not repeated, stored or used by the agent; holder-controlled rotation remains needed.
+
+Official hosted Auth guidance supports raising the email rate limit with a Send Email Hook. A desired 20/hour local CLI preview returned zero declared differences: the installed CLI does not expose this field in hosted config diff. No limit push was performed; the trial local section was removed. Dashboard automation remains unavailable. Owner instructed to change only the DEMO email send limit to 20/hour; actual setting/readback and resumed delivery remain pending. Email confirmation, native hook, expiry, per-recipient throttles and account guards remain intact. Ignored Faculty helper now reports sanitized stage/slot/code and correct password rules; pure local checks pass, with no extra provider mutation.
