@@ -153,7 +153,7 @@ test('creates an unconfirmed Student with leading zeros, then proof still grants
     (await signed.client.rpc('create_course_draft', { course_id: randomUUID(), details: {} })).error
       ?.code
   ).toBe('PT401');
-});
+}, 45000);
 test('accepts non-Gmail Faculty and the exact 12-code-point password boundary', async () => {
   const application = { ...input('faculty'), password: '😀'.repeat(12) };
   passwords.set(application.email, application.password);
@@ -246,7 +246,7 @@ test('a later retry resolves an uncertain committed account and preserves its or
     ).error?.code
   ).toBe('invalid_credentials');
   expect(saved.account_count).toBe(1);
-});
+}, 45000);
 test('a settled browser can register a different applicant with a fresh capability', async () => {
   const session = browser();
   for (const application of [input(), input('faculty')]) {
@@ -325,7 +325,7 @@ test('creation and mail failure retain the capability; changed identity cannot h
       })
     ).error
   ).toBeTruthy();
-});
+}, 45000);
 test.each(['pending', 'rejected', 'deactivated'])(
   'keeps identifiers reserved for %s accounts',
   async (state) => {

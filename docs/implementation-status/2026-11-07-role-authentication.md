@@ -1,20 +1,60 @@
 # Role authentication implementation and acceptance
 
-**Current checkpoint: 2026-11-08 corrective verification; full acceptance remains open.** Tasks 1–4 and Task 5 source are committed and reviewed. Whole-branch review found three issues; the current corrective worktree addresses them with focused tests. The owner requested solo Sol work for the remaining steps, so no further subagent review will be dispatched. Historical pause and resumed results remain below.
+**Latest recorded checkpoint: 2026-11-09 scoped test, CI and documentation correction; full acceptance remains open.** Tasks 1–4 and Task 5 source are committed and reviewed. The three earlier whole-branch review corrections are committed with focused verification. All 15 role-authentication migrations were applied to DEMO on November 8. The owner subsequently requested Ponytail fixes and a separate Sol review for the November 9 findings; that request supersedes the earlier solo-work restriction for this scope.
+
+### Current handoff status
+
+This summary consolidates the recorded results. Earlier checkpoints preserve what was known at each stage; their pending-work and environment statements do not override this summary, the [November 9 correction](#scoped-test-ci-and-documentation-correction--2026-11-09), or the [DEMO update](#demo-migration-and-lan-https-update--2026-11-08).
+
+| Area | Latest recorded status | Remaining work |
+| --- | --- | --- |
+| Implementation and review | Tasks 1–4, Task 5 source/reviews and whole-branch review completed; three earlier corrective findings addressed. | Full Task 5 acceptance remains open. The earlier scoped subagent rereview was omitted under the then-current solo-work instruction; the November 9 scope has a separately requested Sol review. |
+| Unit/integration verification | November 9 attested full run passed **358 tests with two opt-in skips**, including all five previously failing cases and the previously blocked registration suite. | Preserve earlier failures as historical evidence; skips are not passes. |
+| DEMO migrations | **All 15 applied in source order.** Hosted history contains **37 entries**; registration, verification and review functions were read back. Existing account and Auth user counts remained seven each. | No migration reapplication is indicated by this record. Final-network and holder rehearsal remain separate acceptance work. |
+| LAN HTTPS and styling | Webpack build and focused Chromium/Firefox layout checks passed; a CA-verified LAN HTTPS GET and Chromium Student-form inspection passed. | Hosted DEMO Auth Site URL and exact email redirect still need alignment with the recorded LAN origin and hosted readback before email confirmation is treated as verified there. |
+| Browser and device acceptance | Earlier full Chromium/Firefox run passed 104 cases before the corrections; later focused corrective/layout checks passed. | Current full browser coverage, working WebKit, TRD 6.5's latest-two-stable matrix, and physical Android/iPhone network/certificate checks remain open. |
+| Real inbox and holder flows | Native hook queuing and proof flows have evidence. | Actual school/personal inbox receipt and holder completion remain unverified. |
 
 The [implementation plan](../superpowers/plans/2026-11-06-role-authentication.md) remains the checklist. [PRD](../../PRD.md), [TRD](../../TRD.md), [ARCHITECTURE](../../ARCHITECTURE.md) and the [authentication UI reference](../design/authentication/role-authentication.md) remain authoritative. No recorded blocker waives a requirement.
 
+## Scoped test, CI and documentation correction — 2026-11-09
+
+The owner requested investigation and fixes after a full run reported **312 passed, five failed and 30 skipped**, with one suite blocked. Two failures were the explicit missing TEST mail-hook attestation (public-signup boundary and registration setup). Native recovery returned `over_request_rate_limit` (429). Three application cases failed during applicant proof setup, before their target assertions; the production proof helper hides the native error behind its generic unavailable result, so those three original failures cannot independently establish the native error code.
+
+Read-only TEST configuration inspection confirmed email confirmation, the enabled `public.send_auth_email` hook, 1,800-second expiry and minimum password length 12. One native resend for a run-owned `example.invalid` Faculty fixture queued a pending proof with a measured 1,800-second lifetime. The fixture and its journal were cleaned. No SMTP worker was started and no DEMO readiness setting was changed. Only after those checks was the TEST attestation supplied to the full test command for this session.
+
+The fix wraps ordinary fixture transport with one bounded retry for an exact TEST verification POST rejected with native `429` / `over_request_rate_limit`. It does not change production proof handling, mock native verification, change provider quotas, or spoof source IPs. The original request and caller cancellation survive the wait; a second rejection remains a failure. The affected native-proof cases explicitly budget 45 seconds for the possible wait and bounded network attempts. [Fixture guidance](../../tests/integration/helpers/README.md) records the retry bounds and safe full-run command.
+
+Decision retries now announce only **Decision saved.** Existing delivery-specific labels still show queued, recorded or failed mail independently. Regression tests cover failed/sent readback; the lost-response browser assertion requires the neutral acknowledgment and still checks one saved history event/version.
+
+CI now runs static checks, unit/component tests and default public browser checks, installing Chromium, Firefox and WebKit. It triggers for `main`, `feat/role-authentication`, pull requests targeting `main`, or manual dispatch. Hosted integration and authenticated browser coverage remain separately guarded acceptance gates; public CI skips are not passes for those flows. The plan, architecture/spec pointers and demonstration/setup instructions now distinguish completed DEMO migrations from unfinished email-origin/browser/device/inbox acceptance.
+
+Verification on the corrected source:
+
+| Check | Measured result and limits |
+| --- | --- |
+| Full unit/integration command | `AUTH_MAIL_HOOK_VERIFIED_PROJECT_REF=ggiccvcrkydcimveyrfi npm test -- --no-cache`: **358 passed, two opt-in skips**, 42 files passed and one skipped, 395.52 seconds. All five earlier failures and the registration suite passed. No fixture recovery JSON remained after cleanup. |
+| Retry-helper regressions | **13 passed**: one retry only, unchanged body, successful replay, readable final rejection, bounded Retry-After, cancellation, malformed errors, other origins/endpoints and network uncertainty. The full suite includes these cases. |
+| Static checks and build | Formatting, lint, TypeScript and webpack production build passed. Documentation-only follow-ups received whitespace and relative-link checks. |
+| Credential-free browser scope | **36 passed, 80 hosted-only skips** across Chromium and Firefox: 1280/320-pixel public flows, validation, keyboard focus and interrupted requests. An isolated loopback port avoided disturbing the existing app. This is public CI-scope evidence, not authenticated or WebKit acceptance. |
+| Decision retry browser regression | The earlier scoped fix passed the exact lost-response retry case in Chromium and Firefox at 1280×720, with one saved history event/version. No broader authenticated browser pass is claimed here. |
+| Independent Sol review | The requested separate Sol review found no blocking source/CI defect and requested one historical date-label correction, which was applied. Additional helper edge cases were tested. The final settled-checkout rereview returned **no blocking findings**; it was a read-only review, not independent test execution. |
+
+The earlier WebKit host blocker, stable-browser/device matrix, real inbox/holder flows and DEMO email-origin gate remain open product acceptance work. They are not new failures of this scoped test/CI correction or claims covered by the credential-free CI job. No merge, public deployment or provider-quota change is part of this correction.
+
 ## Whole-branch review correction (2026-11-08)
+
+Historical checkpoint before the later DEMO rollout. Its results remain evidence; rollout status is superseded by the current handoff summary and DEMO update.
 
 The whole-branch review found two Important issues and one Minor issue: an unverified applicant could receive a decision that stranded email proof; identity inputs accepted edits while Save was pending and then discarded them; and a valid session on the wrong review route went to the requested role's login. A forward migration on isolated TEST requires current-email proof for new decisions while retaining Administrator reopening for legacy recovery. The Pending queue hides unverified applications; direct detail explains the requirement and withholds decisions. Correction inputs lock during Save. Wrong-role sessions return to their own approved home or restricted status.
 
 The correction has focused evidence on current source: **27/27** real application integration tests, **15/15** component tests, **8/8** review-flow browser tests at 1280 and 320 CSS pixels, and **16/16** role-route browser tests across Chromium and Firefox. The desktop and 320-pixel screenshots were inspected; no horizontal overflow was observed. Typecheck, lint, formatting and production build passed. The final full `npm test` run with the TEST mail-hook attestation passed **343 tests with two opt-in skips** (41 files passed, one skipped, 296.45 seconds). The hosted migration version `20261108035007` was also confirmed present by read-only inspection.
 
-Failed runs remain part of the record. An earlier full attempt after the correction had **340 passes, two native-invitation failures and two opt-in skips**; both failures passed an unchanged focused rerun. Two nearby provider `429` responses were observed, without proof of exact attribution. A later `npm test` invocation lacked the process-only mail-hook attestation: one guard failure and one blocked suite left **314 passes and 30 skips**. The next attested run passed **342**, with one existing hosted faculty-boundary case timing out after five seconds; the case passed unchanged in a 2.9-second focused rerun and in the final full run. No timeout, provider quota, or application source was changed to obtain that result. The earlier 104-pass full browser attempt below predates this correction. The current three-engine full browser check, actual inbox/device/stable-browser matrix and DEMO rollout remain open.
+Failed runs remain part of the record. An earlier full attempt after the correction had **340 passes, two native-invitation failures and two opt-in skips**; both failures passed an unchanged focused rerun. Two nearby provider `429` responses were observed, without proof of exact attribution. A later `npm test` invocation lacked the process-only mail-hook attestation: one guard failure and one blocked suite left **314 passes and 30 skips**. The next attested run passed **342**, with one existing hosted faculty-boundary case timing out after five seconds; the case passed unchanged in a 2.9-second focused rerun and in the final full run. No timeout, provider quota, or application source was changed to obtain that result. The earlier 104-pass full browser attempt below predates this correction. At this checkpoint, the three-engine full browser check, actual inbox/device/stable-browser matrix and DEMO rollout were still open. The later DEMO update records migration completion; the remaining acceptance gaps are listed in the current handoff summary.
 
 A broader current-source application browser run passed all **16 Chromium** cases and the first **7 Firefox** cases, then stopped at the stale-reviewer case because Firefox reported an uncaught `TypeError: Error in input stream` from `/faculty`. The case's visible assertions reached their expected outcome; its page-error audit correctly failed. Eight later Firefox cases did not run. An unchanged focused retry failed earlier while reserving a synthetic TEST fixture; the fixture RPC returned no error code. A read-only check found 53 recent localhost authentication admissions, below the limit of 100. A second unchanged focused retry then **passed 1/1** with the page-error audit enabled. The input-stream cause and fixture retry failure remain unproven. Earlier focused correction cases passed in both engines; this broader attempt is not a full browser pass. Test fixtures and the local HTTPS proxy were cleaned after the attempt.
 
-A read-only DEMO migration inventory on November 8 showed only the 23 earlier account/course migrations through `course_draft_request_size_boundary`. None of the 15 role-authentication application migrations in the plan's TEST mapping is recorded there. No DEMO migration, fixture harness, account, or provider setting was changed during this work.
+The earlier read-only DEMO inventory on November 8 was recorded as 23 account/course migrations through `course_draft_request_size_boundary`, with none of the 15 role-authentication migrations present. No DEMO migration, fixture harness, account, or provider setting was changed during that inventory pass. The later rollout record reports 22 preexisting entries and 37 after applying all 15 migrations; it supersedes this earlier count and unmigrated status.
 
 ## Resumed verification (2026-11-08)
 
@@ -34,7 +74,7 @@ The Chromium/Firefox passes include role login and denied routes, revoked/deacti
 
 Final source static checks previously passed: typecheck, lint with zero warnings/errors, formatting, whitespace and changed-document links. The resumed command built the unchanged source successfully. Task 5 ran no additional hosted/browser probe during this documentation pass. The November 7 full unit/integration result remains326passed/twofailed/twoskipped as a historical result, with its bootstrap and unproven native recovery failure retained alongside focused diagnostic evidence.
 
-Owner-authorized exact older-run recovery completed at2026-11-08 03:28:20UTC; postconditions completed03:28:48UTC. Owned records/native sessions were removed, all18unrelated-table count/digest pairs matched, the protected TEST marker remained intact, and the journal was removed. The subsequent full unit/integration run passed, including bootstrap. Current work still needed: independent Task5/whole-branch review, working WebKit coverage, required stable browsers and physical devices, actual inbox/holder flows, and DEMO/final-network readiness. Task5 performed no hosted calls while the cleanup writer was active. The preserve-until-authorized record below remains historical.
+Owner-authorized exact older-run recovery completed at2026-11-08 03:28:20UTC; postconditions completed03:28:48UTC. Owned records/native sessions were removed, all18unrelated-table count/digest pairs matched, the protected TEST marker remained intact, and the journal was removed. The subsequent full unit/integration run passed, including bootstrap. Work still needed at that checkpoint included independent Task5/whole-branch review, working WebKit coverage, required stable browsers and physical devices, actual inbox/holder flows, and DEMO/final-network readiness. Later reviews and DEMO migration results supersede those pending items as described in the current handoff summary. Task5 performed no hosted calls while the cleanup writer was active. The preserve-until-authorized record below remains historical.
 
 The detailed resumed log is `.playwright-cli/role-auth-resumed-full-e2e.log`. Root owns resumed-run runtime/fixture cleanup and has already completed the single Next.js feedback pass; no feedback resubmission is required.
 
@@ -103,7 +143,9 @@ Those 48 passes include application review/correction, the new saved-decision hy
 
 Earlier partial full-suite attempts found stale navigation assertions and signup focus behavior that were subsequently corrected. Their logs and focused reruns remain available; do not combine them into a fictional single clean final run.
 
-## Unfinished tasks and blockers (updated 2026-11-08)
+## Historical unfinished tasks and blockers (early 2026-11-08)
+
+This table preserves the early resumed handoff. Its pending bootstrap result, reviews and TEST-only migration status were superseded by later results. Use the current handoff summary for remaining work.
 
 | Remaining work | Why it is unfinished | What is needed when work resumes |
 | --- | --- | --- |
@@ -191,7 +233,9 @@ This document and the tracked plan preserve the measured conclusions. Detailed l
 | Final static and hydration unit results | `/tmp/task5-final-hydration-{typecheck,lint,format}.log`, `/tmp/task5-hydration-{red,green}.log` |
 | Repeatable assertions | [E2E tests](../../tests/e2e/), [integration tests](../../tests/integration/), [unit tests](../../tests/unit/) |
 
-## Remaining execution sequence after resumption
+## Historical execution sequence after resumption
+
+This sequence predates the completed reviews and DEMO migration rollout. It is retained as history, not a current instruction to repeat reviews, cleanup or migration work. Use the current handoff summary and implementation plan for the remaining acceptance gates.
 
 1. Read this handoff, `AGENTS.md`, the current plan and the matching local SDD ledger. Inspect `git status` before editing. Keep Tasks 1–4 completed; do not reimplement or redispatch them.
 2. Review the Task5 snapshot from `27e70a0`, including `tests/unit/application-hydration.test.tsx`. The last completed static checks passed; avoid redundant full-suite runs unless new changes or unresolved concerns require them.

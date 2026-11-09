@@ -124,7 +124,7 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
       expect((await decision(faculty, f.id, 4)).error).toBeNull();
       expect((await read(client)).data).toMatchObject({ status: 'approved', email_verified: true });
     },
-    20000
+    45000
   );
 
   it('allows Faculty to read and approve a verified Student with a recorded notice', async () => {
@@ -145,7 +145,7 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
     const detailAdmin = (await read(administrator, f.id)).data;
     expect(detailAdmin.delivery_state).toBe('pending');
     expect(detailAdmin.history).toHaveLength(1);
-  });
+  }, 45000);
 
   it('restricts Faculty targets, Program Heads, unapproved reviewers and applicant isolation', async () => {
     const f = await applicant('faculty');
@@ -161,7 +161,7 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
       (await anonymous().rpc('application_details', { target_id: f.id })).error
     ).not.toBeNull();
     expect((await admin.rpc('application_details', { target_id: f.id })).error).not.toBeNull();
-  });
+  }, 45000);
 
   it('requires external attestations and nonempty bounded reasons without saving a decision', async () => {
     const f = await applicant('faculty');
@@ -174,7 +174,7 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
         '23514'
       );
     expect((await read(administrator, f.id)).data.history).toHaveLength(0);
-  });
+  }, 45000);
 
   it('preserves repeated correction cycles and binds decision retries to actor and payload', async () => {
     const f = await applicant();
@@ -212,7 +212,7 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
         (e: { event: string }) => e.event === 'application_needs_correction'
       )
     ).toHaveLength(2);
-  });
+  }, 45000);
 
   it('rejects stale reviews and permits only one concurrent decision', async () => {
     const f = await applicant();
@@ -234,7 +234,7 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
     expect(results.filter((r) => !r.error)).toHaveLength(1);
     expect(results.filter((r) => r.error?.code === 'PT409')).toHaveLength(1);
     expect((await read(administrator, f.id)).data.history).toHaveLength(1);
-  });
+  }, 45000);
 
   it('allows only Administrator reopening with a reason and verified error; reopening preserves identity and activation', async () => {
     const f = await applicant();
@@ -255,7 +255,7 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
     });
     await harness('state', { account_id: f.id, active: false });
     expect((await decision(administrator, f.id, 3)).error?.code).toBe('42501');
-  });
+  }, 45000);
 
   it('allows only verified-error Administrator reopening to recover a legacy unverified rejection', async () => {
     const f = await createFixture('student', false);
@@ -273,7 +273,7 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
     await verifyApplicant(f);
     const client = (await signIn(f)).client;
     expect((await read(client)).data).toMatchObject({ status: 'pending', email_verified: true });
-  });
+  }, 45000);
 
   it('rechecks reviewer revocation even for a previously saved request ID', async () => {
     const reviewer = await createFixture('faculty');
@@ -286,7 +286,7 @@ describe('ordinary-session application review', { timeout: 15000 }, () => {
     expect((await decision(client, f.id, 1, 'reject', { request_id: request })).error?.code).toBe(
       '42501'
     );
-  });
+  }, 45000);
 });
 
 describe('preapproval identity correction', { timeout: 20000 }, () => {
@@ -327,7 +327,7 @@ describe('preapproval identity correction', { timeout: 20000 }, () => {
     ).toBe('23514');
     expect((await administrator.rpc('correct_student_number', release)).error).toBeNull();
     expect((await attempt()).error).toBeNull();
-  });
+  }, 45000);
   it('requires an unclaimed verified replacement before releasing a current number', async () => {
     const f = await applicant();
     const other = await applicant();
@@ -377,7 +377,7 @@ describe('preapproval identity correction', { timeout: 20000 }, () => {
         })
       ).error
     ).toBeNull();
-  });
+  }, 45000);
   it('rejects replacement email collisions and expired possession proof without changing identity', async () => {
     const f = await applicant();
     const other = await applicant();
@@ -402,7 +402,7 @@ describe('preapproval identity correction', { timeout: 20000 }, () => {
     expect(admission).not.toHaveBeenCalled();
     expect((await admin.rpc('reconcile_auth_mail')).error).toBeNull();
     expect((await read(f.client)).data).toMatchObject({ email: f.email, replacement: null });
-  });
+  }, 45000);
   it('requires fresh replacement-email proof, preserves identity until completion and revokes old sessions', async () => {
     const f = await applicant();
     const replacement = `fixture-${runId.slice(0, 8)}-${randomUUID().slice(0, 8)}@caloocan.sti.edu.ph`;
@@ -448,7 +448,7 @@ describe('preapproval identity correction', { timeout: 20000 }, () => {
     await expect(
       confirmProof(admin, anonymous(), p.data.challenge, proofHash(randomUUID()))
     ).rejects.toThrow();
-  });
+  }, 45000);
   it('cancels replacement proof without releasing a disputed student number', async () => {
     const f = await applicant();
     const replacement = `fixture-${runId.slice(0, 8)}-${randomUUID().slice(0, 8)}@caloocan.sti.edu.ph`;
@@ -468,7 +468,7 @@ describe('preapproval identity correction', { timeout: 20000 }, () => {
       confirmProof(admin, anonymous(), p.data.challenge, proofHash(randomUUID()))
     ).rejects.toThrow();
     expect((await read(f.client)).data).toMatchObject({ email: f.email, replacement: null });
-  });
+  }, 45000);
 });
 async function applicationHarness(action: string, id: string) {
   const r = await admin.rpc('test_application_fixture', {
@@ -492,7 +492,7 @@ describe('application transaction failure boundaries', { timeout: 15000 }, () =>
     expect(await applicationHarness('inspect', f.id)).toMatchObject({ events: 0, notices: 0 });
     await applicationHarness('allow_outbox', f.id);
     expect((await decision(faculty, f.id, 1)).error).toBeNull();
-  });
+  }, 45000);
   it('keeps a saved decision through failed delivery and independent retry', async () => {
     const f = await applicant();
     expect((await decision(faculty, f.id, 1, 'needs_correction')).error).toBeNull();
@@ -523,7 +523,7 @@ describe('application transaction failure boundaries', { timeout: 15000 }, () =>
     );
     expect(await applicationHarness('inspect', f.id)).toMatchObject({ events: 1, notices: 1 });
     expect((await read(administrator, f.id)).data.delivery_state).toBe('sent');
-  });
+  }, 45000);
   it('rechecks the locked reviewer row after concurrent revocation', async () => {
     const f = await applicant();
     const reviewer = await createFixture('faculty');
@@ -538,7 +538,7 @@ describe('application transaction failure boundaries', { timeout: 15000 }, () =>
     await revocation;
     expect(result.error?.code).toBe('42501');
     expect((await read(f.client)).data.status).toBe('pending');
-  });
+  }, 45000);
   it.each(['deactivated', 'rejected', 'expired'])(
     'fences a late Auth replacement write after %s and recovers the old identity',
     async (state) => {
@@ -597,7 +597,8 @@ describe('application transaction failure boundaries', { timeout: 15000 }, () =>
       expect(late.error).not.toBeNull();
       expect((await admin.auth.admin.getUserById(f.id)).data.user?.email).toBe(f.email);
       expect(await applicationHarness('inspect', f.id)).toMatchObject({ identity_blocked: false });
-    }
+    },
+    45000
   );
 });
 it.each(['active', 'deactivated', 'rejected'])(
@@ -666,7 +667,7 @@ it.each(['active', 'deactivated', 'rejected'])(
       identity_blocked: false,
     });
   },
-  15000
+  45000
 );
 it('controlled demo approval cannot bypass an incomplete replacement identity', async () => {
   const f = await applicant();
@@ -682,7 +683,7 @@ it('controlled demo approval cannot bypass an incomplete replacement identity', 
   });
   expect(result.error).not.toBeNull();
   expect((await read(f.client)).data.status).toBe('pending');
-}, 15000);
+}, 45000);
 it('controlled demo approval rejects an application corrected since its initial setup identity', async () => {
   const f = await applicant();
   await applicationHarness('demo_slot', f.id);
@@ -706,4 +707,4 @@ it('controlled demo approval rejects an application corrected since its initial 
     ).error
   ).not.toBeNull();
   expect((await read(f.client)).data.status).toBe('pending');
-}, 15000);
+}, 45000);

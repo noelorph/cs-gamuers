@@ -317,7 +317,7 @@ it('completes a real native invitation through two fenced operations and require
   expect(Boolean(replay.error)).toBe(true);
   expect((await inspect(id)).employee_number).toBe('001-A');
   expect(await inspect(id)).toHaveProperty('native_erased', true);
-});
+}, 45000);
 it('rejects completion after reservation release and maintenance clears the cancelled proof', async () => {
   const { reserveFixture } = await import('./helpers/fixtures');
   const { confirmProof } = await import('@/features/accounts/email-protocol');
@@ -360,7 +360,7 @@ it('rejects completion after reservation release and maintenance clears the canc
     native_erased: true,
     delivery_erased: true,
   });
-});
+}, 45000);
 it('finishes a committed holder password update after its response is lost', async () => {
   const { reserveFixture } = await import('./helpers/fixtures');
   const { confirmProof, finishInvitation } = await import('@/features/accounts/email-protocol');
@@ -401,7 +401,7 @@ it('finishes a committed holder password update after its response is lost', asy
       password: 'Holder chosen secret passphrase',
     })
   ).resolves.toEqual({ complete: true });
-});
+}, 45000);
 it('cancels a stale applying operation and fences a late chosen-password write', async () => {
   const { reserveFixture } = await import('./helpers/fixtures');
   const { confirmProof } = await import('@/features/accounts/email-protocol');
@@ -437,7 +437,7 @@ it('cancels a stale applying operation and fences a late chosen-password write',
   });
   expect(Boolean(late.error)).toBe(true);
   expect(await inspect(id)).toHaveProperty('state', 'failed');
-});
+}, 45000);
 it('maintenance finalizes an Auth-applied password without retaining or replaying the password', async () => {
   const { reserveFixture } = await import('./helpers/fixtures');
   const { confirmProof } = await import('@/features/accounts/email-protocol');
@@ -472,7 +472,7 @@ it('maintenance finalizes an Auth-applied password without retaining or replayin
   expect(Boolean(result.error)).toBe(false);
   expect(Boolean((await admin.rpc('reconcile_auth_mail')).error)).toBe(false);
   expect(await inspect(id)).toMatchObject({ state: 'complete', employee_number: '000-RECONCILED' });
-});
+}, 45000);
 it('can reissue the native invitation after an interrupted verified setup', async () => {
   const { reserveFixture } = await import('./helpers/fixtures');
   const { confirmProof } = await import('@/features/accounts/email-protocol');
@@ -539,7 +539,7 @@ it('can reissue the native invitation after an interrupted verified setup', asyn
       ).error
     )
   ).toBe(true);
-});
+}, 45000);
 it('resumes one bootstrap and commits one real Administrator approval despite mail failure', async () => {
   const { fixturePassword, signIn } = await import('./helpers/fixtures');
   const { confirmProof, finishInvitation } = await import('@/features/accounts/email-protocol');
@@ -712,7 +712,7 @@ it('resumes one bootstrap and commits one real Administrator approval despite ma
     'active',
     false
   );
-}, 30000);
+}, 45000);
 it('serializes concurrent proof claims to one browser capability', async () => {
   const f = await proofFixture();
   const p = await inspect(f.id);
@@ -802,7 +802,7 @@ it('rejects a cancelled old native invite after a fresh verifier and marker are 
       ).error
     )
   ).toBe(true);
-}, 15000);
+}, 45000);
 it('serializes cancellation racing a native chosen-password commit', async () => {
   const { reserveFixture } = await import('./helpers/fixtures');
   const { confirmProof } = await import('@/features/accounts/email-protocol');
@@ -841,4 +841,4 @@ it('serializes cancellation racing a native chosen-password commit', async () =>
   expect(Boolean(cancel.error)).toBe(false);
   await admin.rpc('reconcile_auth_mail');
   expect(await inspect(id)).toHaveProperty('state', write.error ? 'failed' : 'complete');
-}, 15000);
+}, 45000);

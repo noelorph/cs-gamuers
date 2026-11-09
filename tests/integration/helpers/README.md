@@ -2,6 +2,16 @@
 
 `accounts.test.ts` uses real hosted Auth tokens and server-only secret-key transport with an explicit ordinary-user JWT for every database request. It refuses missing credentials, matching demo/test targets, and any target other than the explicitly authorized isolated project. `.env.local` is loaded without printing values. `npm test -- tests/unit` remains usable without integration credentials; `npm test` intentionally requires a prepared integration target.
 
+Before the full run, verify the exact TEST Send Email Hook, confirmation requirement and 1,800-second proof lifetime, and capture a native resend with workers stopped. Only after that evidence, run:
+
+```sh
+AUTH_MAIL_HOOK_VERIFIED_PROJECT_REF=ggiccvcrkydcimveyrfi npm test
+```
+
+Keep this attestation command-local; do not replace DEMO readiness or set it merely to satisfy a test. Missing readiness remains a hard failure. CI runs `npm test -- tests/unit` and public browser checks without these hosted credentials; a green CI run does not establish hosted authentication acceptance.
+
+Native verification has a shared provider IP bucket in addition to application limits. `native-verification-fetch.mjs` wraps only the ordinary fixture transport: one retry is allowed after an exact TEST POST `/auth/v1/verify` returns `429` with `over_request_rate_limit`. It waits up to 11 seconds (a bounded numeric Retry-After, or 11 seconds when absent), preserves caller cancellation and the original request, and returns any second rejection unchanged. Other endpoints, errors and network uncertainty are never retried. Tests that perform real native proof verification have a 45-second budget for the possible wait plus both bounded network attempts; assertions and production limits are unchanged. Sustained provider exhaustion still fails the suite and must be investigated, not bypassed by changing quotas or spoofing source IPs.
+
 Apply all `supabase/migrations/*.sql` in filename order. Then, through the approved Supabase connector, verify the selected project ID is `ggiccvcrkydcimveyrfi`, run the URL/ref isolation guard, and install `account-fixture-harness.sql` with `apply_migration`. The SQL marker is operator configuration; it does not independently discover the connected project's identity. Never install this harness on the demo project or include it in application migrations. A repeated installation requires retaining the protected marker and table, and replacing only the function after reviewing its diff.
 
 The harness is executable only by `service_role`, requires the protected test marker and exact caller marker, and owns fixtures through one random run UUID. It exposes a fixed set of reservation/state/session/operation actions, with no arbitrary SQL or global reset. Wrong caller roles, wrong markers, and cross-run account IDs are checked by the integration suite. Native `createUser({email_confirm:true})` is exclusively synthetic test setup, not evidence of participant email ownership. `generateLink` produces fixture proofs without sending mail. Never reuse this confirmation shortcut for demo accounts.

@@ -211,20 +211,24 @@ describe('hosted account boundaries', () => {
     expect((await actor((await signIn(fixture)).client)).length).toBe(1);
   });
 
-  it.each(['magiclink', 'recovery'] as const)('denies native signed %s sessions', async (type) => {
-    const fixture = await createFixture();
-    await harness('state', { account_id: fixture.id, status: 'approved' });
-    const link = await admin.auth.admin.generateLink({ type, email: fixture.email });
-    expect(Boolean(link.error)).toBe(false);
-    const client = anonymous();
-    const verified = await client.auth.verifyOtp({
-      token_hash: link.data.properties!.hashed_token,
-      type,
-    });
-    expect(Boolean(verified.error)).toBe(false);
-    expect(Boolean(verified.data.session)).toBe(true);
-    expect(await actor(client)).toEqual([]);
-  });
+  it.each(['magiclink', 'recovery'] as const)(
+    'denies native signed %s sessions',
+    async (type) => {
+      const fixture = await createFixture();
+      await harness('state', { account_id: fixture.id, status: 'approved' });
+      const link = await admin.auth.admin.generateLink({ type, email: fixture.email });
+      expect(Boolean(link.error)).toBe(false);
+      const client = anonymous();
+      const verified = await client.auth.verifyOtp({
+        token_hash: link.data.properties!.hashed_token,
+        type,
+      });
+      expect(Boolean(verified.error)).toBe(false);
+      expect(Boolean(verified.data.session)).toBe(true);
+      expect(await actor(client)).toEqual([]);
+    },
+    45000
+  );
 
   it('creates a native invitation from the active reservation when released invitation history shares its email', async () => {
     const original = await createFixture('administrator');
@@ -287,7 +291,7 @@ describe('hosted account boundaries', () => {
         })
       ).operation_state
     ).toBe('auth_applied');
-  });
+  }, 45000);
 
   it('denies native recovery sessions for initially unconfirmed accounts', async () => {
     const fixture = await createFixture('student', false);
@@ -309,7 +313,7 @@ describe('hosted account boundaries', () => {
       `Native recovery verification failed (${result.error?.code ?? 'no-code'}:${result.error?.status ?? 'no-status'})`
     ).toBe(false);
     expect(await actor(client)).toEqual([]);
-  });
+  }, 45000);
 
   it('rejects direct native password/email writes and accepts only the exact current verified password operation', async () => {
     const fixture = await createFixture();

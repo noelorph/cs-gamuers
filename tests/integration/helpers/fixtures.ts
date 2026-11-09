@@ -5,6 +5,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { userTransport } from '../../../src/lib/supabase/user-transport.mjs';
 import { assertIsolatedTestTarget } from './environment';
 import { saveFixtureJournal } from './fixture-journal.mjs';
+import { nativeVerificationFetch } from './native-verification-fetch.mjs';
 
 try {
   loadEnvFile('.env.local');
@@ -23,7 +24,10 @@ const options = {
 };
 export const admin = createClient(url, secret, options);
 export const anonymous = () =>
-  createClient(url, secret, { ...options, global: { fetch: userTransport(url, secret) } });
+  createClient(url, secret, {
+    ...options,
+    global: { fetch: nativeVerificationFetch(url, userTransport(url, secret)) },
+  });
 export const runId = randomUUID();
 export const fixturePassword = `Fixture ${randomUUID()}`;
 const ownedIds = new Set<string>();

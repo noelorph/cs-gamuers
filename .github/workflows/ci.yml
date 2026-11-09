@@ -4,14 +4,15 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, feat/role-authentication]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   checks:
-    name: Project checks
+    name: Static, unit and public browser checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -40,11 +41,12 @@ jobs:
       - name: Check TypeScript
         run: npm run typecheck
 
-      - name: Run unit and integration tests
-        run: npm run test
+      # Hosted integration requires separately verified TEST credentials and mail-hook readiness.
+      - name: Run unit and component tests
+        run: npm test -- tests/unit
 
-      - name: Install browser
-        run: npx playwright install --with-deps chromium
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium firefox webkit
 
-      - name: Build and run browser tests
+      - name: Build and run public browser tests (hosted flows require TEST setup)
         run: npm run test:e2e

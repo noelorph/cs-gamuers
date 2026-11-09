@@ -42,17 +42,7 @@ remains canonical until the fenced Auth update commits; incomplete replacement
 blocks approval/resubmission. Completion revokes old sessions and queues the old-address
 notice. These are same-account operations, with retained history and no new role grant.
 
-The role-authentication migrations and TEST-only fixture harness updates were applied
-only to the exact isolated TEST target after checking target identity. Local migration
-filenames and connector-assigned hosted versions differ; the plan records their
-mapping. A later review correction adds a forward migration, applied only to
-TEST, requiring completed current-email proof before a new application review
-decision. DEMO has not received this
-extension's migrations or rollout verification. Review its existing migration history,
-select DEMO explicitly, apply only the missing application migrations in order, and
-verify real account/proof/role flows before demonstrating this source against DEMO.
-Never install TEST fixture harnesses on DEMO, reset either project, or treat TEST
-synthetic approvals as school-record evidence.
+At the earlier TEST checkpoint, the role-authentication migrations and fixture harnesses were applied only to isolated TEST. On November 8, all 15 extension migrations were subsequently applied to DEMO in source order; the hosted history contains 37 entries, with seven application accounts and seven Auth users retained. The plan records the rollout and TEST migration mapping. TEST fixture harnesses remain TEST-only. Do not reapply those migrations based on this historical checkpoint. Hosted DEMO email-origin alignment, real holder flows, and the remaining browser/device/inbox gates still need acceptance. Never install TEST fixture harnesses on DEMO, reset either project, or treat synthetic approvals as school-record evidence.
 
 Task 3 recorded actual native Student and Faculty browser signup, configured-hook
 capture, explicit email confirmation, and password sign-in to Pending status on

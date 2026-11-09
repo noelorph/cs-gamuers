@@ -364,7 +364,7 @@ test.describe('application status and authorized review', () => {
       .getByRole('dialog')
       .getByRole('button', { name: 'Send correction request', exact: true })
       .click();
-    await expect(page.getByRole('status')).toContainText('Decision saved');
+    await expect(page.getByRole('status')).toHaveText('Decision saved.');
     const current = await (await fixtures.signIn(f)).client.rpc('application_details');
     expect(current.data.history).toHaveLength(1);
     expect(current.data.version).toBe(2);

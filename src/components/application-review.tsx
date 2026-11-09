@@ -146,7 +146,7 @@ export function ApplicationReview({
       if (result.ok) {
         setApplication(result.value);
         setOpen(false);
-        setMessage('Decision saved. Decision email queued.');
+        setMessage('Decision saved.');
         setChoice('');
         setRequest(null);
         router.refresh();

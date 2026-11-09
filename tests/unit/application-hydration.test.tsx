@@ -1,9 +1,9 @@
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { hydrateRoot, type Root } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { Application } from '@/features/accounts/application-types';
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('@/app/auth/status/actions', () => ({
   readApplication: vi.fn(),
   saveCorrection: vi.fn(),
@@ -18,6 +18,7 @@ vi.mock('@/app/admin/applications/actions', () => ({
 }));
 import { ApplicationStatus } from '@/app/auth/status/status';
 import { ApplicationReview } from '@/components/application-review';
+import { submitReview } from '@/app/admin/applications/actions';
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -100,3 +101,31 @@ it('withholds decisions for an unverified Pending application opened directly', 
   expect(screen.queryByRole('button', { name: 'Review decision' })).toBeNull();
   expect(screen.getByText(/Verify the current email before reviewing/)).toBeTruthy();
 });
+
+it.each([
+  ['failed', 'Decision saved. Email delivery failed.'],
+  ['sent', 'Decision email delivery recorded.'],
+] as const)(
+  'acknowledges a retried decision without claiming %s mail is queued',
+  async (state, label) => {
+    vi.mocked(submitReview)
+      .mockResolvedValueOnce({ ok: false, code: 'unavailable' })
+      .mockResolvedValueOnce({ ok: true, value: { ...application, delivery_state: state } });
+    render(
+      <ApplicationReview
+        initial={{ ...application, status: 'pending' }}
+        administrator
+        queueHref="/admin/applications"
+      />
+    );
+    fireEvent.click(screen.getByLabelText('Request correction'));
+    fireEvent.change(screen.getByLabelText('Reason (required)'), {
+      target: { value: 'Synthetic correction reason.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Review decision' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Send correction request' }));
+    await waitFor(() => expect(screen.getByRole('status').textContent).toBe('Decision saved.'));
+    expect(screen.getByText(label)).toBeTruthy();
+    expect(screen.queryByText('Decision email queued.')).toBeNull();
+  }
+);
