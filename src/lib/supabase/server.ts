@@ -1,11 +1,14 @@
 import 'server-only';
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 import { getAdminEnv, getAppEnv } from '@/config/env';
 import { createRequestAuth } from './auth';
 import { userTransport } from './user-transport.mjs';
 import type { Database } from './database.types';
 
 export async function createRequestClient() {
+  if (!(await cookies()).getAll().some(({ name, value }) => name.includes('-auth-token') && value))
+    throw new Error('Authentication required');
   const auth = await createRequestAuth();
   const { data, error } = await auth.getSession();
   const token = data.session?.access_token;

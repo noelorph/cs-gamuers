@@ -7,9 +7,12 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   getSession: vi.fn(),
   getUser: vi.fn(),
+  cookies: vi.fn(),
+  auth: vi.fn(),
 }));
+vi.mock('next/headers', () => ({ cookies: async () => ({ getAll: mocks.cookies }) }));
 vi.mock('@/lib/supabase/auth', () => ({
-  createRequestAuth: async () => ({ getSession: mocks.getSession, getUser: mocks.getUser }),
+  createRequestAuth: mocks.auth,
 }));
 vi.mock('@/config/env', () => ({
   getAppEnv: () => ({ supabaseUrl: 'https://example.supabase.co' }),
@@ -21,6 +24,8 @@ import { requireActor } from '@/lib/access';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.cookies.mockReturnValue([{ name: 'sb-example-auth-token.0', value: 'synthetic' }]);
+  mocks.auth.mockResolvedValue({ getSession: mocks.getSession, getUser: mocks.getUser });
   mocks.getSession.mockResolvedValue({
     data: { session: { access_token: 'verified-token' } },
     error: null,
@@ -30,6 +35,13 @@ beforeEach(() => {
 });
 
 describe('request account boundary', () => {
+  it('refuses absent session cookies before requiring provider configuration', async () => {
+    mocks.cookies.mockReturnValue([{ name: 'unrelated', value: 'keep' }]);
+    mocks.auth.mockRejectedValue(new Error('Missing SUPABASE_URL'));
+    await expect(createRequestClient()).rejects.toThrow('Authentication required');
+    expect(mocks.auth).not.toHaveBeenCalled();
+  });
+
   it('pins a verified token per request and refuses missing, expired or unverifiable sessions', async () => {
     const first = await createRequestClient();
     const second = await createRequestClient();
