@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   checks:
-    name: Static, unit and public browser checks
+    name: Project checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
